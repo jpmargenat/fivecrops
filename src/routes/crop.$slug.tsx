@@ -60,7 +60,8 @@ export const Route = createFileRoute("/crop/$slug")({
 });
 
 function CropPage() {
-  const c = Route.useLoaderData()!;
+  const { slug } = Route.useParams();
+  const c = CROPS[slug] as CropData;
 
   return (
     <div className="crop-page">
