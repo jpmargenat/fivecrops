@@ -1,4 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
+import { LincolnHeightsEngine, type EngineHud } from "@/components/LincolnHeightsEngine";
 
 type CropData = {
   num: string;
@@ -59,9 +61,25 @@ export const Route = createFileRoute("/crop/$slug")({
   ),
 });
 
+const EMPTY_HUD: EngineHud = {
+  frequency: "— Hz",
+  cutoff: "— Hz",
+  elevation: "— m",
+  slope: "—",
+  windSpeed: "— km/h",
+  windDirection: "—",
+  windGusts: "— m/s",
+};
+
 function CropPage() {
   const { slug } = Route.useParams();
   const c = CROPS[slug] as CropData;
+  const [hud, setHud] = useState<EngineHud>(EMPTY_HUD);
+  const [playKey, setPlayKey] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const isLincoln = slug === "lincoln-heights";
 
   return (
     <div className="crop-page">
@@ -71,23 +89,47 @@ function CropPage() {
           {c.name.toUpperCase()} — Crop {c.num}
         </div>
         <div className="crop-controls">
-          <button className="play-btn" type="button">▶ Play</button>
+          {isLincoln && (
+            <button
+              className="play-btn"
+              type="button"
+              disabled={playing}
+              onClick={() => {
+                if (playing) return;
+                setDone(false);
+                setPlaying(true);
+                setPlayKey((k) => k + 1);
+              }}
+            >
+              {done ? "✓ Finalizado" : playing ? "● Playing" : "▶ Play"}
+            </button>
+          )}
         </div>
       </div>
 
       <div className="crop-stats">
-        <div className="stat">frequency<strong>— Hz</strong></div>
-        <div className="stat">cutoff<strong>— Hz</strong></div>
-        <div className="stat">elevation<strong>— m</strong></div>
-        <div className="stat">slope<strong>—</strong></div>
-        <div className="stat wind">wind speed<strong>— m/s</strong></div>
-        <div className="stat wind">wind direction<strong>—°</strong></div>
-        <div className="stat wind">wind gusts<strong>— m/s</strong></div>
+        <div className="stat">frequency<strong>{hud.frequency}</strong></div>
+        <div className="stat">cutoff<strong>{hud.cutoff}</strong></div>
+        <div className="stat">elevation<strong>{hud.elevation}</strong></div>
+        <div className="stat">slope<strong>{hud.slope}</strong></div>
+        <div className="stat wind">wind speed<strong>{hud.windSpeed}</strong></div>
+        <div className="stat wind">wind direction<strong>{hud.windDirection}</strong></div>
+        <div className="stat wind">wind gusts<strong>{hud.windGusts}</strong></div>
       </div>
 
       <div className="crop-canvas">
-        <div className="canvas-placeholder-title">{c.name.toUpperCase()}</div>
-        <div className="canvas-placeholder-sub">{c.region}</div>
+        {isLincoln ? (
+          <LincolnHeightsEngine
+            playKey={playKey}
+            onHud={(h) => setHud((prev) => ({ ...prev, ...h }))}
+            onFinish={() => { setPlaying(false); setDone(true); }}
+          />
+        ) : (
+          <>
+            <div className="canvas-placeholder-title">{c.name.toUpperCase()}</div>
+            <div className="canvas-placeholder-sub">{c.region}</div>
+          </>
+        )}
       </div>
 
       <div className="crop-info">
