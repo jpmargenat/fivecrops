@@ -145,8 +145,33 @@ function Landing() {
         </div>
       </section>
 
+      <section className="thumbs-section">
+        <div className="crop-thumbs">
+          {CROPS.map((c) =>
+            c.active ? (
+              <Link
+                key={c.slug}
+                to="/crop/$slug"
+                params={{ slug: c.slug }}
+                className="crop-thumb active"
+              >
+                <span className="thumb-num">{c.num}</span>
+                <span className="thumb-name">{c.name}</span>
+              </Link>
+            ) : (
+              <div key={c.slug} className="crop-thumb inactive">
+                <span className="thumb-num">{c.num}</span>
+                <span className="thumb-name">Coming Soon</span>
+              </div>
+            )
+          )}
+        </div>
+        <Link to="/gallery" className="gallery-link">
+          → Process Gallery — crops, GIFs &amp; reference images
+        </Link>
+      </section>
+
       <section className="section">
-        <h2 className="section-title">Credits</h2>
 
         <div className="credits-block">
           <div className="credits-name"><strong>Juan Pablo Margenat</strong></div>
