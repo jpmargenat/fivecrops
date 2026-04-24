@@ -107,7 +107,7 @@ function Landing() {
       </div>
 
       <section className="section">
-        <h2 className="section-title">About FiveCrops</h2>
+        <h2 className="section-title">ABOUT FIVECROPS</h2>
         <div className="section-body">
           <p>
             FiveCrops emerges from a daily practice of cycling Los Angeles. Over months of riding, a
