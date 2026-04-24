@@ -32,8 +32,9 @@ export const Route = createFileRoute("/crop/$slug")({
     };
   },
   loader: ({ params }) => {
-    if (!CROPS[params.slug]) throw notFound();
-    return CROPS[params.slug];
+    const c = CROPS[params.slug];
+    if (!c) throw notFound();
+    return c;
   },
   component: CropPage,
   notFoundComponent: () => (
