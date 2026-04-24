@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -107,7 +107,7 @@ function Landing() {
       </div>
 
       <section className="section">
-        <h2 className="section-title">About FiveCrops</h2>
+        <h2 className="section-title">ABOUT FIVECROPS</h2>
         <div className="section-body">
           <p>
             FiveCrops emerges from a daily practice of cycling Los Angeles. Over months of riding, a
@@ -145,43 +145,69 @@ function Landing() {
         </div>
       </section>
 
+      <section className="thumbs-section">
+        <div className="crop-thumbs">
+          {CROPS.map((c) =>
+            c.active ? (
+              <Link
+                key={c.slug}
+                to="/crop/$slug"
+                params={{ slug: c.slug }}
+                className="crop-thumb active"
+              >
+                <span className="thumb-num">{c.num}</span>
+                <span className="thumb-name">{c.name}</span>
+              </Link>
+            ) : (
+              <div key={c.slug} className="crop-thumb inactive">
+                <span className="thumb-num">{c.num}</span>
+                <span className="thumb-name">Coming Soon</span>
+              </div>
+            )
+          )}
+        </div>
+        <Link to="/gallery" className="gallery-link">
+          → Process Gallery — crops, GIFs &amp; reference images
+        </Link>
+      </section>
+
       <section className="section">
-        <h2 className="section-title">Credits</h2>
+        <h2 className="section-title">CREDITS</h2>
 
         <div className="credits-block">
-          <div className="credits-name">Juan Pablo Margenat</div>
+          <div className="credits-name"><strong>Juan Pablo Margenat</strong></div>
           <div className="credits-role">
             Architect & Professor, Universidad de Buenos Aires
             <br />
             Visiting Scholar, UCLA/REMAP 2026
             <br />
-            Home institution: CHELA — Centro Heurístico Experimental Latinoamericano —{" "}
+            Home institution: <strong>CHELA</strong> — Centro Heurístico Experimental Latinoamericano —{" "}
             <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
               chela.org.ar
             </a>
             <br />
-            Funded by: Fundación Williams
+            Funded by: <strong>Fundación Williams</strong>
           </div>
         </div>
 
         <div className="credits-block">
           <div className="credits-name">Research Director</div>
-          <div className="credits-role">Fabián Wagmister — UCLA/REMAP</div>
+          <div className="credits-role"><strong>Fabián Wagmister</strong> — UCLA/REMAP</div>
         </div>
 
         <div className="credits-block">
           <div className="credits-name">REMAP Development</div>
-          <div className="credits-role">Jeff Burke — UCLA/REMAP</div>
+          <div className="credits-role"><strong>Jeff Burke</strong> — UCLA/REMAP</div>
         </div>
 
         <div className="credits-block">
           <div className="credits-name">Academic context at UCLA</div>
           <div className="credits-role">
-            Generative Art — Refik Anadol, Design Media Arts, UCLA
+            Generative Art — <strong>Refik Anadol</strong>, Design Media Arts, UCLA
             <br />
-            Production Practice in Theater with Emerging Technologies I — Jeff Burke
+            Production Practice in Theater with Emerging Technologies I — <strong>Jeff Burke</strong>
             <br />
-            REMAP/UCLA — Jeff Burke & Fabián Wagmister
+            REMAP/UCLA — <strong>Jeff Burke</strong> &amp; <strong>Fabián Wagmister</strong>
           </div>
         </div>
 

@@ -59,8 +59,8 @@ button {
 
 .landing-title {
   font-size: clamp(48px, 9vw, 120px);
-  font-weight: 200;
-  letter-spacing: 0.25em;
+  font-weight: 700;
+  letter-spacing: 0.42em;
   color: var(--text-primary);
   margin-bottom: 18px;
 }
@@ -199,8 +199,9 @@ button {
 
 .section-title {
   font-size: 11px;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.42em;
   text-transform: uppercase;
+  font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 28px;
   padding-bottom: 14px;
