@@ -172,6 +172,7 @@ function Landing() {
       </section>
 
       <section className="section">
+        <h2 className="section-title">CREDITS</h2>
 
         <div className="credits-block">
           <div className="credits-name"><strong>Juan Pablo Margenat</strong></div>
