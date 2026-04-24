@@ -1,9 +1,16 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 
-const CROPS: Record<
-  string,
-  { num: string; name: string; region: string; rides: string; elevation: string; distance: string; points: string }
-> = {
+type CropData = {
+  num: string;
+  name: string;
+  region: string;
+  rides: string;
+  elevation: string;
+  distance: string;
+  points: string;
+};
+
+const CROPS: Record<string, CropData> = {
   "lincoln-heights": {
     num: "01",
     name: "Lincoln Heights",
