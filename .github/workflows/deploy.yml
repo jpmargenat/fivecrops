@@ -14,8 +14,10 @@ jobs:
       - uses: oven-sh/setup-bun@v1
       - run: bun install
       - run: bun run build
-      - run: mkdir -p dist && (cp .output/public/index.html dist/index.html || cp .output/public/200.html dist/index.html)
-      - run: cp -r .output/public/* dist/
+      - run: |
+          mkdir -p dist
+          cp .output/public/index.html dist/index.html || cp .output/public/200.html dist/index.html
+          cp -r .output/public/* dist/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
