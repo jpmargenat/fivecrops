@@ -433,3 +433,7 @@ button {
 }
 
 .gallery-link:hover { opacity: 1; }
+.credits-role strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
