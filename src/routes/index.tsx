@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Five urban extractions from an accumulated cycling map of Los Angeles. PedalúDico / UCLA REMAP 2026.",
+          "Five urban extractions from an accumulated cycling map of Los Angeles. PedaLúdico / UCLA REMAP 2026.",
       },
     ],
   }),
@@ -53,31 +53,15 @@ function Landing() {
       <header className="landing-header">
         <h1 className="landing-title">FIVECROPS</h1>
         <p className="landing-subtitle">Five urban extractions from a cycling map of Los Angeles</p>
-        <p className="landing-meta">An experimental tool for S.A.L.I. — PedalúDico / UCLA REMAP 2026</p>
+        <p className="landing-meta">An experimental tool for S.A.L.I. — PedaLúdico / UCLA REMAP 2026</p>
       </header>
 
-      <div className="hero-map" aria-label="Schematic map of Los Angeles with five crop markers">
-        <svg className="map-svg" viewBox="0 0 100 56" preserveAspectRatio="none">
-          <g className="map-grid">
-            {Array.from({ length: 11 }).map((_, i) => (
-              <line key={`v${i}`} x1={i * 10} y1={0} x2={i * 10} y2={56} />
-            ))}
-            {Array.from({ length: 7 }).map((_, i) => (
-              <line key={`h${i}`} x1={0} y1={i * 9.33} x2={100} y2={i * 9.33} />
-            ))}
-          </g>
-          <path
-            className="map-coast"
-            d="M 0 48 Q 12 44 22 46 T 42 50 T 70 52 T 100 50"
-          />
-          <g className="map-roads">
-            <path d="M 5 30 Q 35 28 65 32 T 98 30" />
-            <path d="M 20 5 Q 28 25 32 50" />
-            <path d="M 60 8 Q 55 28 58 52" />
-            <path d="M 0 18 Q 40 22 95 15" />
-            <path d="M 78 5 Q 72 28 80 54" />
-          </g>
-        </svg>
+      <div className="hero-map" aria-label="Cycling map of Los Angeles with five crop markers">
+        <img
+          src="/la-map.png"
+          alt="Cycling map of Los Angeles"
+          className="map-img"
+        />
 
         {CROPS.map((c) => {
           const { x, y } = project(c.lat, c.lon);
@@ -108,10 +92,10 @@ function Landing() {
           <p>FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.</p>
           <p>Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.</p>
           <p>Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.</p>
-          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and meandrical practices in urban and non-urban territories.</p>
+          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.</p>
         </div>
         <div className="section-links">
-          <a href="https://wiki.chela.org.ar/Pedaludico" target="_blank" rel="noreferrer">
+          <a href="https://wiki.chela.org.ar/PedaLúdico" target="_blank" rel="noreferrer">
             → PedaLúdico Research Wiki
           </a>
           <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
@@ -123,7 +107,6 @@ function Landing() {
         </div>
       </section>
 
-      {/* ✅ CAMBIADO: agregado "section" para alineación */}
       <section className="section thumbs-section">
         <div className="crop-thumbs">
           {CROPS.map((c) =>
@@ -193,9 +176,9 @@ function Landing() {
         <div className="credits-block">
           <div className="credits-name">Research framework</div>
           <div className="credits-role">
-            PedalúDico —{" "}
-            <a href="https://wiki.chela.org.ar/PedalúDico" target="_blank" rel="noreferrer">
-              wiki.chela.org.ar/PedalúDico
+            PedaLúdico —{" "}
+            <a href="https://wiki.chela.org.ar/PedaLúdico" target="_blank" rel="noreferrer">
+              wiki.chela.org.ar/PedaLúdico
             </a>
           </div>
         </div>
@@ -212,7 +195,7 @@ function Landing() {
       </section>
 
       <footer className="landing-footer">
-        FiveCrops 2026 — CHELA / UCLA REMAP / PedalúDico
+        FiveCrops 2026 — CHELA / UCLA REMAP / PedaLúdico
       </footer>
     </div>
   );
