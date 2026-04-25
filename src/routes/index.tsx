@@ -108,10 +108,10 @@ function Landing() {
           <p>FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.</p>
           <p>Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.</p>
           <p>Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.</p>
-          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of ​​Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and meandrical practices in urban and non-urban territories.</p>
+          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and meandrical practices in urban and non-urban territories.</p>
         </div>
         <div className="section-links">
-          <a href="https://wiki.chela.org.ar/PedaLúdico" target="_blank" rel="noreferrer">
+          <a href="https://wiki.chela.org.ar/Pedaludico" target="_blank" rel="noreferrer">
             → PedaLúdico Research Wiki
           </a>
           <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
@@ -123,7 +123,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* ✅ CAMBIOS AQUÍ: alineación con "section" y colores en el crop activo */}
+      {/* ✅ CAMBIADO: agregado "section" para alineación */}
       <section className="section thumbs-section">
         <div className="crop-thumbs">
           {CROPS.map((c) =>
@@ -134,8 +134,8 @@ function Landing() {
                 params={{ slug: c.slug }}
                 className="crop-thumb active"
               >
-                <span className="thumb-num" style={{ color: "#7dd3fc", fontWeight: "bold" }}>{c.num}</span>
-                <span className="thumb-name" style={{ color: "#7dd3fc", fontWeight: "bold" }}>{c.name}</span>
+                <span className="thumb-num">{c.num}</span>
+                <span className="thumb-name">{c.name}</span>
               </Link>
             ) : (
               <div key={c.slug} className="crop-thumb inactive">
