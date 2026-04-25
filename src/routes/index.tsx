@@ -109,27 +109,16 @@ function Landing() {
       <section className="section">
         <h2 className="section-title">ABOUT FIVECROPS</h2>
         <div className="section-body">
+         <p> FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.
+      </p>
           <p>
-            FiveCrops emerges from a daily practice of cycling Los Angeles. Over months of riding, a
-            map built itself through movement — street by street, neighborhood by neighborhood. From
-            this accumulated cartography, five areas of particular density were extracted: crops,
-            like the Photoshop command — focused cuts into the urban fabric.
+            Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.
           </p>
           <p>
-            Each crop visualizes all the times the cyclist passed through that zone, layered and
-            animated. The accumulated paths reveal something invisible in everyday experience: the
-            weight of presence, the rhythm of return, the texture of a neighborhood absorbed through
-            the body on a bicycle.
+            Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.
           </p>
           <p>
-            Sound responds to the data: elevation becomes frequency, speed shapes the filter, wind
-            modulates the oscillator. The city speaks through its own physical parameters.
-          </p>
-          <p>
-            FiveCrops is a tool-building exercise within the Interpretive Cartographies branch of
-            PedalúDico, developed during a Visiting Scholar residency at UCLA/REMAP. It feeds into
-            S.A.L.I. (Siempre a la Izquierda), a larger psicogeographic research project exploring
-            situationist and pedalúdic practices across urban and non-urban territories.
+            FiveCrops is an exercise in creating tools within the research branch on the idea of ​​Interpretive Cartographies within PedalúDico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.
           </p>
         </div>
         <div className="section-links">
