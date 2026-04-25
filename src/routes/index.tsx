@@ -37,12 +37,10 @@ const CROPS: Crop[] = [
   { slug: "silver-lake", num: "05", name: "Silver Lake", lat: 34.08, lon: -118.27, active: false },
 ];
 
-// Bounding box for LA region projection
 const BOUNDS = { minLat: 33.95, maxLat: 34.18, minLon: -118.50, maxLon: -118.15 };
 
 function project(lat: number, lon: number) {
   const x = ((lon - BOUNDS.minLon) / (BOUNDS.maxLon - BOUNDS.minLon)) * 100;
-  // invert y because lat increases northward
   const y = (1 - (lat - BOUNDS.minLat) / (BOUNDS.maxLat - BOUNDS.minLat)) * 100;
   return { x, y };
 }
@@ -60,7 +58,6 @@ function Landing() {
 
       <div className="hero-map" aria-label="Schematic map of Los Angeles with five crop markers">
         <svg className="map-svg" viewBox="0 0 100 56" preserveAspectRatio="none">
-          {/* Grid */}
           <g className="map-grid">
             {Array.from({ length: 11 }).map((_, i) => (
               <line key={`v${i}`} x1={i * 10} y1={0} x2={i * 10} y2={56} />
@@ -69,7 +66,6 @@ function Landing() {
               <line key={`h${i}`} x1={0} y1={i * 9.33} x2={100} y2={i * 9.33} />
             ))}
           </g>
-          {/* Schematic coast / freeways */}
           <path
             className="map-coast"
             d="M 0 48 Q 12 44 22 46 T 42 50 T 70 52 T 100 50"
@@ -109,21 +105,14 @@ function Landing() {
       <section className="section">
         <h2 className="section-title">ABOUT FIVECROPS</h2>
         <div className="section-body">
-         <p> FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.
-      </p>
-          <p>
-            Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.
-          </p>
-          <p>
-            Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.
-          </p>
-          <p>
-            FiveCrops is an exercise in creating tools within the research branch on the idea of ​​Interpretive Cartographies within PedalúDico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.
-          </p>
+          <p>FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.</p>
+          <p>Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.</p>
+          <p>Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.</p>
+          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of ​​Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and meandrical practices in urban and non-urban territories.</p>
         </div>
         <div className="section-links">
-          <a href="https://wiki.chela.org.ar/PedalúDico" target="_blank" rel="noreferrer">
-            → PedalúDico Research Wiki
+          <a href="https://wiki.chela.org.ar/PedaLúdico" target="_blank" rel="noreferrer">
+            → PedaLúdico Research Wiki
           </a>
           <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
             → CHELA
@@ -134,7 +123,8 @@ function Landing() {
         </div>
       </section>
 
-      <section className="thumbs-section">
+      {/* ✅ CAMBIOS AQUÍ: alineación con "section" y colores en el crop activo */}
+      <section className="section thumbs-section">
         <div className="crop-thumbs">
           {CROPS.map((c) =>
             c.active ? (
@@ -144,8 +134,8 @@ function Landing() {
                 params={{ slug: c.slug }}
                 className="crop-thumb active"
               >
-                <span className="thumb-num">{c.num}</span>
-                <span className="thumb-name">{c.name}</span>
+                <span className="thumb-num" style={{ color: "#7dd3fc", fontWeight: "bold" }}>{c.num}</span>
+                <span className="thumb-name" style={{ color: "#7dd3fc", fontWeight: "bold" }}>{c.name}</span>
               </Link>
             ) : (
               <div key={c.slug} className="crop-thumb inactive">
