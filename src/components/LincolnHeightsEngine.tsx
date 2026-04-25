@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { LINCOLN_HEIGHTS_GPS, type GpsPoint } from "@/data/lincoln-heights-gps";
+import { LINCOLN_HEIGHTS_SUPER_GPS } from "@/data/lincoln-heights-super-gps";
 
 const TOTAL_MS = 75000;
 const PADDING = 40;
@@ -19,9 +20,21 @@ const STREET_LABELS: Record<number, string> = {
   443: "Ave 26",
 };
 
+// Street labels for the super route
+const SUPER_STREET_LABELS: Record<number, string> = {
+  20: "Workman St",
+  55: "Ave 26",
+  90: "N Broadway",
+  140: "Griffin Ave",
+  200: "Pasadena Ave",
+  280: "N Main St",
+  350: "Mission Rd",
+  420: "Valley Blvd",
+};
+
 type Wind = { speed: number; direction: number; gusts: number };
 type NewsItem = { source: string; title: string; idx: number };
-type ActiveLabel = { idx: number; text: string; age: number; maxAge: number; fadeIn: number };
+type ActiveLabel = { idx: number; text: string; age: number; maxAge: number; fadeIn: number; isSuper?: boolean };
 type ActiveCard = { idx: number; news: NewsItem; age: number; maxAge: number };
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; trail: { x: number; y: number }[] };
 
@@ -46,7 +59,7 @@ export type EngineHud = {
 };
 
 type Props = {
-  playKey: number; // increment to trigger play
+  playKey: number;
   onHud: (h: Partial<EngineHud>) => void;
   onFinish: () => void;
 };
@@ -77,13 +90,14 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
     width: 0,
     height: 0,
     projected: [] as { x: number; y: number }[],
+    projectedSuper: [] as { x: number; y: number }[],
     maxDist: 1,
     cumDist: [] as number[],
     finished: false,
     running: false,
   });
 
-  // Resize + project
+  // Resize + project both routes using same bounds
   useEffect(() => {
     const wrap = wrapRef.current;
     const main = mainRef.current;
@@ -106,26 +120,31 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
       stateRef.current.width = w;
       stateRef.current.height = h;
 
-      const lons = LINCOLN_HEIGHTS_GPS.map((p) => p.lon);
-      const lats = LINCOLN_HEIGHTS_GPS.map((p) => p.lat);
-      const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-      const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+      // Use combined bounds of both routes so they share the same coordinate space
+      const allLons = [...LINCOLN_HEIGHTS_GPS, ...LINCOLN_HEIGHTS_SUPER_GPS].map((p) => p.lon);
+      const allLats = [...LINCOLN_HEIGHTS_GPS, ...LINCOLN_HEIGHTS_SUPER_GPS].map((p) => p.lat);
+      const minLon = Math.min(...allLons), maxLon = Math.max(...allLons);
+      const minLat = Math.min(...allLats), maxLat = Math.max(...allLats);
       const sx = (w - PADDING * 2) / (maxLon - minLon);
       const sy = (h - PADDING * 2) / (maxLat - minLat);
       const s = Math.min(sx, sy);
       const offX = (w - (maxLon - minLon) * s) / 2;
       const offY = (h - (maxLat - minLat) * s) / 2;
-      stateRef.current.projected = LINCOLN_HEIGHTS_GPS.map((p) => ({
+
+      const projectPt = (p: GpsPoint) => ({
         x: offX + (p.lon - minLon) * s,
         y: h - (offY + (p.lat - minLat) * s),
-      }));
+      });
+
+      stateRef.current.projected = LINCOLN_HEIGHTS_GPS.map(projectPt);
+      stateRef.current.projectedSuper = LINCOLN_HEIGHTS_SUPER_GPS.map(projectPt);
+
       let total = 0;
       const cum: number[] = [];
       for (const p of LINCOLN_HEIGHTS_GPS) { total += p.dist; cum.push(total); }
       stateRef.current.maxDist = total;
       stateRef.current.cumDist = cum;
 
-      // Clear offscreen on resize
       const oc = off.getContext("2d")!;
       oc.clearRect(0, 0, w, h);
       drawIdle();
@@ -160,9 +179,7 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
           windDirection: `${Math.round(w.direction)}° ${compass(w.direction)}`,
           windGusts: `${w.gusts.toFixed(1)} m/s`,
         });
-      } catch {
-        /* ignore */
-      }
+      } catch { /* ignore */ }
     };
     fetchWind();
     const id = setInterval(fetchWind, 30000);
@@ -170,7 +187,7 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // News fetch
+  // News fetch (kept for future use)
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -230,9 +247,31 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
     ctx.restore();
   }
 
+  // Draw the super route as a faint background layer on the offscreen canvas
+  function drawSuperRoute() {
+    const off = offRef.current; if (!off) return;
+    const oc = off.getContext("2d")!;
+    const proj = stateRef.current.projectedSuper;
+    if (proj.length < 2) return;
+
+    oc.save();
+    oc.globalAlpha = 0.18;
+    oc.strokeStyle = "rgba(180, 180, 255, 0.9)";
+    oc.lineWidth = 1.5;
+    oc.lineCap = "round";
+    oc.lineJoin = "round";
+    oc.beginPath();
+    oc.moveTo(proj[0].x, proj[0].y);
+    for (let i = 1; i < proj.length; i++) {
+      oc.lineTo(proj[i].x, proj[i].y);
+    }
+    oc.stroke();
+    oc.restore();
+  }
+
   function spawnParticle() {
     const { width: w, height: h, wind } = stateRef.current;
-    const rad = ((wind.direction + 180) * Math.PI) / 180; // wind FROM dir; particles travel TO opposite
+    const rad = ((wind.direction + 180) * Math.PI) / 180;
     const speed = Math.max(0.4, wind.speed * 0.25);
     const vx = Math.sin(rad) * speed;
     const vy = -Math.cos(rad) * speed;
@@ -254,7 +293,8 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
     const gain = ctx.createGain();
     const lfo = ctx.createOscillator();
     const lfoGain = ctx.createGain();
-    osc.type = "sine"; osc.frequency.value = 100;
+    osc.type = "triangle"; // ← changed from "sine"
+    osc.frequency.value = 100;
     filter.type = "lowpass"; filter.frequency.value = 600; filter.Q.value = 2;
     gain.gain.value = 0;
     lfo.type = "sine"; lfo.frequency.value = 0.5;
@@ -265,21 +305,22 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
     stateRef.current.audio = { ctx, osc, filter, gain, lfo, lfoGain };
   }
 
-  function clickAt(t: number, dist: number) {
+  // Heavy click every 4 GPS points — replaces the old clickAt
+  function clickSuperAt(t: number, dist: number) {
     const a = stateRef.current.audio; if (!a) return;
     const { ctx } = a;
-    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.025), ctx.sampleRate);
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
     const src = ctx.createBufferSource(); src.buffer = buf;
-    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 8;
-    bp.frequency.value = mapRange(dist, 0, stateRef.current.maxDist, 800, 4000);
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 4;
+    bp.frequency.value = mapRange(dist, 0, stateRef.current.maxDist, 400, 2000);
     const g = ctx.createGain();
-    const vol = mapRange(dist, 0, stateRef.current.maxDist, 0.02, 0.18);
+    const vol = mapRange(dist, 0, stateRef.current.maxDist, 0.08, 0.45);
     g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
     src.connect(bp); bp.connect(g); g.connect(ctx.destination);
-    src.start(t); src.stop(t + 0.03);
+    src.start(t); src.stop(t + 0.05);
   }
 
   async function start() {
@@ -289,9 +330,12 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
     setRunning(true);
     setFinished(false);
 
-    // Reset offscreen
+    // Reset offscreen and draw super route as background first
     const off = offRef.current;
-    if (off) off.getContext("2d")!.clearRect(0, 0, stateRef.current.width, stateRef.current.height);
+    if (off) {
+      off.getContext("2d")!.clearRect(0, 0, stateRef.current.width, stateRef.current.height);
+      drawSuperRoute(); // ← second route drawn as faint background
+    }
     stateRef.current.activeLabels = [];
     stateRef.current.activeCards = [];
     stateRef.current.activeIdx = 0;
@@ -365,7 +409,10 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
       const lfoAmt = mapRange(stateRef.current.wind.speed, 0, 15, 1, 20);
       a.lfo.frequency.linearRampToValueAtTime(lfoRate, t + segSec);
       a.lfoGain.gain.linearRampToValueAtTime(lfoAmt, t + segSec);
-      clickAt(t + 0.001, cumNow);
+      // Only heavy click every 4 points — no regular click
+      if (i % 4 === 0) {
+        clickSuperAt(t + 0.001, cumNow);
+      }
     }
 
     // HUD
@@ -376,11 +423,18 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
       slope: `${seg.slope > 0 ? "+" : ""}${seg.slope.toFixed(3)}`,
     });
 
-    // Street label
+    // Street label — main route
     const streetText = STREET_LABELS[i];
     if (streetText) {
       stateRef.current.activeLabels.push({ idx: i, text: streetText, age: 0, maxAge: 180, fadeIn: 15 });
     }
+
+    // Street label — super route (shown as the animation reaches that point index)
+    const superStreetText = SUPER_STREET_LABELS[i];
+    if (superStreetText) {
+      stateRef.current.activeLabels.push({ idx: i, text: superStreetText, age: 0, maxAge: 180, fadeIn: 15, isSuper: true });
+    }
+
     // News card
     const news = stateRef.current.news.find((n) => n.idx === i);
     if (news) {
@@ -455,13 +509,22 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
       let alpha = 1;
       if (L.age < L.fadeIn) alpha = L.age / L.fadeIn;
       else if (L.age > L.maxAge - 30) alpha = Math.max(0, (L.maxAge - L.age) / 30);
-      const p = proj[L.idx];
+      // Super route labels use the projectedSuper coords, main route uses projected
+      const p = L.isSuper
+        ? stateRef.current.projectedSuper[Math.min(L.idx, stateRef.current.projectedSuper.length - 1)]
+        : proj[L.idx];
       const lx = Math.min(w - 90, Math.max(10, p.x + 18));
       const ly = Math.max(20, p.y - 18);
-      ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.5})`;
+      // Super labels slightly dimmer and in a different color
+      const labelColor = L.isSuper
+        ? `rgba(180,180,255,${alpha * 0.7})`
+        : `rgba(255,255,255,${alpha * 0.85})`;
+      ctx.strokeStyle = L.isSuper
+        ? `rgba(180,180,255,${alpha * 0.4})`
+        : `rgba(255,255,255,${alpha * 0.5})`;
       ctx.lineWidth = 0.75;
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(lx, ly); ctx.stroke();
-      ctx.fillStyle = `rgba(255,255,255,${alpha * 0.85})`;
+      ctx.fillStyle = labelColor;
       ctx.fillText(L.text, lx + 4, ly);
       if (L.age >= L.maxAge) labels.splice(i, 1);
     }
@@ -556,7 +619,6 @@ export function LincolnHeightsEngine({ playKey, onHud, onFinish }: Props) {
     stateRef.current.running = false;
   }
 
-  // Visual indicator unused — parent owns play button
   void running; void finished;
 
   return (
