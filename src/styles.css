@@ -421,7 +421,7 @@ button {
 
 .crop-thumb.inactive .thumb-num,
 .crop-thumb.inactive .thumb-name {
-  color: var(--text-tertiary);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .gallery-link {
