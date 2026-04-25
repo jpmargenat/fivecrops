@@ -143,7 +143,7 @@ function Landing() {
             <br />
             Visiting Scholar, UCLA/REMAP 2026
             <br />
-            Home institution: <strong>CHELA</strong> — Centro Heurístico Experimental Latinoamericano —{" "}
+            Home institution: <strong>cheLA</strong> — Centro Heurístico Experimental Latinoamericano —{" "}
             <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
               chela.org.ar
             </a>
