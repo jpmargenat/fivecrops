@@ -51,7 +51,7 @@ function Landing() {
   return (
     <div className="landing">
       <header className="landing-header">
-        <h1 className="landing-title">FIVECROPS</h1>
+        <h1 className="landing-title">FiveCrops</h1>
         <p className="landing-subtitle">Five urban extractions from a cycling map of Los Angeles</p>
         <p className="landing-meta">An experimental tool for S.A.L.I. — PedaLúdico / UCLA REMAP 2026</p>
       </header>
