@@ -94,7 +94,7 @@ function Landing() {
           <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.</p>
         </div>
         <div className="section-links">
-          <a href="hhttps://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
+          <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
             → PedaLúdico Research Wiki
           </a>
           <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
