@@ -85,28 +85,7 @@ function Landing() {
         })}
       </div>
 
-      <section className="section">
-        <h2 className="section-title">ABOUT FIVECROPS</h2>
-        <div className="section-body">
-          <p>FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.</p>
-          <p>Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.</p>
-          <p>Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.</p>
-          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.</p>
-        </div>
-        <div className="section-links">
-          <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
-            → PedaLúdico Research Wiki
-          </a>
-          <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
-            → CHELA
-          </a>
-          <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer">
-            → REMAP UCLA
-          </a>
-        </div>
-      </section>
-
-      {/* ✅ NUEVA SECCIÓN DE THUMBNAILS VISUALES */}
+      {/* ✅ THUMBNAILS justo debajo del mapa */}
       <section className="section thumbs-section">
         <div className="crop-thumbs-grid">
           {CROPS.map((c, i) => {
@@ -143,6 +122,27 @@ function Landing() {
         <Link to="/gallery" className="gallery-link">
           → Process Gallery — crops, GIFs &amp; reference images
         </Link>
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">ABOUT FIVECROPS</h2>
+        <div className="section-body">
+          <p>FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.</p>
+          <p>Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.</p>
+          <p>Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.</p>
+          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.</p>
+        </div>
+        <div className="section-links">
+          <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
+            → PedaLúdico Research Wiki
+          </a>
+          <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
+            → CHELA
+          </a>
+          <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer">
+            → REMAP UCLA
+          </a>
+        </div>
       </section>
 
       <section className="section">
