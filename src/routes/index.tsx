@@ -62,7 +62,6 @@ function Landing() {
           alt="Cycling map of Los Angeles"
           className="map-img"
         />
-
         {CROPS.map((c) => {
           const { x, y } = project(c.lat, c.lon);
           return (
@@ -107,26 +106,39 @@ function Landing() {
         </div>
       </section>
 
+      {/* ✅ NUEVA SECCIÓN DE THUMBNAILS VISUALES */}
       <section className="section thumbs-section">
-        <div className="crop-thumbs">
-          {CROPS.map((c) =>
-            c.active ? (
+        <div className="crop-thumbs-grid">
+          {CROPS.map((c, i) => {
+            const imgSrc = `/t${i + 1}.png`;
+            return c.active ? (
               <Link
                 key={c.slug}
                 to="/crop/$slug"
                 params={{ slug: c.slug }}
-                className="crop-thumb active"
+                className="crop-thumb-card active"
               >
-                <span className="thumb-num">{c.num}</span>
-                <span className="thumb-name">{c.name}</span>
+                <div className="crop-thumb-img-wrap">
+                  <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
+                </div>
+                <div className="crop-thumb-label">
+                  <span className="crop-thumb-num">{c.num}</span>
+                  <span className="crop-thumb-name">{c.name}</span>
+                </div>
               </Link>
             ) : (
-              <div key={c.slug} className="crop-thumb inactive">
-                <span className="thumb-num">{c.num}</span>
-                <span className="thumb-name">Coming Soon</span>
+              <div key={c.slug} className="crop-thumb-card inactive">
+                <div className="crop-thumb-img-wrap">
+                  <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--inactive" />
+                  <div className="crop-thumb-soon">Coming Soon</div>
+                </div>
+                <div className="crop-thumb-label">
+                  <span className="crop-thumb-num">{c.num}</span>
+                  <span className="crop-thumb-name">{c.name}</span>
+                </div>
               </div>
-            )
-          )}
+            );
+          })}
         </div>
         <Link to="/gallery" className="gallery-link">
           → Process Gallery — crops, GIFs &amp; reference images
