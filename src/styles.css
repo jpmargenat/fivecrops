@@ -437,3 +437,103 @@ button {
   color: var(--text-primary);
   font-weight: 700;
 }
+
+/* === CROP THUMBS GRID === */
+.crop-thumbs-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.crop-thumb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  cursor: default;
+}
+
+.crop-thumb-card.active {
+  cursor: pointer;
+}
+
+.crop-thumb-card.active:hover .crop-thumb-img {
+  opacity: 1;
+}
+
+.crop-thumb-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--border-faint);
+}
+
+.crop-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s;
+}
+
+.crop-thumb-img--active {
+  opacity: 0.9;
+}
+
+.crop-thumb-img--inactive {
+  opacity: 0.2;
+  filter: grayscale(100%);
+}
+
+.crop-thumb-soon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.crop-thumb-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.crop-thumb-num {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-tertiary);
+}
+
+.crop-thumb-card.active .crop-thumb-num {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.crop-thumb-name {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.crop-thumb-card.active .crop-thumb-name {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.crop-thumb-card.inactive .crop-thumb-name {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+@media (max-width: 600px) {
+  .crop-thumbs-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
