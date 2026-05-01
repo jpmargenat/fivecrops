@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { WEST_HOLLYWOOD_GPS_01 } from "@/data/west-hollywood-gps-01";
 
-const COMPRESS      = 60 / 910;
-const PADDING       = 70;
-const PDI_RADIUS_M  = 50;
+const COMPRESS     = 60 / 910;
+const PADDING      = 70;
+const PDI_RADIUS_M = 50;
+
+// Color base turquesa neón
+const TEAL_BASE = { r: 0, g: 229, b: 204 }; // #00e5cc
 
 const PDI_POINTS = [
   { name: "Center of the Crop", description: "Wilson Plaza",                               lat: 34.07221939292978, lon: -118.44363368595516 },
@@ -20,12 +23,6 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
 }
 function headingToCutoff(h: number) { return 300 + ((Math.cos(h * Math.PI / 180) + 1) / 2) * 2700; }
 function headingToQ(h: number)      { return 1 + Math.abs(Math.sin(h * Math.PI / 180)) * 14; }
-function headingColor(h: number) {
-  if (h <= 45 || h > 315)  return "#7dd3fc";
-  if (h > 45  && h <= 135) return "#c084fc";
-  if (h > 135 && h <= 225) return "#fb923c";
-  return "#34d399";
-}
 function compass(deg: number) {
   const d = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
   return d[Math.round(((deg % 360) / 22.5)) % 16];
@@ -36,7 +33,16 @@ export type EngineHud = {
   windSpeed: string; windDirection: string; windGusts: string; heading: string;
 };
 
-type Wind     = { speed: number; direction: number; gusts: number };
+type Wind = { speed: number; direction: number; gusts: number };
+
+// Segmento vivo — se redibuja cada frame con envejecimiento
+type LiveSegment = {
+  x1: number; y1: number; x2: number; y2: number;
+  baseWidth: number;  // grosor original según velocidad
+  age: number;        // frames de vida
+  windContra: number; // qué tan en contra estaba el viento al dibujarse (0-1)
+};
+
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; trail: { x: number; y: number }[] };
 type PdiLabel = { name: string; desc: string; x: number; y: number; age: number };
 
@@ -45,11 +51,9 @@ type Props = { playKey: number; onHud: (h: Partial<EngineHud>) => void; onFinish
 export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const mainRef = useRef<HTMLCanvasElement | null>(null);
-  const offRef  = useRef<HTMLCanvasElement | null>(null);
   const [running, setRunning]   = useState(false);
   const [finished, setFinished] = useState(false);
 
-  // Distancia acumulada (calculada una vez)
   const { cumDist, totalDist } = (() => {
     let t = 0;
     const c = WEST_HOLLYWOOD_GPS_01.map(p => { t += p.dist; return t; });
@@ -63,8 +67,10 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     pdiSeen:      new Set<number>(),
     projected:    [] as { x: number; y: number }[],
     projectedPDI: [] as { x: number; y: number }[],
-    activeIdx: 0, rafId: 0,
-    timeouts:  [] as ReturnType<typeof setTimeout>[],
+    segments:     [] as LiveSegment[], // todos los segmentos vivos
+    activeIdx:    0, rafId: 0,
+    timeouts:     [] as ReturnType<typeof setTimeout>[],
+    lfoPhase:     0,  // fase actual del LFO para modulación visual
     audio: null as null | { ctx: AudioContext; osc: OscillatorNode; filter: BiquadFilterNode; gain: GainNode; lfo: OscillatorNode; lfoGain: GainNode },
     width: 0, height: 0,
     running: false, finished: false,
@@ -72,16 +78,14 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
 
   // ── Proyección ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    const wrap = wrapRef.current, main = mainRef.current, off = offRef.current;
-    if (!wrap || !main || !off) return;
+    const wrap = wrapRef.current, main = mainRef.current;
+    if (!wrap || !main) return;
     const project = () => {
       const w = Math.max(320, wrap.clientWidth), h = Math.max(320, wrap.clientHeight);
       const dpr = window.devicePixelRatio || 1;
-      [main, off].forEach(c => {
-        c.width = w * dpr; c.height = h * dpr;
-        c.style.width = w + "px"; c.style.height = h + "px";
-        c.getContext("2d")!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      });
+      main.width = w * dpr; main.height = h * dpr;
+      main.style.width = w + "px"; main.style.height = h + "px";
+      main.getContext("2d")!.setTransform(dpr, 0, 0, dpr, 0, 0);
       stateRef.current.width = w; stateRef.current.height = h;
       const pts = WEST_HOLLYWOOD_GPS_01;
       const minLon = Math.min(...pts.map(p => p.lon)), maxLon = Math.max(...pts.map(p => p.lon));
@@ -92,7 +96,6 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
       const toXY = (lat: number, lon: number) => ({ x: ox + (lon - minLon) * s, y: h - (oy + (lat - minLat) * s) });
       stateRef.current.projected    = pts.map(p => toXY(p.lat, p.lon));
       stateRef.current.projectedPDI = PDI_POINTS.map(p => toXY(p.lat, p.lon));
-      off.getContext("2d")!.clearRect(0, 0, w, h);
       drawIdle();
     };
     project();
@@ -102,7 +105,7 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Viento (WeHo coords) ────────────────────────────────────────────────────
+  // ── Viento ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
     const fetchWind = async () => {
@@ -129,7 +132,6 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     const ctx = main.getContext("2d")!;
     const { width: w, height: h } = stateRef.current;
     ctx.fillStyle = "#0f0d14"; ctx.fillRect(0, 0, w, h);
-    const off = offRef.current; if (off) ctx.drawImage(off, 0, 0, w, h);
     drawLabel(ctx);
   }
   function drawLabel(ctx: CanvasRenderingContext2D) {
@@ -150,7 +152,7 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     const ctx = new Ctx();
     const osc = ctx.createOscillator(), filter = ctx.createBiquadFilter();
     const gain = ctx.createGain(), lfo = ctx.createOscillator(), lfoGain = ctx.createGain();
-    osc.type = "triangle"; osc.frequency.value = 286.6; // 143.3m × 2Hz/m
+    osc.type = "triangle"; osc.frequency.value = 286.6;
     filter.type = "lowpass"; filter.frequency.value = 1200; filter.Q.value = 2;
     gain.gain.value = 0; lfo.type = "sine"; lfo.frequency.value = 0.5; lfoGain.gain.value = 0;
     lfo.connect(lfoGain); lfoGain.connect(gain.gain);
@@ -159,17 +161,14 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     stateRef.current.audio = { ctx, osc, filter, gain, lfo, lfoGain };
   }
 
-  // Kick: bombo sine + click ruido blanco
   function fireKick(cumNow: number) {
     const a = stateRef.current.audio; if (!a) return;
     const t = a.ctx.currentTime + 0.001;
-    // Bombo
     const kick = a.ctx.createOscillator(), kg = a.ctx.createGain();
     kick.type = "sine";
     kick.frequency.setValueAtTime(110, t); kick.frequency.exponentialRampToValueAtTime(38, t + 0.08);
     kg.gain.setValueAtTime(0.7, t); kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
     kick.connect(kg); kg.connect(a.ctx.destination); kick.start(t); kick.stop(t + 0.13);
-    // Click
     const buf = a.ctx.createBuffer(1, Math.floor(a.ctx.sampleRate * 0.025), a.ctx.sampleRate);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
@@ -186,8 +185,8 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     if (stateRef.current.running) return;
     stateRef.current.running = true; stateRef.current.finished = false;
     stateRef.current.pdiLabels = []; stateRef.current.pdiSeen = new Set();
+    stateRef.current.segments = []; stateRef.current.lfoPhase = 0;
     setRunning(true); setFinished(false);
-    offRef.current?.getContext("2d")!.clearRect(0, 0, stateRef.current.width, stateRef.current.height);
     stateRef.current.activeIdx = 0;
     initAudio();
     const pts = WEST_HOLLYWOOD_GPS_01;
@@ -205,16 +204,29 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
 
   // ── Step ────────────────────────────────────────────────────────────────────
   function stepSegment(i: number, segSec: number) {
-    const proj = stateRef.current.projected, off = offRef.current; if (!off) return;
-    const oc = off.getContext("2d")!, a = stateRef.current.audio;
-    const seg = WEST_HOLLYWOOD_GPS_01[i], cumNow = cumDist[i];
-    // Visual
-    const normSlope = Math.min(1, Math.abs(seg.slope) / 0.2);
-    oc.save(); oc.globalAlpha = 0.38; oc.strokeStyle = headingColor(seg.heading);
-    oc.lineWidth = Math.max(1.5, normSlope * 8 + 2); oc.lineCap = "round";
-    oc.beginPath(); oc.moveTo(proj[i - 1].x, proj[i - 1].y); oc.lineTo(proj[i].x, proj[i].y);
-    oc.stroke(); oc.restore();
+    const proj = stateRef.current.projected;
+    const a    = stateRef.current.audio;
+    const seg  = WEST_HOLLYWOOD_GPS_01[i];
+    const cumNow = cumDist[i];
+
+    // Calcular windContra para este segmento (cuán en contra está el viento)
+    const windAngle = (seg.heading - stateRef.current.wind.direction) * Math.PI / 180;
+    const windCos   = Math.cos(windAngle); // +1=a favor, -1=en contra
+    const windContra = Math.max(0, -windCos); // 0=favor/perp, 1=en contra
+    const windPerp   = Math.abs(Math.sin(windAngle));
+
+    // Grosor base: velocidad (0→fino, 7.5m/s→grueso)
+    const baseWidth = mapRange(seg.speed, 0, 7.5, 1.5, 6);
+
+    // Agregar segmento al array vivo
+    stateRef.current.segments.push({
+      x1: proj[i - 1].x, y1: proj[i - 1].y,
+      x2: proj[i].x,     y2: proj[i].y,
+      baseWidth, age: 0, windContra,
+    });
+
     stateRef.current.activeIdx = i;
+
     // Audio
     if (a) {
       const t = a.ctx.currentTime, ramp = Math.max(0.04, segSec * 0.7);
@@ -223,21 +235,16 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
       a.filter.frequency.linearRampToValueAtTime(cutoff, t + ramp);
       a.filter.Q.linearRampToValueAtTime(headingToQ(seg.heading), t + ramp);
       a.gain.gain.linearRampToValueAtTime(mapRange(Math.max(0, seg.slope), 0, 0.3, 0.12, 0.35), t + ramp);
-      // WCL — Wind Controlled LFO
-      // windCos: +1=a favor, -1=en contra, 0=perpendicular
-      // windPerp: 1=perpendicular, 0=paralelo
-      const windAngle = (seg.heading - stateRef.current.wind.direction) * Math.PI / 180;
-      const windCos   = Math.cos(windAngle); // +1 a favor, -1 en contra
-      const windPerp  = Math.abs(Math.sin(windAngle)); // 1=perpendicular, 0=paralelo
-      // Velocidad LFO: a favor=lento, en contra=rápido
+      // WCL
       const lfoFreq  = mapRange(windCos, -1, 1, 5, 0.2) * mapRange(stateRef.current.wind.speed, 0, 20, 0.5, 1.5);
-      // Profundidad LFO: perpendicular=máximo, paralelo=mínimo
-      const lfoDepth = mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.12) * windPerp;
+      const lfoAmp   = mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.12) * windPerp;
       a.lfo.frequency.linearRampToValueAtTime(Math.max(0.1, lfoFreq), t + ramp);
-      a.lfoGain.gain.linearRampToValueAtTime(lfoDepth, t + ramp);
+      a.lfoGain.gain.linearRampToValueAtTime(lfoAmp, t + ramp);
     }
+
     // Kick cada 4 puntos
     if (i % 4 === 0) fireKick(cumNow);
+
     // PDI por proximidad
     PDI_POINTS.forEach((pdi, pi) => {
       if (stateRef.current.pdiSeen.has(pi)) return;
@@ -246,6 +253,7 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
         stateRef.current.pdiLabels.push({ name: pdi.name, desc: pdi.description, x: stateRef.current.projectedPDI[pi].x, y: stateRef.current.projectedPDI[pi].y, age: 0 });
       }
     });
+
     // HUD
     onHud({ frequency: `${Math.round(seg.ele * 2)} Hz`, cutoff: `${Math.round(headingToCutoff(seg.heading))} Hz`, elevation: `${seg.ele} m`, slope: `${seg.slope > 0 ? "+" : ""}${seg.slope.toFixed(3)}`, heading: `${Math.round(seg.heading)}° ${compass(seg.heading)}` });
   }
@@ -269,11 +277,48 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   function render() {
-    const main = mainRef.current, off = offRef.current; if (!main || !off) return;
+    const main = mainRef.current; if (!main) return;
     const ctx = main.getContext("2d")!;
-    const { width: w, height: h, projected: proj } = stateRef.current;
-    ctx.fillStyle = "#0f0d14"; ctx.fillRect(0, 0, w, h); ctx.drawImage(off, 0, 0, w, h);
-    // Partículas
+    const { width: w, height: h, projected: proj, wind } = stateRef.current;
+
+    // Fondo
+    ctx.fillStyle = "#0f0d14"; ctx.fillRect(0, 0, w, h);
+
+    // LFO visual: fase oscila en el tiempo para modular el brillo
+    const lfoFreqVisual = stateRef.current.audio
+      ? mapRange(wind.speed, 0, 20, 0.2, 5) // aprox igual al audio LFO
+      : 1;
+    stateRef.current.lfoPhase += (lfoFreqVisual * Math.PI * 2) / 60; // 60fps aprox
+    const lfoVal = (Math.sin(stateRef.current.lfoPhase) + 1) / 2; // 0–1
+
+    // Segmentos vivos — redibujados con envejecimiento
+    const totalFrames = 60 * 60; // ~60 segundos a 60fps = total de vida máxima
+    ctx.save(); ctx.lineCap = "round";
+    for (const seg of stateRef.current.segments) {
+      seg.age++;
+      const ageT = Math.min(1, seg.age / totalFrames); // 0=recién dibujado, 1=fin
+
+      // Expansión: el grosor crece con la edad, acelerado por windContra
+      const expansionFactor = 1 + ageT * 99 * (1 + seg.windContra * 3); // hasta 100x, viento en contra 4x más rápido
+      const lw = seg.baseWidth * expansionFactor;
+
+      // Opacidad: empieza en 0.5, baja con la edad
+      const baseAlpha = 0.5 * (1 - ageT * 0.85); // de 0.5 a 0.075
+
+      // LFO satura el color: pulsa entre turquesa y blanco
+      const pulse = lfoVal * 0.4 * (1 - ageT); // el pulso se apaga con la edad
+      const r = Math.round(TEAL_BASE.r + (255 - TEAL_BASE.r) * pulse);
+      const g = Math.round(TEAL_BASE.g + (255 - TEAL_BASE.g) * pulse);
+      const b = Math.round(TEAL_BASE.b + (255 - TEAL_BASE.b) * pulse);
+
+      ctx.globalAlpha = Math.max(0.01, baseAlpha);
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.lineWidth = lw;
+      ctx.beginPath(); ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); ctx.stroke();
+    }
+    ctx.restore();
+
+    // Partículas de viento
     const particles = stateRef.current.particles;
     while (particles.length < 120) particles.push(spawnParticle());
     ctx.save(); ctx.lineWidth = 1.2; ctx.lineCap = "round";
@@ -281,41 +326,48 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
       const p = particles[i];
       p.x += p.vx; p.y += p.vy; p.life++;
       p.trail.push({ x: p.x, y: p.y });
-      if (p.trail.length > Math.max(10, stateRef.current.wind.speed * 3)) p.trail.shift();
+      if (p.trail.length > Math.max(10, wind.speed * 3)) p.trail.shift();
       const lt = p.life / p.maxLife;
-      const alpha = (lt < 0.2 ? lt / 0.2 : lt > 0.8 ? (1 - lt) / 0.2 : 1) * 0.35;
-      ctx.strokeStyle = `rgba(125,211,252,${Math.max(0, Math.min(1, alpha))})`;
+      const alpha = (lt < 0.2 ? lt / 0.2 : lt > 0.8 ? (1 - lt) / 0.2 : 1) * 0.3;
+      ctx.strokeStyle = `rgba(0,229,204,${Math.max(0, Math.min(1, alpha))})`;
       ctx.beginPath(); p.trail.forEach((t, j) => j === 0 ? ctx.moveTo(t.x, t.y) : ctx.lineTo(t.x, t.y)); ctx.stroke();
       if (p.life >= p.maxLife || p.x < -20 || p.x > w + 20 || p.y < -20 || p.y > h + 20) particles[i] = spawnParticle();
     }
     ctx.restore();
+
     // Dot activo
     const idx = stateRef.current.activeIdx;
     if (stateRef.current.running && !stateRef.current.finished && idx > 0 && idx < proj.length) {
-      const seg = WEST_HOLLYWOOD_GPS_01[idx], color = headingColor(seg.heading);
-      ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 20;
-      ctx.beginPath(); ctx.arc(proj[idx].x, proj[idx].y, Math.min(12, 5 + Math.abs(seg.slope) * 20), 0, Math.PI * 2);
+      const brightness = 0.7 + lfoVal * 0.3;
+      const r = Math.round(TEAL_BASE.r * brightness + 255 * (1 - brightness));
+      const g = Math.round(TEAL_BASE.g);
+      const b = Math.round(TEAL_BASE.b * brightness);
+      const color = `rgb(${r},${g},${b})`;
+      ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 24;
+      ctx.beginPath(); ctx.arc(proj[idx].x, proj[idx].y, 5, 0, Math.PI * 2);
       ctx.fill(); ctx.restore();
     }
-    // PDI — permanentes una vez activados
+
+    // PDI — permanentes
     ctx.save();
     for (const L of stateRef.current.pdiLabels) {
       L.age++;
       const alpha = L.age < 20 ? L.age / 20 : 1;
       const lx = Math.min(w - 200, Math.max(10, L.x + 22)), ly = Math.max(30, L.y - 28);
       ctx.globalAlpha = alpha;
-      ctx.strokeStyle = "rgba(125,211,252,0.5)"; ctx.lineWidth = 0.8;
+      ctx.strokeStyle = "rgba(0,229,204,0.5)"; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(L.x, L.y); ctx.lineTo(lx, ly); ctx.stroke();
-      ctx.fillStyle = "#7dd3fc"; ctx.shadowColor = "#7dd3fc"; ctx.shadowBlur = 10;
+      ctx.fillStyle = "#00e5cc"; ctx.shadowColor = "#00e5cc"; ctx.shadowBlur = 10;
       ctx.beginPath(); ctx.arc(L.x, L.y, 4, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
       ctx.font = "bold 11px -apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif";
-      ctx.fillStyle = "#7dd3fc"; ctx.textAlign = "left";
+      ctx.fillStyle = "#00e5cc"; ctx.textAlign = "left";
       ctx.fillText(L.name.toUpperCase(), lx + 4, ly);
       ctx.font = "10px -apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.6)";
       L.desc.split("\n").forEach((line, li) => ctx.fillText(line, lx + 4, ly + 14 + li * 13));
     }
     ctx.restore();
+
     if (!stateRef.current.running || stateRef.current.finished) drawLabel(ctx);
   }
 
@@ -331,7 +383,6 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
 
   return (
     <div ref={wrapRef} className="engine-wrap">
-      <canvas ref={offRef} style={{ display: "none" }} />
       <canvas ref={mainRef} className="engine-canvas" />
     </div>
   );
