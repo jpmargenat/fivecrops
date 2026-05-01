@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { LincolnHeightsEngine, type EngineHud } from "@/components/LincolnHeightsEngine";
+import { LincolnHeightsEngine, type EngineHud as LHHud } from "@/components/LincolnHeightsEngine";
+import { WestHollywoodEngine, type EngineHud as WHHud } from "@/components/WestHollywoodEngine";
 
 type CropData = {
   num: string;
@@ -21,6 +22,15 @@ const CROPS: Record<string, CropData> = {
     elevation: "86.1m – 124m",
     distance: "~8.5km",
     points: "554 GPS points",
+  },
+  "west-hollywood": {
+    num: "02",
+    name: "West Hollywood",
+    region: "Los Angeles, California",
+    rides: "1 ride accumulated — April 2026",
+    elevation: "115.6m – 145.8m",
+    distance: "~2.16km",
+    points: "86 GPS points",
   },
 };
 
@@ -61,7 +71,9 @@ export const Route = createFileRoute("/crop/$slug")({
   ),
 });
 
-const EMPTY_HUD: EngineHud = {
+type AnyHud = LHHud | WHHud;
+
+const EMPTY_HUD: AnyHud = {
   frequency: "— Hz",
   cutoff: "— Hz",
   elevation: "— m",
@@ -74,12 +86,23 @@ const EMPTY_HUD: EngineHud = {
 function CropPage() {
   const { slug } = Route.useParams();
   const c = CROPS[slug] as CropData;
-  const [hud, setHud] = useState<EngineHud>(EMPTY_HUD);
+  const [hud, setHud] = useState<AnyHud>(EMPTY_HUD);
   const [playKey, setPlayKey] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [done, setDone] = useState(false);
 
-  const isLincoln = slug === "lincoln-heights";
+  const isLincoln      = slug === "lincoln-heights";
+  const isWestHollywood = slug === "west-hollywood";
+  const hasEngine      = isLincoln || isWestHollywood;
+
+  const handlePlay = () => {
+    if (playing) return;
+    setDone(false);
+    setPlaying(true);
+    setPlayKey((k) => k + 1);
+  };
+  const handleFinish = () => { setPlaying(false); setDone(true); };
+  const handleHud    = (h: Partial<AnyHud>) => setHud((prev) => ({ ...prev, ...h }));
 
   return (
     <div className="crop-page">
@@ -89,17 +112,12 @@ function CropPage() {
           {c.name.toUpperCase()} — Crop {c.num}
         </div>
         <div className="crop-controls">
-          {isLincoln && (
+          {hasEngine && (
             <button
               className="play-btn"
               type="button"
               disabled={playing}
-              onClick={() => {
-                if (playing) return;
-                setDone(false);
-                setPlaying(true);
-                setPlayKey((k) => k + 1);
-              }}
+              onClick={handlePlay}
             >
               {done ? "✓ Finalizado" : playing ? "● Playing" : "▶ Play"}
             </button>
@@ -118,13 +136,21 @@ function CropPage() {
       </div>
 
       <div className="crop-canvas">
-        {isLincoln ? (
+        {isLincoln && (
           <LincolnHeightsEngine
             playKey={playKey}
-            onHud={(h) => setHud((prev) => ({ ...prev, ...h }))}
-            onFinish={() => { setPlaying(false); setDone(true); }}
+            onHud={handleHud}
+            onFinish={handleFinish}
           />
-        ) : (
+        )}
+        {isWestHollywood && (
+          <WestHollywoodEngine
+            playKey={playKey}
+            onHud={handleHud}
+            onFinish={handleFinish}
+          />
+        )}
+        {!hasEngine && (
           <>
             <div className="canvas-placeholder-title">{c.name.toUpperCase()}</div>
             <div className="canvas-placeholder-sub">{c.region}</div>
