@@ -6,7 +6,17 @@ const PADDING      = 70;
 const PDI_RADIUS_M = 50;
 
 // Color base turquesa neón
-const TEAL_BASE = { r: 0, g: 80, b: 255 }; // #0050ff azul eléctrico
+// Color por velocidad: lento=turquesa, rápido=azul eléctrico
+const COLOR_SLOW = { r: 0,  g: 220, b: 180 }; // #00dcb4 turquesa
+const COLOR_FAST = { r: 0,  g: 80,  b: 255 }; // #0050ff azul eléctrico
+const TEAL_BASE  = COLOR_SLOW; // fallback
+
+function speedColor(speedT: number, alpha: number): string {
+  const r = Math.round(COLOR_SLOW.r + (COLOR_FAST.r - COLOR_SLOW.r) * speedT);
+  const g = Math.round(COLOR_SLOW.g + (COLOR_FAST.g - COLOR_SLOW.g) * speedT);
+  const b = Math.round(COLOR_SLOW.b + (COLOR_FAST.b - COLOR_SLOW.b) * speedT);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
 const PDI_POINTS = [
   { name: "Center of the Crop", description: "Wilson Plaza",                               lat: 34.07221939292978, lon: -118.44363368595516 },
@@ -38,7 +48,8 @@ type Wind = { speed: number; direction: number; gusts: number };
 // Segmento vivo — se redibuja cada frame con envejecimiento
 type LiveSegment = {
   x1: number; y1: number; x2: number; y2: number;
-  baseWidth: number;  // grosor original según velocidad
+  baseWidth: number;  // grosor: lento=grueso, rápido=fino
+  speedT: number;     // 0=lento/turquesa, 1=rápido/azul
   age: number;        // frames de vida
   windContra: number; // qué tan en contra estaba el viento al dibujarse (0-1)
 };
@@ -215,14 +226,15 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     const windContra = Math.max(0, -windCos); // 0=favor/perp, 1=en contra
     const windPerp   = Math.abs(Math.sin(windAngle));
 
-    // Grosor base: velocidad (0→fino, 7.5m/s→grueso)
-    const baseWidth = mapRange(seg.speed, 0, 7.5, 1.5, 6);
+    // Grosor base: lento=grueso/oscuro, rápido=fino/claro
+    const baseWidth = mapRange(seg.speed, 0, 7.5, 12, 3); // invertido y doble
 
     // Agregar segmento al array vivo
+    const speedT = mapRange(seg.speed, 0, 7.5, 0, 1);
     stateRef.current.segments.push({
       x1: proj[i - 1].x, y1: proj[i - 1].y,
       x2: proj[i].x,     y2: proj[i].y,
-      baseWidth, age: 0, windContra,
+      baseWidth, speedT, age: 0, windContra,
     });
 
     stateRef.current.activeIdx = i;
@@ -291,29 +303,30 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     stateRef.current.lfoPhase += (lfoFreqVisual * Math.PI * 2) / 60; // 60fps aprox
     const lfoVal = (Math.sin(stateRef.current.lfoPhase) + 1) / 2; // 0–1
 
-    // ── ESTELA — aguada que crece en la dirección del viento ──
+    // ── 1. ESTELA — primero, debajo de la línea ──
+    // Se desplaza en dirección del viento, es la versión diluida de la línea
     const totalFrames = 60 * 60;
     const windRad = stateRef.current.wind.direction * Math.PI / 180;
-    const windDx  = Math.sin(windRad) * stateRef.current.wind.speed * 0.12; // desplazamiento por frame
-    const windDy  = -Math.cos(windRad) * stateRef.current.wind.speed * 0.12;
+    const windDx  = Math.sin(windRad);
+    const windDy  = -Math.cos(windRad);
     ctx.save(); ctx.lineCap = "round";
     for (const seg of stateRef.current.segments) {
-      seg.age++;
       const ageT = Math.min(1, seg.age / totalFrames);
-      // Desplazamiento acumulado por viento
-      const drift = ageT * seg.age * 0.04;
-      const dx = windDx * drift, dy = windDy * drift;
-      // 4 capas — más opacas y más expansivas que antes
-      const maxExp = 20 + seg.windContra * 30;
+      // Drift: se aleja en dirección del viento con la edad
+      const driftPx = ageT * stateRef.current.wind.speed * 15;
+      const dx = windDx * driftPx, dy = windDy * driftPx;
+      // Expansión: más agresiva con viento en contra
+      const maxExp = 40 + seg.windContra * 60;
+      // 4 capas de halo — la estela es versión diluida del color del segmento
       const layers = [
-        { expand: 1 + ageT * maxExp * 0.15, alpha: 0.55 * (1 - ageT * 0.6) },
-        { expand: 1 + ageT * maxExp * 0.35, alpha: 0.30 * (1 - ageT * 0.7) },
-        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.15 * (1 - ageT * 0.8) },
-        { expand: 1 + ageT * maxExp,        alpha: 0.06 * (1 - ageT * 0.9) },
+        { expand: 1 + ageT * maxExp * 0.15, alpha: 0.35 * (1 - ageT * 0.5) },
+        { expand: 1 + ageT * maxExp * 0.35, alpha: 0.20 * (1 - ageT * 0.6) },
+        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.10 * (1 - ageT * 0.75) },
+        { expand: 1 + ageT * maxExp,        alpha: 0.04 * (1 - ageT * 0.85) },
       ];
       for (const layer of layers) {
-        ctx.globalAlpha = Math.max(0.005, layer.alpha);
-        ctx.strokeStyle = `rgb(${TEAL_BASE.r},${TEAL_BASE.g},${TEAL_BASE.b})`;
+        ctx.globalAlpha = Math.max(0.003, layer.alpha);
+        ctx.strokeStyle = speedColor(seg.speedT, 1);
         ctx.lineWidth = seg.baseWidth * layer.expand;
         ctx.beginPath();
         ctx.moveTo(seg.x1 + dx, seg.y1 + dy);
@@ -323,33 +336,35 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     }
     ctx.restore();
 
-    // ── LÍNEA PRINCIPAL — suavizada con Catmull-Rom, modulada por LFO ──
+    // ── 2. LÍNEA PRINCIPAL — encima, más opaca, suavizada ──
+    // Turquesa cuando lento, azul eléctrico cuando rápido. Lento=grueso, rápido=fino.
     const segs = stateRef.current.segments;
     if (segs.length > 0) {
       ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
-      const pulse = lfoVal * 0.35;
-      const r = Math.round(TEAL_BASE.r * 0.75 + (255 - TEAL_BASE.r) * pulse);
-      const g = Math.round(TEAL_BASE.g * 0.85 + (255 - TEAL_BASE.g) * pulse);
-      const b = Math.round(TEAL_BASE.b * 0.8 + (255 - TEAL_BASE.b) * pulse);
-      ctx.strokeStyle = `rgb(${r},${g},${b})`;
-      ctx.globalAlpha = 0.9;
-      // Construir array de puntos únicos
-      const pts: {x:number,y:number,w:number}[] = [];
-      pts.push({x: segs[0].x1, y: segs[0].y1, w: segs[0].baseWidth});
-      for (const s of segs) pts.push({x: s.x2, y: s.y2, w: s.baseWidth});
-      // Dibujar con curvas suavizadas (Catmull-Rom → bezier)
-      if (pts.length >= 2) {
-        ctx.lineWidth = pts[0].w;
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x, pts[0].y);
+      // Dibujar segmento a segmento con color y grosor propios
+      for (const s of segs) {
+        const lfoBoost = lfoVal * 0.15;
+        ctx.globalAlpha = 0.9 + lfoBoost;
+        ctx.strokeStyle = speedColor(s.speedT, 1);
+        ctx.lineWidth = s.baseWidth;
+        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke();
+      }
+      // Segunda pasada suavizada encima con quadratic curves
+      ctx.globalAlpha = 0.6;
+      const pts: {x:number,y:number,s:number}[] = [];
+      pts.push({x: segs[0].x1, y: segs[0].y1, s: segs[0].speedT});
+      for (const s of segs) pts.push({x: s.x2, y: s.y2, s: s.speedT});
+      if (pts.length >= 3) {
         for (let i = 1; i < pts.length - 1; i++) {
-          // Punto de control: promedio entre actual y siguiente
           const mx = (pts[i].x + pts[i+1].x) / 2;
           const my = (pts[i].y + pts[i+1].y) / 2;
+          ctx.strokeStyle = speedColor(pts[i].s, 1);
+          ctx.lineWidth = mapRange(pts[i].s, 0, 1, 12, 3) * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(i === 1 ? pts[0].x : (pts[i-1].x + pts[i].x)/2, i === 1 ? pts[0].y : (pts[i-1].y + pts[i].y)/2);
           ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+          ctx.stroke();
         }
-        ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
-        ctx.stroke();
       }
       ctx.restore();
     }
