@@ -5,16 +5,14 @@ const COMPRESS     = 60 / 910;
 const PADDING      = 70;
 const PDI_RADIUS_M = 50;
 
-// Color base turquesa neón
-// Color por velocidad: lento=turquesa, rápido=azul eléctrico
-const COLOR_SLOW = { r: 0,  g: 220, b: 180 }; // #00dcb4 turquesa
-const COLOR_FAST = { r: 0,  g: 80,  b: 255 }; // #0050ff azul eléctrico
-const TEAL_BASE  = COLOR_SLOW; // fallback
+// Color: lento=turquesa oscuro, rápido=azul claro
+const C_SLOW = { r: 0,  g: 180, b: 160 }; // turquesa oscuro
+const C_FAST = { r: 80, g: 180, b: 255 }; // azul claro brillante
 
-function speedColor(speedT: number, alpha: number): string {
-  const r = Math.round(COLOR_SLOW.r + (COLOR_FAST.r - COLOR_SLOW.r) * speedT);
-  const g = Math.round(COLOR_SLOW.g + (COLOR_FAST.g - COLOR_SLOW.g) * speedT);
-  const b = Math.round(COLOR_SLOW.b + (COLOR_FAST.b - COLOR_SLOW.b) * speedT);
+function lerpColor(t: number, alpha: number): string {
+  const r = Math.round(C_SLOW.r + (C_FAST.r - C_SLOW.r) * t);
+  const g = Math.round(C_SLOW.g + (C_FAST.g - C_SLOW.g) * t);
+  const b = Math.round(C_SLOW.b + (C_FAST.b - C_SLOW.b) * t);
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
@@ -45,13 +43,12 @@ export type EngineHud = {
 
 type Wind = { speed: number; direction: number; gusts: number };
 
-// Segmento vivo — se redibuja cada frame con envejecimiento
-type LiveSegment = {
+type Seg = {
   x1: number; y1: number; x2: number; y2: number;
-  baseWidth: number;  // grosor: lento=grueso, rápido=fino
-  speedT: number;     // 0=lento/turquesa, 1=rápido/azul
-  age: number;        // frames de vida
-  windContra: number; // qué tan en contra estaba el viento al dibujarse (0-1)
+  w: number;       // grosor base: lento=grueso, rápido=fino
+  t: number;       // 0=lento/turquesa, 1=rápido/azul
+  age: number;     // frames de vida
+  wContra: number; // 0=favor, 1=contra el viento
 };
 
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; maxLife: number; trail: { x: number; y: number }[] };
@@ -78,10 +75,9 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     pdiSeen:      new Set<number>(),
     projected:    [] as { x: number; y: number }[],
     projectedPDI: [] as { x: number; y: number }[],
-    segments:     [] as LiveSegment[], // todos los segmentos vivos
-    activeIdx:    0, rafId: 0,
+    segs:         [] as Seg[],
+    activeIdx:    0, rafId: 0, lfoPhase: 0,
     timeouts:     [] as ReturnType<typeof setTimeout>[],
-    lfoPhase:     0,  // fase actual del LFO para modulación visual
     audio: null as null | { ctx: AudioContext; osc: OscillatorNode; filter: BiquadFilterNode; gain: GainNode; lfo: OscillatorNode; lfoGain: GainNode },
     width: 0, height: 0,
     running: false, finished: false,
@@ -196,7 +192,7 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     if (stateRef.current.running) return;
     stateRef.current.running = true; stateRef.current.finished = false;
     stateRef.current.pdiLabels = []; stateRef.current.pdiSeen = new Set();
-    stateRef.current.segments = []; stateRef.current.lfoPhase = 0;
+    stateRef.current.segs = []; stateRef.current.lfoPhase = 0;
     setRunning(true); setFinished(false);
     stateRef.current.activeIdx = 0;
     initAudio();
@@ -205,7 +201,7 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
       const delayMs = pts[i].elapsed * 1000 * COMPRESS;
       const segMs   = (pts[i].elapsed - pts[i - 1].elapsed) * 1000 * COMPRESS;
       const ii = i, sm = segMs;
-      stateRef.current.timeouts.push(setTimeout(() => stepSegment(ii, sm / 1000), delayMs));
+      stateRef.current.timeouts.push(setTimeout(() => stepSeg(ii, sm / 1000), delayMs));
     }
     const lastMs = pts[pts.length - 1].elapsed * 1000 * COMPRESS;
     stateRef.current.timeouts.push(setTimeout(() => finish(), lastMs + 400));
@@ -214,60 +210,53 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
   }
 
   // ── Step ────────────────────────────────────────────────────────────────────
-  function stepSegment(i: number, segSec: number) {
+  function stepSeg(i: number, segSec: number) {
     const proj = stateRef.current.projected;
     const a    = stateRef.current.audio;
-    const seg  = WEST_HOLLYWOOD_GPS_01[i];
+    const gps  = WEST_HOLLYWOOD_GPS_01[i];
     const cumNow = cumDist[i];
 
-    // Calcular windContra para este segmento (cuán en contra está el viento)
-    const windAngle = (seg.heading - stateRef.current.wind.direction) * Math.PI / 180;
-    const windCos   = Math.cos(windAngle); // +1=a favor, -1=en contra
-    const windContra = Math.max(0, -windCos); // 0=favor/perp, 1=en contra
+    const windAngle = (gps.heading - stateRef.current.wind.direction) * Math.PI / 180;
+    const windCos   = Math.cos(windAngle);
+    const windContra = Math.max(0, -windCos);
     const windPerp   = Math.abs(Math.sin(windAngle));
 
-    // Grosor base: lento=grueso/oscuro, rápido=fino/claro
-    const baseWidth = mapRange(seg.speed, 0, 7.5, 12, 3); // invertido y doble
+    // lento=grueso/turquesa, rápido=fino/azul
+    const speedT    = mapRange(gps.speed, 0, 7.5, 0, 1);
+    const baseWidth = mapRange(speedT, 0, 1, 10, 2); // lento=10px, rápido=2px
 
-    // Agregar segmento al array vivo
-    const speedT = mapRange(seg.speed, 0, 7.5, 0, 1);
-    stateRef.current.segments.push({
+    stateRef.current.segs.push({
       x1: proj[i - 1].x, y1: proj[i - 1].y,
       x2: proj[i].x,     y2: proj[i].y,
-      baseWidth, speedT, age: 0, windContra,
+      w: baseWidth, t: speedT, age: 0, wContra: windContra,
     });
-
     stateRef.current.activeIdx = i;
 
     // Audio
     if (a) {
       const t = a.ctx.currentTime, ramp = Math.max(0.04, segSec * 0.7);
-      a.osc.frequency.linearRampToValueAtTime(seg.ele * 2, t + ramp);
-      const cutoff = headingToCutoff(seg.heading) + stateRef.current.wind.gusts * 60;
-      a.filter.frequency.linearRampToValueAtTime(cutoff, t + ramp);
-      a.filter.Q.linearRampToValueAtTime(headingToQ(seg.heading), t + ramp);
-      a.gain.gain.linearRampToValueAtTime(mapRange(Math.max(0, seg.slope), 0, 0.3, 0.12, 0.35), t + ramp);
-      // WCL
-      const lfoFreq  = mapRange(windCos, -1, 1, 5, 0.2) * mapRange(stateRef.current.wind.speed, 0, 20, 0.5, 1.5);
-      const lfoAmp   = mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.12) * windPerp;
+      a.osc.frequency.linearRampToValueAtTime(gps.ele * 2, t + ramp);
+      a.filter.frequency.linearRampToValueAtTime(headingToCutoff(gps.heading) + stateRef.current.wind.gusts * 60, t + ramp);
+      a.filter.Q.linearRampToValueAtTime(headingToQ(gps.heading), t + ramp);
+      a.gain.gain.linearRampToValueAtTime(mapRange(Math.max(0, gps.slope), 0, 0.3, 0.12, 0.35), t + ramp);
+      const windCosA = windCos, windPerpA = windPerp;
+      const lfoFreq = mapRange(windCosA, -1, 1, 5, 0.2) * mapRange(stateRef.current.wind.speed, 0, 20, 0.5, 1.5);
+      const lfoAmp  = mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.12) * windPerpA;
       a.lfo.frequency.linearRampToValueAtTime(Math.max(0.1, lfoFreq), t + ramp);
       a.lfoGain.gain.linearRampToValueAtTime(lfoAmp, t + ramp);
     }
 
-    // Kick cada 4 puntos
     if (i % 4 === 0) fireKick(cumNow);
 
-    // PDI por proximidad
     PDI_POINTS.forEach((pdi, pi) => {
       if (stateRef.current.pdiSeen.has(pi)) return;
-      if (haversine(seg.lat, seg.lon, pdi.lat, pdi.lon) <= PDI_RADIUS_M) {
+      if (haversine(gps.lat, gps.lon, pdi.lat, pdi.lon) <= PDI_RADIUS_M) {
         stateRef.current.pdiSeen.add(pi);
         stateRef.current.pdiLabels.push({ name: pdi.name, desc: pdi.description, x: stateRef.current.projectedPDI[pi].x, y: stateRef.current.projectedPDI[pi].y, age: 0 });
       }
     });
 
-    // HUD
-    onHud({ frequency: `${Math.round(seg.ele * 2)} Hz`, cutoff: `${Math.round(headingToCutoff(seg.heading))} Hz`, elevation: `${seg.ele} m`, slope: `${seg.slope > 0 ? "+" : ""}${seg.slope.toFixed(3)}`, heading: `${Math.round(seg.heading)}° ${compass(seg.heading)}` });
+    onHud({ frequency: `${Math.round(gps.ele * 2)} Hz`, cutoff: `${Math.round(headingToCutoff(gps.heading))} Hz`, elevation: `${gps.ele} m`, slope: `${gps.slope > 0 ? "+" : ""}${gps.slope.toFixed(3)}`, heading: `${Math.round(gps.heading)}° ${compass(gps.heading)}` });
   }
 
   function finish() {
@@ -291,43 +280,43 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
   function render() {
     const main = mainRef.current; if (!main) return;
     const ctx = main.getContext("2d")!;
-    const { width: w, height: h, projected: proj, wind } = stateRef.current;
+    const { width: w, height: h, projected: proj, wind, segs } = stateRef.current;
 
-    // Fondo
     ctx.fillStyle = "#0f0d14"; ctx.fillRect(0, 0, w, h);
 
-    // LFO visual: fase oscila en el tiempo para modular el brillo
-    const lfoFreqVisual = stateRef.current.audio
-      ? mapRange(wind.speed, 0, 20, 0.2, 5) // aprox igual al audio LFO
-      : 1;
-    stateRef.current.lfoPhase += (lfoFreqVisual * Math.PI * 2) / 60; // 60fps aprox
-    const lfoVal = (Math.sin(stateRef.current.lfoPhase) + 1) / 2; // 0–1
+    // LFO visual
+    stateRef.current.lfoPhase += (mapRange(wind.speed, 0, 20, 0.3, 4) * Math.PI * 2) / 60;
+    const lfoVal = (Math.sin(stateRef.current.lfoPhase) + 1) / 2;
 
-    // ── 1. ESTELA — primero, debajo de la línea ──
-    // Se desplaza en dirección del viento, es la versión diluida de la línea
+    // ── 1. SEDIMENTO — debajo, siempre más transparente que la línea ──
+    // Se expande radialmente, con leve deriva en dirección del viento
+    // Nunca más allá de la huella de la línea (drift muy pequeño)
     const totalFrames = 60 * 60;
-    const windRad = stateRef.current.wind.direction * Math.PI / 180;
+    const windRad = wind.direction * Math.PI / 180;
     const windDx  = Math.sin(windRad);
     const windDy  = -Math.cos(windRad);
+
     ctx.save(); ctx.lineCap = "round";
-    for (const seg of stateRef.current.segments) {
+    for (const seg of segs) {
+      seg.age++;
       const ageT = Math.min(1, seg.age / totalFrames);
-      // Drift: se aleja en dirección del viento con la edad
-      const driftPx = ageT * stateRef.current.wind.speed * 15;
-      const dx = windDx * driftPx, dy = windDy * driftPx;
-      // Expansión: más agresiva con viento en contra
-      const maxExp = 40 + seg.windContra * 60;
-      // 4 capas de halo — la estela es versión diluida del color del segmento
+      // Deriva leve — máx 8px al final del minuto
+      const drift = ageT * wind.speed * 0.8;
+      const dx = windDx * drift, dy = windDy * drift;
+      // Expansión proporcional al grosor base — se queda cerca de la línea
+      const expand1 = seg.w * (1 + ageT * (4 + seg.wContra * 6));
+      const expand2 = seg.w * (1 + ageT * (10 + seg.wContra * 14));
+      const expand3 = seg.w * (1 + ageT * (20 + seg.wContra * 25));
+      // Capas: muy transparentes, color del segmento
       const layers = [
-        { expand: 1 + ageT * maxExp * 0.15, alpha: 0.35 * (1 - ageT * 0.5) },
-        { expand: 1 + ageT * maxExp * 0.35, alpha: 0.20 * (1 - ageT * 0.6) },
-        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.10 * (1 - ageT * 0.75) },
-        { expand: 1 + ageT * maxExp,        alpha: 0.04 * (1 - ageT * 0.85) },
+        { lw: expand1, alpha: 0.25 * (1 - ageT * 0.6) },
+        { lw: expand2, alpha: 0.12 * (1 - ageT * 0.75) },
+        { lw: expand3, alpha: 0.05 * (1 - ageT * 0.85) },
       ];
       for (const layer of layers) {
-        ctx.globalAlpha = Math.max(0.003, layer.alpha);
-        ctx.strokeStyle = speedColor(seg.speedT, 1);
-        ctx.lineWidth = seg.baseWidth * layer.expand;
+        ctx.globalAlpha = Math.max(0.005, layer.alpha);
+        ctx.strokeStyle = lerpColor(seg.t, 1);
+        ctx.lineWidth = layer.lw;
         ctx.beginPath();
         ctx.moveTo(seg.x1 + dx, seg.y1 + dy);
         ctx.lineTo(seg.x2 + dx, seg.y2 + dy);
@@ -336,82 +325,71 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     }
     ctx.restore();
 
-    // ── 2. LÍNEA PRINCIPAL — encima, más opaca, suavizada ──
-    // Turquesa cuando lento, azul eléctrico cuando rápido. Lento=grueso, rápido=fino.
-    const segs = stateRef.current.segments;
-    if (segs.length > 0) {
+    // ── 2. LÍNEA PRINCIPAL — encima, continua, suavizada con quadratic ──
+    if (segs.length >= 2) {
       ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
-      // Dibujar segmento a segmento con color y grosor propios
-      for (const s of segs) {
-        const lfoBoost = lfoVal * 0.15;
-        ctx.globalAlpha = 0.9 + lfoBoost;
-        ctx.strokeStyle = speedColor(s.speedT, 1);
-        ctx.lineWidth = s.baseWidth;
-        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke();
-      }
-      // Segunda pasada suavizada encima con quadratic curves
-      ctx.globalAlpha = 0.6;
-      const pts: {x:number,y:number,s:number}[] = [];
-      pts.push({x: segs[0].x1, y: segs[0].y1, s: segs[0].speedT});
-      for (const s of segs) pts.push({x: s.x2, y: s.y2, s: s.speedT});
-      if (pts.length >= 3) {
-        for (let i = 1; i < pts.length - 1; i++) {
-          const mx = (pts[i].x + pts[i+1].x) / 2;
-          const my = (pts[i].y + pts[i+1].y) / 2;
-          ctx.strokeStyle = speedColor(pts[i].s, 1);
-          ctx.lineWidth = mapRange(pts[i].s, 0, 1, 12, 3) * 0.5;
-          ctx.beginPath();
-          ctx.moveTo(i === 1 ? pts[0].x : (pts[i-1].x + pts[i].x)/2, i === 1 ? pts[0].y : (pts[i-1].y + pts[i].y)/2);
-          ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-          ctx.stroke();
-        }
+      // Construir puntos
+      const pts: { x: number; y: number; w: number; t: number }[] = [];
+      pts.push({ x: segs[0].x1, y: segs[0].y1, w: segs[0].w, t: segs[0].t });
+      for (const s of segs) pts.push({ x: s.x2, y: s.y2, w: s.w, t: s.t });
+
+      // Dibujar tramo a tramo con quadratic curves para suavizar
+      for (let i = 1; i < pts.length - 1; i++) {
+        const mx = (pts[i].x + pts[i + 1].x) / 2;
+        const my = (pts[i].y + pts[i + 1].y) / 2;
+        const lfoBoost = lfoVal * 0.12;
+        ctx.globalAlpha = 0.88 + lfoBoost;
+        ctx.strokeStyle = lerpColor(pts[i].t, 1);
+        ctx.lineWidth = pts[i].w;
+        ctx.beginPath();
+        ctx.moveTo(i === 1 ? pts[0].x : (pts[i - 1].x + pts[i].x) / 2, i === 1 ? pts[0].y : (pts[i - 1].y + pts[i].y) / 2);
+        ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+        ctx.stroke();
       }
       ctx.restore();
     }
 
-    // Partículas de viento
+    // ── Partículas ──────────────────────────────────────────────────────────
     const particles = stateRef.current.particles;
-    while (particles.length < 120) particles.push(spawnParticle());
-    ctx.save(); ctx.lineWidth = 1.2; ctx.lineCap = "round";
+    while (particles.length < 100) particles.push(spawnParticle());
+    ctx.save(); ctx.lineWidth = 1; ctx.lineCap = "round";
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       p.x += p.vx; p.y += p.vy; p.life++;
       p.trail.push({ x: p.x, y: p.y });
-      if (p.trail.length > Math.max(10, wind.speed * 3)) p.trail.shift();
+      if (p.trail.length > Math.max(8, wind.speed * 2.5)) p.trail.shift();
       const lt = p.life / p.maxLife;
-      const alpha = (lt < 0.2 ? lt / 0.2 : lt > 0.8 ? (1 - lt) / 0.2 : 1) * 0.3;
-      ctx.strokeStyle = `rgba(0,229,204,${Math.max(0, Math.min(1, alpha))})`;
+      const alpha = (lt < 0.2 ? lt / 0.2 : lt > 0.8 ? (1 - lt) / 0.2 : 1) * 0.25;
+      ctx.strokeStyle = `rgba(0,180,160,${Math.max(0, Math.min(1, alpha))})`;
       ctx.beginPath(); p.trail.forEach((t, j) => j === 0 ? ctx.moveTo(t.x, t.y) : ctx.lineTo(t.x, t.y)); ctx.stroke();
       if (p.life >= p.maxLife || p.x < -20 || p.x > w + 20 || p.y < -20 || p.y > h + 20) particles[i] = spawnParticle();
     }
     ctx.restore();
 
-    // Dot activo
+    // ── Dot activo ──────────────────────────────────────────────────────────
     const idx = stateRef.current.activeIdx;
     if (stateRef.current.running && !stateRef.current.finished && idx > 0 && idx < proj.length) {
-      const brightness = 0.7 + lfoVal * 0.3;
-      const r = Math.round(TEAL_BASE.r * brightness + 255 * (1 - brightness));
-      const g = Math.round(TEAL_BASE.g);
-      const b = Math.round(TEAL_BASE.b * brightness);
-      const color = `rgb(${r},${g},${b})`;
-      ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 24;
-      ctx.beginPath(); ctx.arc(proj[idx].x, proj[idx].y, 5, 0, Math.PI * 2);
+      const gps = WEST_HOLLYWOOD_GPS_01[idx];
+      const st  = mapRange(gps.speed, 0, 7.5, 0, 1);
+      const color = lerpColor(st, 1);
+      ctx.save(); ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 20;
+      ctx.beginPath(); ctx.arc(proj[idx].x, proj[idx].y, 4 + lfoVal * 2, 0, Math.PI * 2);
       ctx.fill(); ctx.restore();
     }
 
-    // PDI — permanentes
+    // ── PDI — permanentes ───────────────────────────────────────────────────
     ctx.save();
     for (const L of stateRef.current.pdiLabels) {
       L.age++;
       const alpha = L.age < 20 ? L.age / 20 : 1;
       const lx = Math.min(w - 200, Math.max(10, L.x + 22)), ly = Math.max(30, L.y - 28);
       ctx.globalAlpha = alpha;
-      ctx.strokeStyle = "rgba(0,229,204,0.5)"; ctx.lineWidth = 0.8;
+      ctx.strokeStyle = "rgba(0,180,160,0.5)"; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(L.x, L.y); ctx.lineTo(lx, ly); ctx.stroke();
-      ctx.fillStyle = "#00e5cc"; ctx.shadowColor = "#00e5cc"; ctx.shadowBlur = 10;
+      ctx.fillStyle = lerpColor(0, 1); ctx.shadowColor = lerpColor(0, 1); ctx.shadowBlur = 10;
       ctx.beginPath(); ctx.arc(L.x, L.y, 4, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
       ctx.font = "bold 11px -apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif";
-      ctx.fillStyle = "#00e5cc"; ctx.textAlign = "left";
+      ctx.fillStyle = lerpColor(0, 1); ctx.textAlign = "left";
       ctx.fillText(L.name.toUpperCase(), lx + 4, ly);
       ctx.font = "10px -apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.6)";
