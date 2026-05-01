@@ -215,8 +215,8 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     const windContra = Math.max(0, -windCos); // 0=favor/perp, 1=en contra
     const windPerp   = Math.abs(Math.sin(windAngle));
 
-    // Grosor base: lento=grueso/oscuro, rápido=fino/claro
-    const baseWidth = mapRange(seg.speed, 0, 7.5, 12, 3); // invertido y doble
+    // Grosor base: velocidad (0→fino, 7.5m/s→grueso)
+    const baseWidth = mapRange(seg.speed, 0, 7.5, 1.5, 6);
 
     // Agregar segmento al array vivo
     stateRef.current.segments.push({
@@ -304,12 +304,12 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
       const drift = ageT * seg.age * 0.04;
       const dx = windDx * drift, dy = windDy * drift;
       // 4 capas — más opacas y más expansivas que antes
-      const maxExp = 40 + seg.windContra * 60;
+      const maxExp = 20 + seg.windContra * 30;
       const layers = [
-        { expand: 1 + ageT * maxExp * 0.15, alpha: 0.70 * (1 - ageT * 0.5) },
-        { expand: 1 + ageT * maxExp * 0.35, alpha: 0.45 * (1 - ageT * 0.6) },
-        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.25 * (1 - ageT * 0.7) },
-        { expand: 1 + ageT * maxExp,        alpha: 0.12 * (1 - ageT * 0.85) },
+        { expand: 1 + ageT * maxExp * 0.15, alpha: 0.55 * (1 - ageT * 0.6) },
+        { expand: 1 + ageT * maxExp * 0.35, alpha: 0.30 * (1 - ageT * 0.7) },
+        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.15 * (1 - ageT * 0.8) },
+        { expand: 1 + ageT * maxExp,        alpha: 0.06 * (1 - ageT * 0.9) },
       ];
       for (const layer of layers) {
         ctx.globalAlpha = Math.max(0.005, layer.alpha);
@@ -328,14 +328,11 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     if (segs.length > 0) {
       ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
       const pulse = lfoVal * 0.35;
-      // Velocidad del segmento actual modula el brillo: rápido=claro, lento=oscuro
-      const speedT = segs.length > 0 ? mapRange(WEST_HOLLYWOOD_GPS_01[stateRef.current.activeIdx]?.speed ?? 0, 0, 7.5, 0, 1) : 0;
-      const brightness = 0.55 + speedT * 0.45 + pulse * 0.2;
-      const r = Math.round(TEAL_BASE.r * brightness + (255 - TEAL_BASE.r) * pulse * 0.3);
-      const g = Math.round(TEAL_BASE.g * brightness + (255 - TEAL_BASE.g) * pulse * 0.3);
-      const b = Math.round(Math.min(255, TEAL_BASE.b * brightness + (255 - TEAL_BASE.b) * pulse * 0.3));
+      const r = Math.round(TEAL_BASE.r * 0.75 + (255 - TEAL_BASE.r) * pulse);
+      const g = Math.round(TEAL_BASE.g * 0.85 + (255 - TEAL_BASE.g) * pulse);
+      const b = Math.round(TEAL_BASE.b * 0.8 + (255 - TEAL_BASE.b) * pulse);
       ctx.strokeStyle = `rgb(${r},${g},${b})`;
-      ctx.globalAlpha = 0.92;
+      ctx.globalAlpha = 0.9;
       // Construir array de puntos únicos
       const pts: {x:number,y:number,w:number}[] = [];
       pts.push({x: segs[0].x1, y: segs[0].y1, w: segs[0].baseWidth});
