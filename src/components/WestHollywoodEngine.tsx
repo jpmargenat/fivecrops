@@ -291,32 +291,39 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     stateRef.current.lfoPhase += (lfoFreqVisual * Math.PI * 2) / 60; // 60fps aprox
     const lfoVal = (Math.sin(stateRef.current.lfoPhase) + 1) / 2; // 0–1
 
-    // Segmentos vivos — redibujados con envejecimiento
-    const totalFrames = 60 * 60; // ~60 segundos a 60fps = total de vida máxima
+    // ── ESTELA — expansión lenta, muy transparente ──
+    const totalFrames = 60 * 60;
     ctx.save(); ctx.lineCap = "round";
     for (const seg of stateRef.current.segments) {
       seg.age++;
-      const ageT = Math.min(1, seg.age / totalFrames); // 0=recién dibujado, 1=fin
-
-      // Expansión: el grosor crece con la edad, acelerado por windContra
-      const expansionFactor = 1 + ageT * 99 * (1 + seg.windContra * 3); // hasta 100x, viento en contra 4x más rápido
-      const lw = seg.baseWidth * expansionFactor;
-
-      // Opacidad: empieza en 0.5, baja con la edad
-      const baseAlpha = 0.5 * (1 - ageT * 0.85); // de 0.5 a 0.075
-
-      // LFO satura el color: pulsa entre turquesa y blanco
-      const pulse = lfoVal * 0.4 * (1 - ageT); // el pulso se apaga con la edad
-      const r = Math.round(TEAL_BASE.r + (255 - TEAL_BASE.r) * pulse);
-      const g = Math.round(TEAL_BASE.g + (255 - TEAL_BASE.g) * pulse);
-      const b = Math.round(TEAL_BASE.b + (255 - TEAL_BASE.b) * pulse);
-
-      ctx.globalAlpha = Math.max(0.01, baseAlpha);
-      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      const ageT = Math.min(1, seg.age / totalFrames);
+      const maxExp = 3 + seg.windContra * 4;
+      const lw = seg.baseWidth * (1 + ageT * maxExp);
+      const alpha = 0.08 * (1 - ageT * 0.9);
+      ctx.globalAlpha = Math.max(0.005, alpha);
+      ctx.strokeStyle = "#00b5a0";
       ctx.lineWidth = lw;
       ctx.beginPath(); ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); ctx.stroke();
     }
     ctx.restore();
+
+    // ── LÍNEA PRINCIPAL — opaca, continua, modulada por LFO ──
+    const segs = stateRef.current.segments;
+    if (segs.length > 0) {
+      ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+      const pulse = lfoVal * 0.35;
+      const r = Math.round(TEAL_BASE.r * 0.6 + (255 - TEAL_BASE.r) * pulse);
+      const g = Math.round(TEAL_BASE.g * 0.85 + (255 - TEAL_BASE.g) * pulse);
+      const b = Math.round(TEAL_BASE.b * 0.7 + (255 - TEAL_BASE.b) * pulse);
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.globalAlpha = 0.88;
+      for (let i = 0; i < segs.length; i++) {
+        const s = segs[i];
+        ctx.lineWidth = s.baseWidth;
+        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke();
+      }
+      ctx.restore();
+    }
 
     // Partículas de viento
     const particles = stateRef.current.particles;
