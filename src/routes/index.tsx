@@ -31,7 +31,7 @@ type Crop = {
 
 const CROPS: Crop[] = [
   { slug: "lincoln-heights", num: "01", name: "Lincoln Heights", lat: 34.07, lon: -118.21, active: true },
-  { slug: "west-hollywood", num: "02", name: "West Hollywood", lat: 34.09, lon: -118.36, active: false },
+  { slug: "west-hollywood", num: "02", name: "West Hollywood", lat: 34.09, lon: -118.36, active: true },
   { slug: "culver-city", num: "03", name: "Culver City", lat: 34.02, lon: -118.39, active: false },
   { slug: "downtown-la", num: "04", name: "Downtown LA", lat: 34.05, lon: -118.24, active: false },
   { slug: "silver-lake", num: "05", name: "Silver Lake", lat: 34.08, lon: -118.27, active: false },
