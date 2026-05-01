@@ -223,8 +223,15 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
       a.filter.frequency.linearRampToValueAtTime(cutoff, t + ramp);
       a.filter.Q.linearRampToValueAtTime(headingToQ(seg.heading), t + ramp);
       a.gain.gain.linearRampToValueAtTime(mapRange(Math.max(0, seg.slope), 0, 0.3, 0.12, 0.35), t + ramp);
-      a.lfo.frequency.linearRampToValueAtTime(mapRange(stateRef.current.wind.speed, 0, 20, 0.2, 4), t + ramp);
-      a.lfoGain.gain.linearRampToValueAtTime(mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.07), t + ramp);
+      // WCL — Wind Controlled LFO
+      // El ángulo entre heading y dirección del viento determina la intensidad del LFO
+      // Paralelo (0° o 180°) → sin=0 → mínimo | Perpendicular (90°/270°) → sin=1 → máximo
+      const windAngle = (seg.heading - stateRef.current.wind.direction) * Math.PI / 180;
+      const windPerp  = Math.abs(Math.sin(windAngle)); // 0=paralelo, 1=perpendicular
+      const lfoFreq   = mapRange(stateRef.current.wind.speed, 0, 20, 0.2, 4);
+      const lfoDepth  = mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.12) * windPerp;
+      a.lfo.frequency.linearRampToValueAtTime(lfoFreq, t + ramp);
+      a.lfoGain.gain.linearRampToValueAtTime(lfoDepth, t + ramp);
     }
     // Kick cada 4 puntos
     if (i % 4 === 0) fireKick(cumNow);
