@@ -6,7 +6,7 @@ const PADDING      = 70;
 const PDI_RADIUS_M = 50;
 
 // Color base turquesa neón
-const TEAL_BASE = { r: 0, g: 229, b: 204 }; // #00e5cc
+const TEAL_BASE = { r: 0, g: 180, b: 255 }; // #00b4ff azul neón
 
 const PDI_POINTS = [
   { name: "Center of the Crop", description: "Wilson Plaza",                               lat: 34.07221939292978, lon: -118.44363368595516 },
@@ -291,36 +291,56 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     stateRef.current.lfoPhase += (lfoFreqVisual * Math.PI * 2) / 60; // 60fps aprox
     const lfoVal = (Math.sin(stateRef.current.lfoPhase) + 1) / 2; // 0–1
 
-    // ── ESTELA — expansión lenta, muy transparente ──
+    // ── ESTELA — aguada que se expande suave en el tiempo ──
+    // Dibujamos varias capas de cada segmento con expansión creciente
     const totalFrames = 60 * 60;
     ctx.save(); ctx.lineCap = "round";
     for (const seg of stateRef.current.segments) {
       seg.age++;
       const ageT = Math.min(1, seg.age / totalFrames);
-      const maxExp = 3 + seg.windContra * 4;
-      const lw = seg.baseWidth * (1 + ageT * maxExp);
-      const alpha = 0.08 * (1 - ageT * 0.9);
-      ctx.globalAlpha = Math.max(0.005, alpha);
-      ctx.strokeStyle = "#00b5a0";
-      ctx.lineWidth = lw;
-      ctx.beginPath(); ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); ctx.stroke();
+      // 3 capas de halo: interior, medio, exterior
+      const maxExp = 8 + seg.windContra * 12; // expansión máxima en frames finales
+      const layers = [
+        { expand: 1 + ageT * maxExp * 0.3,  alpha: 0.18 * (1 - ageT * 0.7) },
+        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.09 * (1 - ageT * 0.8) },
+        { expand: 1 + ageT * maxExp,        alpha: 0.04 * (1 - ageT * 0.9) },
+      ];
+      for (const layer of layers) {
+        ctx.globalAlpha = Math.max(0.002, layer.alpha);
+        ctx.strokeStyle = `rgb(${TEAL_BASE.r},${TEAL_BASE.g},${TEAL_BASE.b})`;
+        ctx.lineWidth = seg.baseWidth * layer.expand;
+        ctx.beginPath(); ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); ctx.stroke();
+      }
     }
     ctx.restore();
 
-    // ── LÍNEA PRINCIPAL — opaca, continua, modulada por LFO ──
+    // ── LÍNEA PRINCIPAL — suavizada con Catmull-Rom, modulada por LFO ──
     const segs = stateRef.current.segments;
     if (segs.length > 0) {
       ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
       const pulse = lfoVal * 0.35;
-      const r = Math.round(TEAL_BASE.r * 0.6 + (255 - TEAL_BASE.r) * pulse);
+      const r = Math.round(TEAL_BASE.r * 0.75 + (255 - TEAL_BASE.r) * pulse);
       const g = Math.round(TEAL_BASE.g * 0.85 + (255 - TEAL_BASE.g) * pulse);
-      const b = Math.round(TEAL_BASE.b * 0.7 + (255 - TEAL_BASE.b) * pulse);
+      const b = Math.round(TEAL_BASE.b * 0.8 + (255 - TEAL_BASE.b) * pulse);
       ctx.strokeStyle = `rgb(${r},${g},${b})`;
-      ctx.globalAlpha = 0.88;
-      for (let i = 0; i < segs.length; i++) {
-        const s = segs[i];
-        ctx.lineWidth = s.baseWidth;
-        ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.x2, s.y2); ctx.stroke();
+      ctx.globalAlpha = 0.9;
+      // Construir array de puntos únicos
+      const pts: {x:number,y:number,w:number}[] = [];
+      pts.push({x: segs[0].x1, y: segs[0].y1, w: segs[0].baseWidth});
+      for (const s of segs) pts.push({x: s.x2, y: s.y2, w: s.baseWidth});
+      // Dibujar con curvas suavizadas (Catmull-Rom → bezier)
+      if (pts.length >= 2) {
+        ctx.lineWidth = pts[0].w;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length - 1; i++) {
+          // Punto de control: promedio entre actual y siguiente
+          const mx = (pts[i].x + pts[i+1].x) / 2;
+          const my = (pts[i].y + pts[i+1].y) / 2;
+          ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+        }
+        ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
+        ctx.stroke();
       }
       ctx.restore();
     }
