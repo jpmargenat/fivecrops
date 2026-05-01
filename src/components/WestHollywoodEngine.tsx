@@ -224,13 +224,16 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
       a.filter.Q.linearRampToValueAtTime(headingToQ(seg.heading), t + ramp);
       a.gain.gain.linearRampToValueAtTime(mapRange(Math.max(0, seg.slope), 0, 0.3, 0.12, 0.35), t + ramp);
       // WCL — Wind Controlled LFO
-      // El ángulo entre heading y dirección del viento determina la intensidad del LFO
-      // Paralelo (0° o 180°) → sin=0 → mínimo | Perpendicular (90°/270°) → sin=1 → máximo
+      // windCos: +1=a favor, -1=en contra, 0=perpendicular
+      // windPerp: 1=perpendicular, 0=paralelo
       const windAngle = (seg.heading - stateRef.current.wind.direction) * Math.PI / 180;
-      const windPerp  = Math.abs(Math.sin(windAngle)); // 0=paralelo, 1=perpendicular
-      const lfoFreq   = mapRange(stateRef.current.wind.speed, 0, 20, 0.2, 4);
-      const lfoDepth  = mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.12) * windPerp;
-      a.lfo.frequency.linearRampToValueAtTime(lfoFreq, t + ramp);
+      const windCos   = Math.cos(windAngle); // +1 a favor, -1 en contra
+      const windPerp  = Math.abs(Math.sin(windAngle)); // 1=perpendicular, 0=paralelo
+      // Velocidad LFO: a favor=lento, en contra=rápido
+      const lfoFreq  = mapRange(windCos, -1, 1, 5, 0.2) * mapRange(stateRef.current.wind.speed, 0, 20, 0.5, 1.5);
+      // Profundidad LFO: perpendicular=máximo, paralelo=mínimo
+      const lfoDepth = mapRange(stateRef.current.wind.speed, 0, 20, 0, 0.12) * windPerp;
+      a.lfo.frequency.linearRampToValueAtTime(Math.max(0.1, lfoFreq), t + ramp);
       a.lfoGain.gain.linearRampToValueAtTime(lfoDepth, t + ramp);
     }
     // Kick cada 4 puntos
