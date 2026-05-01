@@ -6,7 +6,7 @@ const PADDING      = 70;
 const PDI_RADIUS_M = 50;
 
 // Color base turquesa neón
-const TEAL_BASE = { r: 0, g: 180, b: 255 }; // #00b4ff azul neón
+const TEAL_BASE = { r: 0, g: 80, b: 255 }; // #0050ff azul eléctrico
 
 const PDI_POINTS = [
   { name: "Center of the Crop", description: "Wilson Plaza",                               lat: 34.07221939292978, lon: -118.44363368595516 },
@@ -291,25 +291,34 @@ export function WestHollywoodEngine({ playKey, onHud, onFinish }: Props) {
     stateRef.current.lfoPhase += (lfoFreqVisual * Math.PI * 2) / 60; // 60fps aprox
     const lfoVal = (Math.sin(stateRef.current.lfoPhase) + 1) / 2; // 0–1
 
-    // ── ESTELA — aguada que se expande suave en el tiempo ──
-    // Dibujamos varias capas de cada segmento con expansión creciente
+    // ── ESTELA — aguada que crece en la dirección del viento ──
     const totalFrames = 60 * 60;
+    const windRad = stateRef.current.wind.direction * Math.PI / 180;
+    const windDx  = Math.sin(windRad) * stateRef.current.wind.speed * 0.12; // desplazamiento por frame
+    const windDy  = -Math.cos(windRad) * stateRef.current.wind.speed * 0.12;
     ctx.save(); ctx.lineCap = "round";
     for (const seg of stateRef.current.segments) {
       seg.age++;
       const ageT = Math.min(1, seg.age / totalFrames);
-      // 3 capas de halo: interior, medio, exterior
-      const maxExp = 8 + seg.windContra * 12; // expansión máxima en frames finales
+      // Desplazamiento acumulado por viento
+      const drift = ageT * seg.age * 0.04;
+      const dx = windDx * drift, dy = windDy * drift;
+      // 4 capas — más opacas y más expansivas que antes
+      const maxExp = 20 + seg.windContra * 30;
       const layers = [
-        { expand: 1 + ageT * maxExp * 0.3,  alpha: 0.18 * (1 - ageT * 0.7) },
-        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.09 * (1 - ageT * 0.8) },
-        { expand: 1 + ageT * maxExp,        alpha: 0.04 * (1 - ageT * 0.9) },
+        { expand: 1 + ageT * maxExp * 0.15, alpha: 0.55 * (1 - ageT * 0.6) },
+        { expand: 1 + ageT * maxExp * 0.35, alpha: 0.30 * (1 - ageT * 0.7) },
+        { expand: 1 + ageT * maxExp * 0.65, alpha: 0.15 * (1 - ageT * 0.8) },
+        { expand: 1 + ageT * maxExp,        alpha: 0.06 * (1 - ageT * 0.9) },
       ];
       for (const layer of layers) {
-        ctx.globalAlpha = Math.max(0.002, layer.alpha);
+        ctx.globalAlpha = Math.max(0.005, layer.alpha);
         ctx.strokeStyle = `rgb(${TEAL_BASE.r},${TEAL_BASE.g},${TEAL_BASE.b})`;
         ctx.lineWidth = seg.baseWidth * layer.expand;
-        ctx.beginPath(); ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(seg.x1 + dx, seg.y1 + dy);
+        ctx.lineTo(seg.x2 + dx, seg.y2 + dy);
+        ctx.stroke();
       }
     }
     ctx.restore();
