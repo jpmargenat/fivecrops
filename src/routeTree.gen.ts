@@ -10,24 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as SystemRouteImport } from './routes/system'
-import { Route as ToolsRouteImport } from './routes/tools'
-import { Route as IndexRouteImport } from './routes/inde'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as CropSlugRouteImport } from './routes/crop.$slug'
 
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SystemRoute = SystemRouteImport.update({
-  id: '/system',
-  path: '/system',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ToolsRoute = ToolsRouteImport.update({
-  id: '/tools',
-  path: '/tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -44,38 +32,30 @@ const CropSlugRoute = CropSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
-  '/system': typeof SystemRoute
-  '/tools': typeof ToolsRoute
   '/crop/$slug': typeof CropSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
-  '/system': typeof SystemRoute
-  '/tools': typeof ToolsRoute
   '/crop/$slug': typeof CropSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
-  '/system': typeof SystemRoute
-  '/tools': typeof ToolsRoute
   '/crop/$slug': typeof CropSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/gallery' | '/system' | '/tools' | '/crop/$slug'
+  fullPaths: '/' | '/gallery' | '/crop/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/gallery' | '/system' | '/tools' | '/crop/$slug'
-  id: '__root__' | '/' | '/gallery' | '/system' | '/tools' | '/crop/$slug'
+  to: '/' | '/gallery' | '/crop/$slug'
+  id: '__root__' | '/' | '/gallery' | '/crop/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GalleryRoute: typeof GalleryRoute
-  SystemRoute: typeof SystemRoute
-  ToolsRoute: typeof ToolsRoute
   CropSlugRoute: typeof CropSlugRoute
 }
 
@@ -86,20 +66,6 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/system': {
-      id: '/system'
-      path: '/system'
-      fullPath: '/system'
-      preLoaderRoute: typeof SystemRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tools': {
-      id: '/tools'
-      path: '/tools'
-      fullPath: '/tools'
-      preLoaderRoute: typeof ToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -122,8 +88,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GalleryRoute: GalleryRoute,
-  SystemRoute: SystemRoute,
-  ToolsRoute: ToolsRoute,
   CropSlugRoute: CropSlugRoute,
 }
 export const routeTree = rootRouteImport
