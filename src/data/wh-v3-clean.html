@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEST HOLLYWOOD — Crop 02 — FiveCrops</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f0d14; color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+  }
+  #topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink: 0;
+  }
+  .back  { font-size: 11px; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); text-transform: uppercase; }
+  .title { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.75); font-weight: 600; }
+  #playbtn {
+    background: rgba(255,255,255,0.9); color: #0f0d14;
+    border: none; padding: 7px 22px; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+    border-radius: 2px; transition: opacity 0.15s;
+  }
+  #playbtn:hover    { opacity: 0.75; }
+  #playbtn:disabled { opacity: 0.3; cursor: default; }
+  #hud {
+    display: flex; gap: 24px; padding: 8px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    flex-shrink: 0; flex-wrap: wrap;
+  }
+  .hud-item  { display: flex; flex-direction: column; gap: 2px; }
+  .hud-label { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.28); }
+  .hud-val   { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.85); font-variant-numeric: tabular-nums; }
+  #canvas-wrap { flex: 1; position: relative; }
+  canvas { position: absolute; top: 0; left: 0; }
+  #off   { display: none; }
+  #legend {
+    position: absolute; bottom: 18px; right: 20px;
+    display: flex; flex-direction: column; gap: 5px; pointer-events: none;
+  }
+  .leg { display: flex; align-items: center; gap: 7px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+  .leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  #status {
+    position: absolute; bottom: 18px; left: 24px;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.2); pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="back">← FIVECROPS</span>
+  <span class="title">WEST HOLLYWOOD — Crop 02</span>
+  <button id="playbtn" onclick="handlePlay()">▶ PLAY</button>
+</div>
+
+<div id="hud">
+  <div class="hud-item"><span class="hud-label">Freq</span><span class="hud-val" id="h-freq">—</span></div>
+  <div class="hud-item"><span class="hud-label">Cutoff</span><span class="hud-val" id="h-cutoff">—</span></div>
+  <div class="hud-item"><span class="hud-label">Elevation</span><span class="hud-val" id="h-ele">—</span></div>
+  <div class="hud-item"><span class="hud-label">Slope</span><span class="hud-val" id="h-slope">—</span></div>
+  <div class="hud-item"><span class="hud-label">Heading</span><span class="hud-val" id="h-heading">—</span></div>
+  <div class="hud-item"><span class="hud-label">Wind</span><span class="hud-val" id="h-wind">—</span></div>
+  <div class="hud-item"><span class="hud-label">Gusts</span><span class="hud-val" id="h-gusts">—</span></div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="off"></canvas>
+  <canvas id="main"></canvas>
+  <div id="legend">
+    <div class="leg"><div class="leg-dot" style="background:#7dd3fc"></div>Norte</div>
+    <div class="leg"><div class="leg-dot" style="background:#c084fc"></div>Este</div>
+    <div class="leg"><div class="leg-dot" style="background:#fb923c"></div>Sur</div>
+    <div class="leg"><div class="leg-dot" style="background:#34d399"></div>Oeste</div>
+  </div>
+  <div id="status">West Hollywood · 1 pedaleada · 1 min · 2.16 km</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// GPS DATA
+// ─────────────────────────────────────────────────────────────────────────────
+const GPS = [{"lat":34.075716,"lon":-118.440523,"ele":143.3,"elapsed":0,"dist":0,"speed":0,"slope":0,"accel":0,"heading":0},{"lat":34.075636,"lon":-118.440413,"ele":143.1,"elapsed":10.0,"dist":13.482,"speed":1.3482,"slope":-0.0148,"accel":0,"heading":131.28},{"lat":34.0757,"lon":-118.440503,"ele":143.0,"elapsed":15.0,"dist":10.925,"speed":2.185,"slope":-0.0092,"accel":0.1674,"heading":310.65},{"lat":34.075707,"lon":-118.440531,"ele":143.1,"elapsed":30.0,"dist":2.694,"speed":0.1796,"slope":0.0371,"accel":-0.1337,"heading":286.8},{"lat":34.075702,"lon":-118.440389,"ele":143.2,"elapsed":40.0,"dist":13.09,"speed":1.309,"slope":0.0076,"accel":0.1129,"heading":92.43},{"lat":34.075686,"lon":-118.440426,"ele":143.2,"elapsed":48.0,"dist":3.844,"speed":0.4805,"slope":0.0,"accel":-0.1036,"heading":242.43},{"lat":34.07564,"lon":-118.440362,"ele":143.3,"elapsed":54.0,"dist":7.804,"speed":1.3007,"slope":0.0128,"accel":0.1367,"heading":130.95},{"lat":34.075647,"lon":-118.440404,"ele":143.2,"elapsed":69.0,"dist":3.946,"speed":0.2631,"slope":-0.0253,"accel":-0.0692,"heading":281.38},{"lat":34.07569,"lon":-118.44043,"ele":143.3,"elapsed":80.0,"dist":5.348,"speed":0.4862,"slope":0.0187,"accel":0.0203,"heading":333.4},{"lat":34.075675,"lon":-118.440405,"ele":143.3,"elapsed":90.0,"dist":2.843,"speed":0.2843,"slope":0.0,"accel":-0.0202,"heading":125.92},{"lat":34.075721,"lon":-118.440419,"ele":143.2,"elapsed":100.0,"dist":5.275,"speed":0.5275,"slope":-0.019,"accel":0.0243,"heading":345.85},{"lat":34.075807,"lon":-118.440496,"ele":143.2,"elapsed":110.0,"dist":11.906,"speed":1.1906,"slope":0.0,"accel":0.0663,"heading":323.44},{"lat":34.075532,"lon":-118.440231,"ele":140.1,"elapsed":140.0,"dist":39.125,"speed":1.3042,"slope":-0.0792,"accel":0.0038,"heading":141.4},{"lat":34.075723,"lon":-118.44013,"ele":140.1,"elapsed":150.0,"dist":23.186,"speed":2.3186,"slope":0.0,"accel":0.1014,"heading":23.65},{"lat":34.076051,"lon":-118.440045,"ele":140.0,"elapsed":160.0,"dist":37.303,"speed":3.7303,"slope":-0.0027,"accel":0.1412,"heading":12.11},{"lat":34.076239,"lon":-118.439811,"ele":139.8,"elapsed":170.0,"dist":30.025,"speed":3.0025,"slope":-0.0067,"accel":-0.0728,"heading":45.87},{"lat":34.076258,"lon":-118.439312,"ele":140.0,"elapsed":180.0,"dist":46.007,"speed":4.6007,"slope":0.0043,"accel":0.1598,"heading":87.37},{"lat":34.076443,"lon":-118.439131,"ele":140.6,"elapsed":190.0,"dist":26.478,"speed":2.6478,"slope":0.0227,"accel":-0.1953,"heading":39.02},{"lat":34.076671,"lon":-118.441084,"ele":145.8,"elapsed":240.0,"dist":181.652,"speed":3.633,"slope":0.0286,"accel":0.0197,"heading":278.02},{"lat":34.076362,"lon":-118.441402,"ele":145.5,"elapsed":250.0,"dist":45.148,"speed":4.5148,"slope":-0.0066,"accel":0.0882,"heading":220.44},{"lat":34.075851,"lon":-118.441574,"ele":143.5,"elapsed":260.0,"dist":58.988,"speed":5.8988,"slope":-0.0339,"accel":0.1384,"heading":195.58},{"lat":34.075442,"lon":-118.44212,"ele":137.9,"elapsed":270.0,"dist":67.803,"speed":6.7803,"slope":-0.0826,"accel":0.0882,"heading":227.88},{"lat":34.075125,"lon":-118.442407,"ele":136.8,"elapsed":280.0,"dist":44.059,"speed":4.4059,"slope":-0.025,"accel":-0.2374,"heading":216.87},{"lat":34.074652,"lon":-118.442628,"ele":135.5,"elapsed":290.0,"dist":56.397,"speed":5.6397,"slope":-0.0231,"accel":0.1234,"heading":201.16},{"lat":34.073982,"lon":-118.442593,"ele":129.1,"elapsed":300.0,"dist":74.57,"speed":7.457,"slope":-0.0858,"accel":0.1817,"heading":177.52},{"lat":34.073373,"lon":-118.442757,"ele":123.0,"elapsed":310.0,"dist":69.382,"speed":6.9382,"slope":-0.0879,"accel":-0.0519,"heading":192.57},{"lat":34.073313,"lon":-118.443264,"ele":122.5,"elapsed":320.0,"dist":47.171,"speed":4.7171,"slope":-0.0106,"accel":-0.2221,"heading":261.87},{"lat":34.073373,"lon":-118.443239,"ele":121.5,"elapsed":330.0,"dist":7.058,"speed":0.7058,"slope":-0.1417,"accel":-0.4011,"heading":19.04},{"lat":34.073368,"lon":-118.443243,"ele":121.2,"elapsed":340.0,"dist":0.667,"speed":0.0667,"slope":-0.4498,"accel":-0.0639,"heading":213.53},{"lat":34.073371,"lon":-118.443266,"ele":121.4,"elapsed":350.0,"dist":2.145,"speed":0.2145,"slope":0.0932,"accel":0.0148,"heading":278.95},{"lat":34.073372,"lon":-118.443268,"ele":123.3,"elapsed":360.0,"dist":0.215,"speed":0.0215,"slope":8.8372,"accel":-0.0193,"heading":301.12},{"lat":34.073376,"lon":-118.443271,"ele":130.1,"elapsed":363.0,"dist":0.524,"speed":0.1747,"slope":12.9771,"accel":0.0511,"heading":328.15},{"lat":34.073402,"lon":-118.443265,"ele":130.1,"elapsed":380.0,"dist":2.943,"speed":0.1731,"slope":0.0,"accel":-0.0001,"heading":10.82},{"lat":34.07353,"lon":-118.44309,"ele":131.0,"elapsed":390.0,"dist":21.503,"speed":2.1503,"slope":0.0419,"accel":0.1977,"heading":48.55},{"lat":34.073544,"lon":-118.442911,"ele":130.8,"elapsed":400.0,"dist":16.56,"speed":1.656,"slope":-0.0121,"accel":-0.0494,"heading":84.61},{"lat":34.07356,"lon":-118.442699,"ele":130.8,"elapsed":410.0,"dist":19.607,"speed":1.9607,"slope":0.0,"accel":0.0305,"heading":84.79},{"lat":34.073559,"lon":-118.44239,"ele":131.7,"elapsed":420.0,"dist":28.461,"speed":2.8461,"slope":0.0316,"accel":0.0885,"heading":90.22},{"lat":34.073546,"lon":-118.441869,"ele":132.6,"elapsed":430.0,"dist":48.008,"speed":4.8008,"slope":0.0187,"accel":0.1955,"heading":91.73},{"lat":34.073286,"lon":-118.441641,"ele":133.1,"elapsed":440.0,"dist":35.733,"speed":3.5733,"slope":0.014,"accel":-0.1227,"heading":144.01},{"lat":34.073053,"lon":-118.441608,"ele":133.5,"elapsed":450.0,"dist":26.086,"speed":2.6086,"slope":0.0153,"accel":-0.0965,"heading":173.31},{"lat":34.072724,"lon":-118.441598,"ele":134.0,"elapsed":460.0,"dist":36.595,"speed":3.6595,"slope":0.0137,"accel":0.1051,"heading":178.56},{"lat":34.072536,"lon":-118.441783,"ele":134.1,"elapsed":470.0,"dist":26.969,"speed":2.6969,"slope":0.0037,"accel":-0.0963,"heading":219.18},{"lat":34.072517,"lon":-118.442092,"ele":134.2,"elapsed":480.0,"dist":28.539,"speed":2.8539,"slope":0.0035,"accel":0.0157,"heading":265.75},{"lat":34.072567,"lon":-118.442454,"ele":133.7,"elapsed":490.0,"dist":33.803,"speed":3.3803,"slope":-0.0148,"accel":0.0526,"heading":279.47},{"lat":34.072355,"lon":-118.442692,"ele":133.4,"elapsed":500.0,"dist":32.191,"speed":3.2191,"slope":-0.0093,"accel":-0.0161,"heading":222.92},{"lat":34.071996,"lon":-118.442672,"ele":133.6,"elapsed":510.0,"dist":39.961,"speed":3.9961,"slope":0.005,"accel":0.0777,"heading":177.36},{"lat":34.071809,"lon":-118.442615,"ele":133.7,"elapsed":520.0,"dist":21.446,"speed":2.1446,"slope":0.0047,"accel":-0.1852,"heading":165.83},{"lat":34.071589,"lon":-118.442609,"ele":132.8,"elapsed":530.0,"dist":24.469,"speed":2.4469,"slope":-0.0368,"accel":0.0302,"heading":178.71},{"lat":34.071448,"lon":-118.442597,"ele":132.2,"elapsed":540.0,"dist":15.717,"speed":1.5717,"slope":-0.0382,"accel":-0.0875,"heading":175.97},{"lat":34.07113,"lon":-118.442598,"ele":132.0,"elapsed":550.0,"dist":35.36,"speed":3.536,"slope":-0.0057,"accel":0.1964,"heading":180.15},{"lat":34.071088,"lon":-118.442661,"ele":131.7,"elapsed":560.0,"dist":7.449,"speed":0.7449,"slope":-0.0403,"accel":-0.2791,"heading":231.17},{"lat":34.071204,"lon":-118.442833,"ele":130.4,"elapsed":570.0,"dist":20.429,"speed":2.0429,"slope":-0.0636,"accel":0.1298,"heading":309.15},{"lat":34.070963,"lon":-118.442881,"ele":128.7,"elapsed":580.0,"dist":27.16,"speed":2.716,"slope":-0.0626,"accel":0.0673,"heading":189.37},{"lat":34.070779,"lon":-118.443045,"ele":128.7,"elapsed":590.0,"dist":25.432,"speed":2.5432,"slope":0.0,"accel":-0.0173,"heading":216.44},{"lat":34.070799,"lon":-118.443119,"ele":127.1,"elapsed":600.0,"dist":7.17,"speed":0.717,"slope":-0.2232,"accel":-0.1826,"heading":288.07},{"lat":34.070886,"lon":-118.443149,"ele":126.5,"elapsed":610.0,"dist":10.061,"speed":1.0061,"slope":-0.0596,"accel":0.0289,"heading":344.06},{"lat":34.071227,"lon":-118.443213,"ele":126.0,"elapsed":620.0,"dist":38.373,"speed":3.8373,"slope":-0.013,"accel":0.2831,"heading":351.16},{"lat":34.071487,"lon":-118.443329,"ele":124.1,"elapsed":630.0,"dist":30.822,"speed":3.0822,"slope":-0.0616,"accel":-0.0755,"heading":339.72},{"lat":34.07135,"lon":-118.443445,"ele":123.1,"elapsed":640.0,"dist":18.607,"speed":1.8607,"slope":-0.0537,"accel":-0.1221,"heading":215.04},{"lat":34.07164,"lon":-118.443641,"ele":121.2,"elapsed":650.0,"dist":36.956,"speed":3.6956,"slope":-0.0514,"accel":0.1835,"heading":330.76},{"lat":34.071923,"lon":-118.443657,"ele":120.6,"elapsed":660.0,"dist":31.503,"speed":3.1503,"slope":-0.019,"accel":-0.0545,"heading":357.32},{"lat":34.072215,"lon":-118.44364,"ele":120.4,"elapsed":670.0,"dist":32.507,"speed":3.2507,"slope":-0.0062,"accel":0.01,"heading":2.76},{"lat":34.072223,"lon":-118.44363,"ele":120.1,"elapsed":680.0,"dist":1.28,"speed":0.128,"slope":-0.2344,"accel":-0.3123,"heading":46.0},{"lat":34.072234,"lon":-118.443625,"ele":120.3,"elapsed":690.0,"dist":1.307,"speed":0.1307,"slope":0.153,"accel":0.0003,"heading":20.63},{"lat":34.072251,"lon":-118.443623,"ele":120.2,"elapsed":700.0,"dist":1.899,"speed":0.1899,"slope":-0.0527,"accel":0.0059,"heading":5.57},{"lat":34.072253,"lon":-118.44363,"ele":120.4,"elapsed":710.0,"dist":0.682,"speed":0.0682,"slope":0.2933,"accel":-0.0122,"heading":289.03},{"lat":34.072228,"lon":-118.443809,"ele":120.2,"elapsed":720.0,"dist":16.72,"speed":1.672,"slope":-0.012,"accel":0.1604,"heading":260.43},{"lat":34.072356,"lon":-118.444098,"ele":119.9,"elapsed":730.0,"dist":30.185,"speed":3.0185,"slope":-0.0099,"accel":0.1346,"heading":298.13},{"lat":34.072495,"lon":-118.444375,"ele":119.5,"elapsed":740.0,"dist":29.83,"speed":2.983,"slope":-0.0134,"accel":-0.0035,"heading":301.21},{"lat":34.072215,"lon":-118.444526,"ele":119.0,"elapsed":750.0,"dist":34.1,"speed":3.41,"slope":-0.0147,"accel":0.0427,"heading":204.07},{"lat":34.07187,"lon":-118.444535,"ele":118.6,"elapsed":760.0,"dist":38.371,"speed":3.8371,"slope":-0.0104,"accel":0.0427,"heading":181.24},{"lat":34.071483,"lon":-118.444519,"ele":117.3,"elapsed":770.0,"dist":43.058,"speed":4.3058,"slope":-0.0302,"accel":0.0469,"heading":178.04},{"lat":34.071224,"lon":-118.444686,"ele":117.0,"elapsed":780.0,"dist":32.65,"speed":3.265,"slope":-0.0092,"accel":-0.1041,"heading":208.11},{"lat":34.071015,"lon":-118.444662,"ele":115.9,"elapsed":790.0,"dist":23.345,"speed":2.3345,"slope":-0.0471,"accel":-0.0931,"heading":174.57},{"lat":34.0709,"lon":-118.444753,"ele":115.8,"elapsed":800.0,"dist":15.29,"speed":1.529,"slope":-0.0065,"accel":-0.0805,"heading":213.24},{"lat":34.070804,"lon":-118.444672,"ele":115.7,"elapsed":810.0,"dist":13.024,"speed":1.3024,"slope":-0.0077,"accel":-0.0227,"heading":145.05},{"lat":34.070811,"lon":-118.444593,"ele":115.7,"elapsed":820.0,"dist":7.318,"speed":0.7318,"slope":0.0,"accel":-0.0571,"heading":83.89},{"lat":34.070876,"lon":-118.444615,"ele":115.6,"elapsed":830.0,"dist":7.506,"speed":0.7506,"slope":-0.0133,"accel":0.0019,"heading":344.34},{"lat":34.070932,"lon":-118.444755,"ele":115.7,"elapsed":840.0,"dist":14.32,"speed":1.432,"slope":0.007,"accel":0.0681,"heading":295.78},{"lat":34.070938,"lon":-118.444933,"ele":115.6,"elapsed":850.0,"dist":16.409,"speed":1.6409,"slope":-0.0061,"accel":0.0209,"heading":272.33},{"lat":34.071078,"lon":-118.444728,"ele":115.8,"elapsed":860.0,"dist":24.472,"speed":2.4472,"slope":0.0082,"accel":0.0806,"heading":50.5},{"lat":34.071093,"lon":-118.444636,"ele":116.2,"elapsed":870.0,"dist":8.636,"speed":0.8636,"slope":0.0463,"accel":-0.1584,"heading":78.86},{"lat":34.071051,"lon":-118.444392,"ele":116.2,"elapsed":880.0,"dist":22.954,"speed":2.2954,"slope":0.0,"accel":0.1432,"heading":101.74},{"lat":34.071086,"lon":-118.444032,"ele":118.4,"elapsed":890.0,"dist":33.386,"speed":3.3386,"slope":0.0659,"accel":0.1043,"heading":83.31},{"lat":34.071045,"lon":-118.44393,"ele":119.4,"elapsed":900.0,"dist":10.443,"speed":1.0443,"slope":0.0958,"accel":-0.2294,"heading":115.89},{"lat":34.07105,"lon":-118.443943,"ele":119.6,"elapsed":910.0,"dist":1.32,"speed":0.132,"slope":0.1515,"accel":-0.0912,"heading":294.91}];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PDI — Puntos de Interés (activación por proximidad, radio 50m)
+// ─────────────────────────────────────────────────────────────────────────────
+const PDI = [
+  { name: "Center of the Crop", description: "Wilson Plaza",                          lat: 34.07221939292978, lon: -118.44363368595516 },
+  { name: "Remap",              description: "Research Engineering\nMedia And Performance", lat: 34.07631649345299, lon: -118.43987165217965  },
+];
+const PDI_RADIUS_M = 50;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+const COMPRESS = 60 / 910;
+
+function mapRange(v, a1, a2, b1, b2) {
+  return b1 + Math.max(0, Math.min(1, (v - a1) / (a2 - a1))) * (b2 - b1);
+}
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371000, p = Math.PI / 180;
+  const a = Math.sin((lat2-lat1)*p/2)**2 + Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin((lon2-lon1)*p/2)**2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+function headingToCutoff(h) {
+  return 300 + ((Math.cos(h * Math.PI / 180) + 1) / 2) * 2700;
+}
+function headingToQ(h) {
+  return 1 + Math.abs(Math.sin(h * Math.PI / 180)) * 14;
+}
+function headingColor(h) {
+  if (h <= 45 || h > 315)  return '#7dd3fc';
+  if (h > 45  && h <= 135) return '#c084fc';
+  if (h > 135 && h <= 225) return '#fb923c';
+  return '#34d399';
+}
+function compass(deg) {
+  const d = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+  return d[Math.round(((deg % 360) / 22.5)) % 16];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+const state = {
+  wind: { speed: 2, direction: 270, gusts: 3 },
+  particles: [], projected: [], projectedPDI: [],
+  activeIdx: 0, rafId: 0, timeouts: [], audio: null,
+  width: 0, height: 0, running: false, finished: false,
+  pdiLabels: [], pdiSeen: new Set(),
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CANVAS
+// ─────────────────────────────────────────────────────────────────────────────
+const wrap = document.getElementById('canvas-wrap');
+const main = document.getElementById('main');
+const off  = document.getElementById('off');
+
+function project() {
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
+  [main, off].forEach(c => {
+    c.width = w * dpr; c.height = h * dpr;
+    c.style.width = w + 'px'; c.style.height = h + 'px';
+    c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+  });
+  state.width = w; state.height = h;
+
+  const pad = 70;
+  const minLon = Math.min(...GPS.map(p => p.lon)), maxLon = Math.max(...GPS.map(p => p.lon));
+  const minLat = Math.min(...GPS.map(p => p.lat)), maxLat = Math.max(...GPS.map(p => p.lat));
+  const s  = Math.min((w - pad*2) / (maxLon - minLon), (h - pad*2) / (maxLat - minLat));
+  const ox = (w - (maxLon - minLon) * s) / 2;
+  const oy = (h - (maxLat - minLat) * s) / 2;
+  const toXY = (lat, lon) => ({ x: ox + (lon - minLon) * s, y: h - (oy + (lat - minLat) * s) });
+
+  state.projected    = GPS.map(p => toXY(p.lat, p.lon));
+  state.projectedPDI = PDI.map(p => toXY(p.lat, p.lon));
+
+  off.getContext('2d').clearRect(0, 0, w, h);
+  drawIdle();
+}
+window.addEventListener('resize', project);
+project();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VIENTO
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchWind() {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.0722&longitude=-118.4402&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m');
+    const j = await r.json();
+    const c = j.current || {};
+    state.wind = { speed: c.wind_speed_10m || 2, direction: c.wind_direction_10m || 270, gusts: c.wind_gusts_10m || 3 };
+    document.getElementById('h-wind').textContent  = (state.wind.speed * 3.6).toFixed(1) + ' km/h ' + compass(state.wind.direction);
+    document.getElementById('h-gusts').textContent = state.wind.gusts.toFixed(1) + ' m/s';
+  } catch(e) {}
+}
+fetchWind();
+setInterval(fetchWind, 30000);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDLE
+// ─────────────────────────────────────────────────────────────────────────────
+function drawIdle() {
+  const ctx = main.getContext('2d');
+  ctx.fillStyle = '#0f0d14'; ctx.fillRect(0, 0, state.width, state.height);
+  ctx.drawImage(off, 0, 0, state.width, state.height);
+  drawLabel(ctx);
+}
+function drawLabel(ctx) {
+  const { width: w, height: h } = state;
+  ctx.save(); ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,255,255,0.42)';
+  ctx.font = 'bold 26px -apple-system, sans-serif';
+  ctx.fillText('WEST HOLLYWOOD', w/2, h * 0.84);
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.font = '15px -apple-system, sans-serif';
+  ctx.fillText('Los Angeles, California', w/2, h * 0.84 + 24);
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIO
+// ─────────────────────────────────────────────────────────────────────────────
+function initAudio() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new Ctx();
+  const osc = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  const lfo = ctx.createOscillator();
+  const lfoGain = ctx.createGain();
+
+  osc.type = 'triangle';              // onda triangular
+  osc.frequency.value = 143.3 * 2;   // primer punto: 286.6Hz (2Hz × metro)
+
+  filter.type = 'lowpass';
+  filter.frequency.value = 1200;
+  filter.Q.value = 2;
+
+  gain.gain.value = 0;
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.5;
+  lfoGain.gain.value = 0;
+
+  lfo.connect(lfoGain); lfoGain.connect(gain.gain);
+  osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  osc.start(); lfo.start();
+  state.audio = { ctx, osc, filter, gain, lfo, lfoGain };
+}
+
+// KICK: bombo sine + click ruido blanco
+function fireKick(cumNow, maxDist) {
+  const a = state.audio; if (!a) return;
+  const t = a.ctx.currentTime + 0.001;
+
+  // Bombo
+  const kick = a.ctx.createOscillator();
+  const kg   = a.ctx.createGain();
+  kick.type = 'sine';
+  kick.frequency.setValueAtTime(110, t);
+  kick.frequency.exponentialRampToValueAtTime(38, t + 0.08);
+  kg.gain.setValueAtTime(0.7, t);
+  kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+  kick.connect(kg); kg.connect(a.ctx.destination);
+  kick.start(t); kick.stop(t + 0.13);
+
+  // Click
+  const buf  = a.ctx.createBuffer(1, Math.floor(a.ctx.sampleRate * 0.025), a.ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  const src = a.ctx.createBufferSource(); src.buffer = buf;
+  const bp  = a.ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 6;
+  bp.frequency.value = mapRange(cumNow, 0, maxDist, 1200, 5000);
+  const g = a.ctx.createGain();
+  g.gain.setValueAtTime(0.4, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
+  src.connect(bp); bp.connect(g); g.connect(a.ctx.destination);
+  src.start(t); src.stop(t + 0.03);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DISTANCIA ACUMULADA
+// ─────────────────────────────────────────────────────────────────────────────
+let totalDist = 0, cumDist = [];
+GPS.forEach(p => { totalDist += p.dist; cumDist.push(totalDist); });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PLAY
+// ─────────────────────────────────────────────────────────────────────────────
+function handlePlay() {
+  if (state.running) return;
+  state.running = true; state.finished = false;
+  state.pdiLabels = []; state.pdiSeen = new Set();
+  document.getElementById('playbtn').disabled = true;
+  document.getElementById('playbtn').textContent = '● PLAYING';
+  off.getContext('2d').clearRect(0, 0, state.width, state.height);
+  state.activeIdx = 0;
+  initAudio();
+
+  for (let i = 1; i < GPS.length; i++) {
+    const delayMs = GPS[i].elapsed * 1000 * COMPRESS;
+    const segMs   = (GPS[i].elapsed - GPS[i-1].elapsed) * 1000 * COMPRESS;
+    const ii = i, sm = segMs;
+    state.timeouts.push(setTimeout(() => step(ii, sm / 1000), delayMs));
+  }
+  const lastMs = GPS[GPS.length-1].elapsed * 1000 * COMPRESS;
+  state.timeouts.push(setTimeout(finish, lastMs + 400));
+
+  const loop = () => { render(); state.rafId = requestAnimationFrame(loop); };
+  state.rafId = requestAnimationFrame(loop);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP
+// ─────────────────────────────────────────────────────────────────────────────
+function step(i, segSec) {
+  const proj   = state.projected;
+  const oc     = off.getContext('2d');
+  const a      = state.audio;
+  const seg    = GPS[i];
+  const cumNow = cumDist[i];
+
+  // Visual
+  const normSlope = Math.min(1, Math.abs(seg.slope) / 0.2);
+  const lw = Math.max(1.5, normSlope * 8 + 2);
+  oc.save();
+  oc.globalAlpha = 0.38;
+  oc.strokeStyle = headingColor(seg.heading);
+  oc.lineWidth   = lw;
+  oc.lineCap     = 'round';
+  oc.beginPath();
+  oc.moveTo(proj[i-1].x, proj[i-1].y);
+  oc.lineTo(proj[i].x,   proj[i].y);
+  oc.stroke();
+  oc.restore();
+
+  state.activeIdx = i;
+
+  // Audio
+  if (a) {
+    const t    = a.ctx.currentTime;
+    const ramp = Math.max(0.04, segSec * 0.7);
+
+    a.osc.frequency.linearRampToValueAtTime(seg.ele * 2, t + ramp);  // 2Hz/metro
+    const cutoff = headingToCutoff(seg.heading) + state.wind.gusts * 60;
+    a.filter.frequency.linearRampToValueAtTime(cutoff, t + ramp);
+    a.filter.Q.linearRampToValueAtTime(headingToQ(seg.heading), t + ramp);
+    const gainV = mapRange(Math.max(0, seg.slope), 0, 0.3, 0.12, 0.35);
+    a.gain.gain.linearRampToValueAtTime(gainV, t + ramp);
+    a.lfo.frequency.linearRampToValueAtTime(mapRange(state.wind.speed, 0, 20, 0.2, 4), t + ramp);
+    a.lfoGain.gain.linearRampToValueAtTime(mapRange(state.wind.speed, 0, 20, 0, 0.07), t + ramp);
+  }
+
+  // Kick cada 4 puntos GPS
+  if (i % 4 === 0) fireKick(cumNow, totalDist);
+
+  // PDI: activar por proximidad
+  PDI.forEach((pdi, pi) => {
+    if (state.pdiSeen.has(pi)) return;
+    if (haversine(seg.lat, seg.lon, pdi.lat, pdi.lon) <= PDI_RADIUS_M) {
+      state.pdiSeen.add(pi);
+      state.pdiLabels.push({
+        name: pdi.name, desc: pdi.description,
+        x: state.projectedPDI[pi].x, y: state.projectedPDI[pi].y,
+        age: 0, maxAge: 200,
+      });
+    }
+  });
+
+  // HUD
+  document.getElementById('h-freq').textContent    = Math.round(seg.ele * 2) + ' Hz';
+  document.getElementById('h-cutoff').textContent  = Math.round(headingToCutoff(seg.heading)) + ' Hz';
+  document.getElementById('h-ele').textContent     = seg.ele + ' m';
+  document.getElementById('h-slope').textContent   = (seg.slope > 0 ? '+' : '') + seg.slope.toFixed(3);
+  document.getElementById('h-heading').textContent = Math.round(seg.heading) + '° ' + compass(seg.heading);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FINISH
+// ─────────────────────────────────────────────────────────────────────────────
+function finish() {
+  state.running = false; state.finished = true;
+  document.getElementById('playbtn').disabled = false;
+  document.getElementById('playbtn').textContent = '▶ PLAY AGAIN';
+  const a = state.audio;
+  if (a) {
+    a.gain.gain.linearRampToValueAtTime(0, a.ctx.currentTime + 2);
+    setTimeout(() => { try { a.osc.stop(); a.lfo.stop(); a.ctx.close(); } catch(e){} state.audio = null; }, 2300);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PARTÍCULAS VIENTO
+// ─────────────────────────────────────────────────────────────────────────────
+function spawnParticle() {
+  const { width: w, height: h, wind } = state;
+  const rad = (wind.direction + 180) * Math.PI / 180;
+  const spd = Math.max(0.3, wind.speed * 0.22);
+  return { x: Math.random()*w, y: Math.random()*h, vx: Math.sin(rad)*spd, vy: -Math.cos(rad)*spd, life: 0, maxLife: 90 + Math.random()*130, trail: [] };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────────────────
+function render() {
+  const ctx = main.getContext('2d');
+  const { width: w, height: h, projected: proj } = state;
+
+  ctx.fillStyle = '#0f0d14'; ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(off, 0, 0, w, h);
+
+  // Partículas
+  while (state.particles.length < 120) state.particles.push(spawnParticle());
+  ctx.save(); ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+  for (let i = state.particles.length - 1; i >= 0; i--) {
+    const p = state.particles[i];
+    p.x += p.vx; p.y += p.vy; p.life++;
+    p.trail.push({ x: p.x, y: p.y });
+    if (p.trail.length > Math.max(10, state.wind.speed * 3)) p.trail.shift();
+    const lt = p.life / p.maxLife;
+    const alpha = (lt < 0.2 ? lt/0.2 : lt > 0.8 ? (1-lt)/0.2 : 1) * 0.35;
+    ctx.strokeStyle = `rgba(125,211,252,${Math.max(0, Math.min(1, alpha))})`;
+    ctx.beginPath();
+    p.trail.forEach((t, j) => j === 0 ? ctx.moveTo(t.x, t.y) : ctx.lineTo(t.x, t.y));
+    ctx.stroke();
+    if (p.life >= p.maxLife || p.x < -20 || p.x > w+20 || p.y < -20 || p.y > h+20)
+      state.particles[i] = spawnParticle();
+  }
+  ctx.restore();
+
+  // Dot activo
+  const idx = state.activeIdx;
+  if (state.running && !state.finished && idx > 0 && idx < proj.length) {
+    const seg = GPS[idx], color = headingColor(seg.heading);
+    const r = Math.min(12, 5 + Math.abs(seg.slope) * 20);
+    ctx.save();
+    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 20;
+    ctx.beginPath(); ctx.arc(proj[idx].x, proj[idx].y, r, 0, Math.PI*2);
+    ctx.fill(); ctx.restore();
+  }
+
+  // PDI labels
+  ctx.save();
+  for (let i = state.pdiLabels.length - 1; i >= 0; i--) {
+    const L = state.pdiLabels[i];
+    L.age++;
+    const alpha = L.age < 20 ? L.age/20 : 1; // queda visible permanentemente
+
+    const lx = Math.min(w - 200, Math.max(10, L.x + 22));
+    const ly = Math.max(30, L.y - 28);
+
+    ctx.globalAlpha = alpha;
+
+    // Línea conector
+    ctx.strokeStyle = 'rgba(125,211,252,0.5)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(L.x, L.y); ctx.lineTo(lx, ly); ctx.stroke();
+
+    // Punto marcador
+    ctx.fillStyle = '#7dd3fc';
+    ctx.shadowColor = '#7dd3fc'; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.arc(L.x, L.y, 4, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Nombre en cyan
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.fillStyle = '#7dd3fc';
+    ctx.textAlign = 'left';
+    ctx.fillText(L.name.toUpperCase(), lx + 4, ly);
+
+    // Descripción en blanco
+    ctx.font = '10px -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    L.desc.split('\n').forEach((line, li) => ctx.fillText(line, lx + 4, ly + 14 + li * 13));
+
+    // PDI permanente — no se elimina
+  }
+  ctx.restore();
+
+  if (!state.running || state.finished) drawLabel(ctx);
+}
+</script>
+</body>
+</html>
