@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root.tsx'
 import { Route as GalleryRouteImport } from './routes/gallery.tsx'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as IndexRouteImport } from './routes/inde'
 import { Route as CropSlugRouteImport } from './routes/crop.$slug.tsx'
 
 const GalleryRoute = GalleryRouteImport.update({

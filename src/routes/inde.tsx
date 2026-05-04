@@ -122,9 +122,9 @@ function Landing() {
         <Link to="/gallery" className="gallery-link">
           → Process Gallery — crops, GIFs &amp; reference images
         </Link>
-        <a href="/tools" className="gallery-link" style={{ display: "block" }}>
+        <Link to="/tools" className="gallery-link">
           → GPX Crop Tool — process &amp; export your routes
-        </a>
+        </Link>
       </section>
 
       <section className="section">
@@ -136,9 +136,9 @@ function Landing() {
           <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.</p>
         </div>
         <div className="section-links">
-          <a href="/system" className="gallery-link" style={{ display: "block" }}>
+          <Link to="/system" className="gallery-link">
             → System — how the interpretive system works
-          </a>
+          </Link>
           <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
             → PedaLúdico Research Wiki
           </a>

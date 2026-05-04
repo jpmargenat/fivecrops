@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as SystemRouteImport } from './routes/system'
 import { Route as ToolsRouteImport } from './routes/tools'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as IndexRouteImport } from './routes/inde'
 import { Route as CropSlugRouteImport } from './routes/crop.$slug'
 
 const GalleryRoute = GalleryRouteImport.update({
