@@ -90,7 +90,7 @@ function SystemPage() {
       <g class="node-btn" onclick="show('gps')">
         <rect x="8" y="50" width="96" height="36" rx="6" fill="rgba(216,90,48,0.15)" stroke="#D85A30" stroke-width="0.5"/>
         <text x="56" y="64" text-anchor="middle" style="font-size:9px;font-weight:700;fill:#f09567">GPS raw</text>
-        <text x="56" y="78" text-anchor="middle" style="font-size:9px;fill:#D85A30">lat · lon · ele · time</text>
+        <text x="56" y="78" text-anchor="middle" style="font-size:9px;fill:#D85A30">lat|lon|ele|time</text>
       </g>
       <g class="node-btn" onclick="show('velocidad')">
         <rect x="8" y="96" width="44" height="26" rx="6" fill="rgba(216,90,48,0.1)" stroke="#D85A30" stroke-width="0.5"/>
@@ -111,7 +111,7 @@ function SystemPage() {
       <!-- cadencia — sensor externo, borde punteado -->
       <g class="node-btn" onclick="show('cadencia')">
         <rect x="8" y="164" width="96" height="26" rx="6" fill="rgba(216,90,48,0.08)" stroke="#D85A30" stroke-width="0.5" stroke-dasharray="3 2"/>
-        <text x="56" y="181" text-anchor="middle" style="font-size:9px;font-weight:500;fill:#f09567">cadencia (RPM) ⊕</text>
+        <text x="56" y="181" text-anchor="middle" style="font-size:9px;font-weight:500;fill:#f09567">cadencia (RPM) ⊕  ·  pulso (BPM) ⊕</text>
       </g>
 
       <line x1="56" y1="86" x2="30" y2="96"  stroke="#D85A30" stroke-width="0.5"/>
@@ -180,7 +180,7 @@ function SystemPage() {
       <g class="node-btn" onclick="show('motor')">
         <rect x="18" y="212" width="304" height="52" rx="10" fill="rgba(55,138,221,0.15)" stroke="#378ADD" stroke-width="1"/>
         <text x="170" y="232" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#85b7eb">motor generativo</text>
-        <text x="170" y="252" text-anchor="middle" style="font-size:9px;fill:rgba(55,138,221,0.7)">scheduler · osciladores · canvas · envelopes · clock divider</text>
+        <text x="170" y="252" text-anchor="middle" style="font-size:9px;fill:rgba(55,138,221,0.7)">scheduler|osc|canvas|env|clock div</text>
       </g>
       <line x1="56"  y1="190" x2="100" y2="212" stroke="#D85A30" stroke-width="0.8" marker-end="url(#arr-coral)"/>
       <line x1="149" y1="170" x2="149" y2="212" stroke="#1D9E75" stroke-width="0.8" marker-end="url(#arr-teal)"/>
@@ -192,17 +192,17 @@ function SystemPage() {
       <g class="node-btn" onclick="show('visual')">
         <rect x="18"  y="296" width="86" height="44" rx="6" fill="rgba(186,117,23,0.15)" stroke="#BA7517" stroke-width="0.5"/>
         <text x="61"  y="314" text-anchor="middle" style="font-size:9px;font-weight:700;fill:#fac775">visual</text>
-        <text x="61"  y="330" text-anchor="middle" style="font-size:9px;fill:#BA7517">trazos · color</text>
+        <text x="61"  y="330" text-anchor="middle" style="font-size:9px;fill:#BA7517">trazos|color</text>
       </g>
       <g class="node-btn" onclick="show('sonoro')">
         <rect x="127" y="296" width="86" height="44" rx="6" fill="rgba(186,117,23,0.15)" stroke="#BA7517" stroke-width="0.5"/>
         <text x="170" y="314" text-anchor="middle" style="font-size:9px;font-weight:700;fill:#fac775">sonoro</text>
-        <text x="170" y="330" text-anchor="middle" style="font-size:9px;fill:#BA7517">oscilador · samples</text>
+        <text x="170" y="330" text-anchor="middle" style="font-size:9px;fill:#BA7517">osc|samples</text>
       </g>
       <g class="node-btn" onclick="show('mensajes')">
         <rect x="236" y="296" width="86" height="44" rx="6" fill="rgba(186,117,23,0.15)" stroke="#BA7517" stroke-width="0.5"/>
         <text x="279" y="314" text-anchor="middle" style="font-size:9px;font-weight:700;fill:#fac775">mensajes</text>
-        <text x="279" y="330" text-anchor="middle" style="font-size:9px;fill:#BA7517">Telegram · audio</text>
+        <text x="279" y="330" text-anchor="middle" style="font-size:9px;fill:#BA7517">Telegram|audio</text>
       </g>
       <line x1="110" y1="264" x2="70"  y2="296" stroke="#BA7517" stroke-width="0.8" marker-end="url(#arr-amber)"/>
       <line x1="170" y1="264" x2="170" y2="296" stroke="#BA7517" stroke-width="0.8" marker-end="url(#arr-amber)"/>
@@ -212,7 +212,7 @@ function SystemPage() {
       <g class="node-btn" onclick="show('espectador')">
         <rect x="48" y="370" width="244" height="44" rx="8" fill="rgba(99,153,34,0.15)" stroke="#639922" stroke-width="0.5"/>
         <text x="170" y="388" text-anchor="middle" style="font-size:9px;font-weight:700;fill:#c0dd97">interfaz espectador</text>
-        <text x="170" y="404" text-anchor="middle" style="font-size:9px;fill:#639922">sliders · parámetros · interacción</text>
+        <text x="170" y="404" text-anchor="middle" style="font-size:9px;fill:#639922">sliders|params|interact</text>
       </g>
       <line x1="61"  y1="340" x2="110" y2="370" stroke="#639922" stroke-width="0.8" marker-end="url(#arr-green)"/>
       <line x1="170" y1="340" x2="170" y2="370" stroke="#639922" stroke-width="0.8" marker-end="url(#arr-green)"/>
@@ -224,7 +224,7 @@ function SystemPage() {
       <g class="node-btn" onclick="show('ingesta')">
         <rect x="18" y="438" width="304" height="36" rx="8" fill="rgba(136,135,128,0.1)" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
         <text x="170" y="452" text-anchor="middle" style="font-size:10px;font-weight:500;fill:rgba(255,255,255,0.5)">sistema 2 — ingesta de rutas GPX</text>
-        <text x="170" y="466" text-anchor="middle" style="font-size:8px;fill:rgba(232,232,224,0.25)">pedalear → exportar → subir → crop</text>
+        <text x="170" y="466" text-anchor="middle" style="font-size:8px;fill:rgba(232,232,224,0.25)">pedalear|exportar|subir|crop</text>
       </g>
       <line x1="170" y1="414" x2="170" y2="438" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" stroke-dasharray="3 3" marker-end="url(#arr)"/>
 
@@ -232,7 +232,7 @@ function SystemPage() {
       <g class="node-btn" onclick="show('sali')">
         <rect x="18" y="496" width="304" height="44" rx="8" fill="rgba(153,53,86,0.15)" stroke="#D4537E" stroke-width="0.5"/>
         <text x="170" y="514" text-anchor="middle" style="font-size:9px;font-weight:700;fill:#ed93b1">S.A.L.I. — en vivo</text>
-        <text x="170" y="530" text-anchor="middle" style="font-size:9px;fill:#D4537E">el mismo sistema · en tiempo real · en el territorio</text>
+        <text x="170" y="530" text-anchor="middle" style="font-size:9px;fill:#D4537E">mismo sistema|tiempo real|territorio</text>
       </g>
       <line x1="170" y1="474" x2="170" y2="496" stroke="#D4537E" stroke-width="0.8" marker-end="url(#arr-pink)"/>
 
