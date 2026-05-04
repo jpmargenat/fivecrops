@@ -111,7 +111,7 @@ function SystemPage() {
       <!-- cadencia — sensor externo, borde punteado -->
       <g class="node-btn" onclick="show('cadencia')">
         <rect x="8" y="164" width="96" height="26" rx="6" fill="rgba(216,90,48,0.08)" stroke="#D85A30" stroke-width="0.5" stroke-dasharray="3 2"/>
-        <text x="56" y="181" text-anchor="middle" style="font-size:9px;font-weight:500;fill:#f09567">cadencia (RPM) ⊕  ·  pulso (BPM) ⊕</text>
+        <text x="56" y="181" text-anchor="middle" style="font-size:9px;font-weight:500;fill:#f09567">Cardio | Cadencia</text>
       </g>
 
       <line x1="56" y1="86" x2="30" y2="96"  stroke="#D85A30" stroke-width="0.5"/>
