@@ -27,13 +27,14 @@ type Crop = {
   lat: number;
   lon: number;
   active: boolean;
+  href?: string;
 };
 
 const CROPS: Crop[] = [
   { slug: "lincoln-heights", num: "01", name: "Lincoln Heights", lat: 34.07, lon: -118.21, active: true },
   { slug: "west-hollywood", num: "02", name: "West Hollywood", lat: 34.09, lon: -118.36, active: true },
   { slug: "culver-city", num: "03", name: "Culver City", lat: 34.02, lon: -118.39, active: false },
-  { slug: "downtown-la", num: "04", name: "Downtown LA", lat: 34.05, lon: -118.24, active: false },
+  { slug: "downtown-la", num: "04", name: "Dogtown", lat: 34.05, lon: -118.24, active: true, href: "/dogtown" },
   { slug: "silver-lake", num: "05", name: "Silver Lake", lat: 34.08, lon: -118.27, active: false },
 ];
 
@@ -66,7 +67,9 @@ function Landing() {
               className={`crop-marker ${c.active ? "active" : ""}`}
               style={{ left: `${x}%`, top: `${y}%` }}
               onClick={() => {
-                if (c.active) navigate({ to: "/crop/$slug", params: { slug: c.slug } });
+                if (!c.active) return;
+                if (c.href) window.location.href = c.href;
+                else navigate({ to: "/crop/$slug", params: { slug: c.slug } });
               }}
               role={c.active ? "link" : undefined}
             >
@@ -86,22 +89,33 @@ function Landing() {
         <div className="crop-thumbs-grid">
           {CROPS.map((c, i) => {
             const imgSrc = `/t${i + 1}.png`;
-            return c.active ? (
-              <Link
-                key={c.slug}
-                to="/crop/$slug"
-                params={{ slug: c.slug }}
-                className="crop-thumb-card active"
-              >
-                <div className="crop-thumb-img-wrap">
-                  <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
-                </div>
-                <div className="crop-thumb-label">
-                  <span className="crop-thumb-num">{c.num}</span>
-                  <span className="crop-thumb-name">{c.name}</span>
-                </div>
-              </Link>
-            ) : (
+            if (c.active && c.href) {
+              return (
+                <a key={c.slug} href={c.href} className="crop-thumb-card active" style={{ textDecoration: "none" }}>
+                  <div className="crop-thumb-img-wrap">
+                    <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
+                  </div>
+                  <div className="crop-thumb-label">
+                    <span className="crop-thumb-num">{c.num}</span>
+                    <span className="crop-thumb-name">{c.name}</span>
+                  </div>
+                </a>
+              );
+            }
+            if (c.active) {
+              return (
+                <Link key={c.slug} to="/crop/$slug" params={{ slug: c.slug }} className="crop-thumb-card active">
+                  <div className="crop-thumb-img-wrap">
+                    <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
+                  </div>
+                  <div className="crop-thumb-label">
+                    <span className="crop-thumb-num">{c.num}</span>
+                    <span className="crop-thumb-name">{c.name}</span>
+                  </div>
+                </Link>
+              );
+            }
+            return (
               <div key={c.slug} className="crop-thumb-card inactive">
                 <div className="crop-thumb-img-wrap">
                   <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--inactive" />
