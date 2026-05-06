@@ -35,7 +35,7 @@ const CROPS: Crop[] = [
   { slug: "west-hollywood", num: "02", name: "West Hollywood", lat: 34.09, lon: -118.36, active: true },
   { slug: "culver-city", num: "03", name: "Culver City", lat: 34.02, lon: -118.39, active: false },
   { slug: "downtown-la", num: "04", name: "Dogtown", lat: 34.05, lon: -118.24, active: true, href: "/dogtown" },
-  { slug: "silver-lake", num: "05", name: "Silver Lake", lat: 34.08, lon: -118.27, active: false },
+  { slug: "venice", num: "05", name: "Venice", lat: 33.981, lon: -118.467, active: true },
 ];
 
 const BOUNDS = { minLat: 33.95, maxLat: 34.18, minLon: -118.50, maxLon: -118.15 };
@@ -153,7 +153,7 @@ function Landing() {
             → System — how the interpretive system works
           </a>
           <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
-            → PedaLúdico Research Wiki
+            → PedaLúDico Research Wiki
           </a>
           <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
             → CHELA

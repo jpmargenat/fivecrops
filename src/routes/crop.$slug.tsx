@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { LincolnHeightsEngine, type EngineHud as LHHud } from "@/components/LincolnHeightsEngine";
 import { WestHollywoodEngine, type EngineHud as WHHud } from "@/components/WestHollywoodEngine";
+import { VeniceEngine, type EngineHud as VHud } from "@/components/VeniceEngine";
 
 type CropData = {
   num: string;
@@ -31,6 +32,15 @@ const CROPS: Record<string, CropData> = {
     elevation: "115.6m – 145.8m",
     distance: "~2.16km",
     points: "86 GPS points",
+  },
+  "venice": {
+    num: "05",
+    name: "Venice",
+    region: "Los Angeles, California",
+    rides: "9 rides accumulated — 2026",
+    elevation: "-6m – 16m",
+    distance: "~4km",
+    points: "2034 GPS points",
   },
 };
 
@@ -71,7 +81,7 @@ export const Route = createFileRoute("/crop/$slug")({
   ),
 });
 
-type AnyHud = LHHud | WHHud;
+type AnyHud = LHHud | WHHud | VHud;
 
 const EMPTY_HUD: AnyHud = {
   frequency: "— Hz",
@@ -91,9 +101,10 @@ function CropPage() {
   const [playing, setPlaying] = useState(false);
   const [done, setDone] = useState(false);
 
-  const isLincoln      = slug === "lincoln-heights";
+  const isLincoln       = slug === "lincoln-heights";
   const isWestHollywood = slug === "west-hollywood";
-  const hasEngine      = isLincoln || isWestHollywood;
+  const isVenice        = slug === "venice";
+  const hasEngine       = isLincoln || isWestHollywood || isVenice;
 
   const handlePlay = () => {
     if (playing) return;
@@ -129,10 +140,20 @@ function CropPage() {
         <div className="stat">frequency<strong>{hud.frequency}</strong></div>
         <div className="stat">cutoff<strong>{hud.cutoff}</strong></div>
         <div className="stat">elevation<strong>{hud.elevation}</strong></div>
-        <div className="stat">slope<strong>{hud.slope}</strong></div>
-        <div className="stat wind">wind speed<strong>{hud.windSpeed}</strong></div>
-        <div className="stat wind">wind direction<strong>{hud.windDirection}</strong></div>
-        <div className="stat wind">wind gusts<strong>{hud.windGusts}</strong></div>
+        {isVenice ? (
+          <>
+            <div className="stat">dist. océano<strong>{(hud as VHud).distOcean ?? "— m"}</strong></div>
+            <div className="stat">dist. canal<strong>{(hud as VHud).distCanal ?? "— m"}</strong></div>
+            <div className="stat">marea<strong>{(hud as VHud).tide ?? "—"}</strong></div>
+          </>
+        ) : (
+          <>
+            <div className="stat">slope<strong>{(hud as LHHud).slope ?? "—"}</strong></div>
+            <div className="stat wind">wind speed<strong>{(hud as LHHud).windSpeed ?? "—"}</strong></div>
+            <div className="stat wind">wind direction<strong>{(hud as LHHud).windDirection ?? "—"}</strong></div>
+            <div className="stat wind">wind gusts<strong>{(hud as LHHud).windGusts ?? "—"}</strong></div>
+          </>
+        )}
       </div>
 
       <div className="crop-canvas">
@@ -145,6 +166,13 @@ function CropPage() {
         )}
         {isWestHollywood && (
           <WestHollywoodEngine
+            playKey={playKey}
+            onHud={handleHud}
+            onFinish={handleFinish}
+          />
+        )}
+        {isVenice && (
+          <VeniceEngine
             playKey={playKey}
             onHud={handleHud}
             onFinish={handleFinish}
