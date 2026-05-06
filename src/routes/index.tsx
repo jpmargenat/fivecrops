@@ -122,7 +122,7 @@ function Landing() {
           <a href="/system" className="gallery-link" style={{ display: "block" }}>
             → System — how the interpretive system works
           </a>
-          <a href="/sources" className="gallery-link" style={{ display: "block" }}>
+          <a href="/sources.html" className="gallery-link" style={{ display: "block" }}>
             → Data Sources — real-time environmental inputs
           </a>
           <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
