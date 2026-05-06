@@ -57,11 +57,7 @@ function Landing() {
       </header>
 
       <div className="hero-map" aria-label="Cycling map of Los Angeles with five crop markers">
-        <img
-          src="/la-map.png"
-          alt="Cycling map of Los Angeles"
-          className="map-img"
-        />
+        <img src="/la-map.png" alt="Cycling map of Los Angeles" className="map-img" />
         {CROPS.map((c) => {
           const { x, y } = project(c.lat, c.lon);
           return (
@@ -125,6 +121,9 @@ function Landing() {
         <a href="/tools" className="gallery-link" style={{ display: "block" }}>
           → GPX Crop Tool — process &amp; export your routes
         </a>
+        <a href="/dogtown" className="gallery-link" style={{ display: "block" }}>
+          → Dogtown — Lincoln Heights · 29 rides
+        </a>
       </section>
 
       <section className="section">
@@ -162,9 +161,7 @@ function Landing() {
             Visiting Scholar, UCLA/REMAP 2026
             <br />
             Home institution: <strong>cheLA</strong> — Centro Heurístico Experimental Latinoamericano —{" "}
-            <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
-              chela.org.ar
-            </a>
+            <a href="https://chela.org.ar" target="_blank" rel="noreferrer">chela.org.ar</a>
             <br />
             Funded by: <strong>Fundación Williams</strong>
           </div>
@@ -205,9 +202,7 @@ function Landing() {
           <div className="credits-name">Institutional support</div>
           <div className="credits-role">
             REMAP —{" "}
-            <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer">
-              remap.ucla.edu
-            </a>
+            <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer">remap.ucla.edu</a>
           </div>
         </div>
       </section>
