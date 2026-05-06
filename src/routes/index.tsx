@@ -57,33 +57,6 @@ function Landing() {
         <p className="landing-meta">An experimental tool for S.A.L.I. — PedaLúdico / UCLA REMAP 2026</p>
       </header>
 
-      <div className="hero-map" aria-label="Cycling map of Los Angeles with five crop markers">
-        <img src="/la-map.png" alt="Cycling map of Los Angeles" className="map-img" />
-        {CROPS.map((c) => {
-          const { x, y } = project(c.lat, c.lon);
-          return (
-            <div
-              key={c.slug}
-              className={`crop-marker ${c.active ? "active" : ""}`}
-              style={{ left: `${x}%`, top: `${y}%` }}
-              onClick={() => {
-                if (!c.active) return;
-                if (c.href) window.location.href = c.href;
-                else navigate({ to: "/crop/$slug", params: { slug: c.slug } });
-              }}
-              role={c.active ? "link" : undefined}
-            >
-              {!c.active && <span className="crop-tooltip">Coming Soon</span>}
-              <span className="dot" />
-              <span className="pulse" />
-              <span className="crop-label">
-                {c.num} · {c.name}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
       {/* THUMBNAILS */}
       <section className="section thumbs-section">
         <div className="crop-thumbs-grid">
@@ -135,9 +108,6 @@ function Landing() {
         <a href="/tools" className="gallery-link" style={{ display: "block" }}>
           → GPX Crop Tool — process &amp; export your routes
         </a>
-        <a href="/dogtown" className="gallery-link" style={{ display: "block" }}>
-          → Dogtown — Lincoln Heights · 29 rides
-        </a>
       </section>
 
       <section className="section">
@@ -163,6 +133,33 @@ function Landing() {
           </a>
         </div>
       </section>
+
+      <div className="hero-map" aria-label="Cycling map of Los Angeles with five crop markers">
+        <img src="/la-map.png" alt="Cycling map of Los Angeles" className="map-img" />
+        {CROPS.map((c) => {
+          const { x, y } = project(c.lat, c.lon);
+          return (
+            <div
+              key={c.slug}
+              className={`crop-marker ${c.active ? "active" : ""}`}
+              style={{ left: `${x}%`, top: `${y}%` }}
+              onClick={() => {
+                if (!c.active) return;
+                if (c.href) window.location.href = c.href;
+                else navigate({ to: "/crop/$slug", params: { slug: c.slug } });
+              }}
+              role={c.active ? "link" : undefined}
+            >
+              {!c.active && <span className="crop-tooltip">Coming Soon</span>}
+              <span className="dot" />
+              <span className="pulse" />
+              <span className="crop-label">
+                {c.num} · {c.name}
+              </span>
+            </div>
+          );
+        })}
+      </div>
 
       <section className="section">
         <h2 className="section-title">CREDITS</h2>
