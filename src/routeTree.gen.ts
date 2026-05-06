@@ -9,16 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as SystemRouteImport } from './routes/system'
 import { Route as ToolsRouteImport } from './routes/tools'
+import { Route as SystemRouteImport } from './routes/system'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as DogtownRouteImport } from './routes/dogtown'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CropSlugRouteImport } from './routes/crop.$slug'
 
-const GalleryRoute = GalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
+const ToolsRoute = ToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SystemRoute = SystemRouteImport.update({
@@ -26,9 +26,9 @@ const SystemRoute = SystemRouteImport.update({
   path: '/system',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ToolsRoute = ToolsRouteImport.update({
-  id: '/tools',
-  path: '/tools',
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DogtownRoute = DogtownRouteImport.update({
@@ -49,53 +49,66 @@ const CropSlugRoute = CropSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dogtown': typeof DogtownRoute
   '/gallery': typeof GalleryRoute
   '/system': typeof SystemRoute
   '/tools': typeof ToolsRoute
-  '/dogtown': typeof DogtownRoute
   '/crop/$slug': typeof CropSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dogtown': typeof DogtownRoute
   '/gallery': typeof GalleryRoute
   '/system': typeof SystemRoute
   '/tools': typeof ToolsRoute
-  '/dogtown': typeof DogtownRoute
   '/crop/$slug': typeof CropSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dogtown': typeof DogtownRoute
   '/gallery': typeof GalleryRoute
   '/system': typeof SystemRoute
   '/tools': typeof ToolsRoute
-  '/dogtown': typeof DogtownRoute
   '/crop/$slug': typeof CropSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/gallery' | '/system' | '/tools' | '/dogtown' | '/crop/$slug'
+  fullPaths:
+    | '/'
+    | '/dogtown'
+    | '/gallery'
+    | '/system'
+    | '/tools'
+    | '/crop/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/gallery' | '/system' | '/tools' | '/dogtown' | '/crop/$slug'
-  id: '__root__' | '/' | '/gallery' | '/system' | '/tools' | '/dogtown' | '/crop/$slug'
+  to: '/' | '/dogtown' | '/gallery' | '/system' | '/tools' | '/crop/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/dogtown'
+    | '/gallery'
+    | '/system'
+    | '/tools'
+    | '/crop/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DogtownRoute: typeof DogtownRoute
   GalleryRoute: typeof GalleryRoute
   SystemRoute: typeof SystemRoute
   ToolsRoute: typeof ToolsRoute
-  DogtownRoute: typeof DogtownRoute
   CropSlugRoute: typeof CropSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/gallery': {
-      id: '/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof GalleryRouteImport
+    '/tools': {
+      id: '/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof ToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/system': {
@@ -105,11 +118,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SystemRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tools': {
-      id: '/tools'
-      path: '/tools'
-      fullPath: '/tools'
-      preLoaderRoute: typeof ToolsRouteImport
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dogtown': {
@@ -138,10 +151,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DogtownRoute: DogtownRoute,
   GalleryRoute: GalleryRoute,
   SystemRoute: SystemRoute,
   ToolsRoute: ToolsRoute,
-  DogtownRoute: DogtownRoute,
   CropSlugRoute: CropSlugRoute,
 }
 export const routeTree = rootRouteImport
