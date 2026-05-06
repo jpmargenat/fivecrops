@@ -84,7 +84,7 @@ button {
 .hero-map {
   position: relative;
   width: 100%;
-  max-width: 1100px;
+  max-width: 780px;
   aspect-ratio: 16 / 9;
   margin: 0 auto 80px;
   background: #07050a;
