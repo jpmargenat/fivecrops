@@ -64,35 +64,33 @@ function FlowingCartographies() {
         <h1 className="landing-title" style={{ fontSize: "clamp(1.8rem, 6vw, 4rem)", letterSpacing: "0.12em" }}>
           FLOWING CARTOGRAPHIES
         </h1>
-        <p className="landing-subtitle" style={{ maxWidth: "580px", margin: "16px auto 0" }}>
-          Archive, analysis and visualization of situationist and pedaludic practices in urban and non-urban territories
-        </p>
         <div style={{
           display: "inline-block",
-          marginTop: "28px",
-          padding: "18px 28px",
+          marginTop: "20px",
+          padding: "20px 32px",
           border: "1px solid rgba(255,255,255,0.15)",
-          background: "rgba(255,255,255,0.04)",
-          maxWidth: "520px",
+          maxWidth: "640px",
           width: "100%",
         }}>
           <p style={{
-            fontFamily: "'Courier New', monospace",
-            fontSize: "11px",
-            letterSpacing: "0.12em",
+            fontSize: "14px",
+            letterSpacing: "0.18em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.75)",
-            lineHeight: "2.2",
+            color: "var(--text-secondary)",
             textAlign: "justify",
-            textAlignLast: "left",
+            textAlignLast: "center",
+            lineHeight: "1.9",
           }}>
-            Juan Pablo Margenat — Visiting Scholar UCLA/REMAP 2026
-            <br />
-            Research Director: Fabián Wagmister &nbsp;·&nbsp; REMAP Development: Jeff Burke
-            <br />
-            cheLA &nbsp;·&nbsp; Fundación Williams
+            Archive, analysis and visualization of situationist and pedaludic practices in urban and non-urban territories
           </p>
         </div>
+        <p className="landing-meta" style={{ marginTop: "24px", lineHeight: "2", opacity: 0.5 }}>
+          Juan Pablo Margenat — Visiting Scholar UCLA/REMAP 2026
+          <br />
+          Research Director: Fabián Wagmister &nbsp;·&nbsp; REMAP Development: Jeff Burke
+          <br />
+          cheLA &nbsp;·&nbsp; Fundación Williams
+        </p>
       </header>
 
       {/* INTRO */}
