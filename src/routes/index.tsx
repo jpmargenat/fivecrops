@@ -26,7 +26,7 @@ const SECTIONS = [
     title: "PLISS",
     subtitle: "PedaLudic Interpretive Situationist Spheres",
     description: "The live transmission and archive platform for situationist pedaludic experiences. Spherical captures, environmental data and collective dialogue assembled in real time.",
-    status: "coming",
+    status: "active",
   },
   {
     num: "02",
@@ -78,6 +78,17 @@ function FlowingCartographies() {
 
       {/* INTRO */}
       <section className="section" style={{ maxWidth: "640px", margin: "0 auto 64px" }}>
+        <h2 style={{
+          fontFamily: "'Courier New', monospace",
+          fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
+          letterSpacing: "0.35em",
+          textTransform: "uppercase",
+          color: "var(--text-secondary)",
+          marginBottom: "28px",
+          fontWeight: "normal",
+        }}>
+          Meandering L.A.
+        </h2>
         <div className="section-body" style={{ textAlign: "justify", textAlignLast: "left" }}>
           <p>
             There is a moment when cycling becomes more than a mechanical movement.
