@@ -22,19 +22,19 @@ export const Route = createFileRoute("/")({
 const SECTIONS = [
   {
     num: "01",
-    slug: "/fivecrops",
-    title: "FiveCrops",
-    subtitle: "Cartographic Laboratory",
-    description: "A rhizomatic detour within the research. Five urban extractions from a cycling map of Los Angeles — where interpretive tools are built, tested and iterated in small portions of territory.",
-    status: "active",
-  },
-  {
-    num: "02",
     slug: "/pliss",
     title: "PLISS",
     subtitle: "PedaLudic Interpretive Situationist Spheres",
     description: "The live transmission and archive platform for situationist pedaludic experiences. Spherical captures, environmental data and collective dialogue assembled in real time.",
     status: "coming",
+  },
+  {
+    num: "02",
+    slug: "/fivecrops",
+    title: "FiveCrops",
+    subtitle: "Cartographic Laboratory",
+    description: "A rhizomatic detour within the research. Five urban extractions from a cycling map of Los Angeles — where interpretive tools are built, tested and iterated in small portions of territory.",
+    status: "active",
   },
   {
     num: "03",
@@ -67,13 +67,32 @@ function FlowingCartographies() {
         <p className="landing-subtitle" style={{ maxWidth: "580px", margin: "16px auto 0" }}>
           Archive, analysis and visualization of situationist and pedaludic practices in urban and non-urban territories
         </p>
-        <p className="landing-meta" style={{ marginTop: "24px", lineHeight: "2", opacity: 0.5 }}>
-          Juan Pablo Margenat — Visiting Scholar UCLA/REMAP 2026
-          <br />
-          Research Director: Fabián Wagmister &nbsp;·&nbsp; REMAP Development: Jeff Burke
-          <br />
-          cheLA &nbsp;·&nbsp; Fundación Williams
-        </p>
+        <div style={{
+          display: "inline-block",
+          marginTop: "28px",
+          padding: "18px 28px",
+          border: "1px solid rgba(255,255,255,0.15)",
+          background: "rgba(255,255,255,0.04)",
+          maxWidth: "520px",
+          width: "100%",
+        }}>
+          <p style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: "11px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.75)",
+            lineHeight: "2.2",
+            textAlign: "justify",
+            textAlignLast: "left",
+          }}>
+            Juan Pablo Margenat — Visiting Scholar UCLA/REMAP 2026
+            <br />
+            Research Director: Fabián Wagmister &nbsp;·&nbsp; REMAP Development: Jeff Burke
+            <br />
+            cheLA &nbsp;·&nbsp; Fundación Williams
+          </p>
+        </div>
       </header>
 
       {/* INTRO */}
