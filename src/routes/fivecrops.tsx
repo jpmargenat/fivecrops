@@ -1,0 +1,158 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/fivecrops")({
+  head: () => ({
+    meta: [
+      { title: "FiveCrops — Cartographic Laboratory" },
+      {
+        name: "description",
+        content:
+          "FiveCrops is an experimental tool for S.A.L.I., extracting five urban crops from a cycling map of Los Angeles built day by day through bodily experience.",
+      },
+    ],
+  }),
+  component: FiveCropsPage,
+});
+
+type Crop = {
+  slug: string;
+  num: string;
+  name: string;
+  lat: number;
+  lon: number;
+  active: boolean;
+  href?: string;
+};
+
+const CROPS: Crop[] = [
+  { slug: "lincoln-heights", num: "01", name: "Lincoln Heights", lat: 34.07, lon: -118.21, active: true },
+  { slug: "west-hollywood", num: "02", name: "West Hollywood", lat: 34.09, lon: -118.36, active: true },
+  { slug: "downtown-la", num: "03", name: "Downtown LA", lat: 34.048, lon: -118.253, active: true, href: "/SPL_Crop05.html" },
+  { slug: "downtown-la", num: "04", name: "Dogtown", lat: 34.05, lon: -118.24, active: true, href: "/dogtown" },
+  { slug: "venice", num: "05", name: "Venice", lat: 33.981, lon: -118.467, active: true },
+];
+
+const BOUNDS = { minLat: 33.95, maxLat: 34.18, minLon: -118.50, maxLon: -118.15 };
+
+function project(lat: number, lon: number) {
+  const x = ((lon - BOUNDS.minLon) / (BOUNDS.maxLon - BOUNDS.minLon)) * 100;
+  const y = (1 - (lat - BOUNDS.minLat) / (BOUNDS.maxLat - BOUNDS.minLat)) * 100;
+  return { x, y };
+}
+
+function FiveCropsPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="landing">
+      <header className="landing-header">
+        <p className="landing-meta" style={{ marginBottom: "12px" }}>
+          <a href="/" style={{ color: "inherit", opacity: 0.45, textDecoration: "none", letterSpacing: "0.15em", fontSize: "0.72rem" }}>
+            ← MEANDERING L.A. / FLOWING CARTOGRAPHIES
+          </a>
+        </p>
+        <h1 className="landing-title">FIVECROPS</h1>
+        <p className="landing-subtitle">Five urban extractions from a cycling map of Los Angeles</p>
+        <p className="landing-meta">Cartographic Laboratory — Flowing Cartographies / UCLA REMAP 2026</p>
+      </header>
+
+      <section className="section thumbs-section">
+        <div className="crop-thumbs-grid">
+          {CROPS.map((c, i) => {
+            const imgSrc = `/t${i + 1}.png`;
+            if (c.active && c.href) {
+              return (
+                <a key={c.slug + i} href={c.href} className="crop-thumb-card active" style={{ textDecoration: "none" }}>
+                  <div className="crop-thumb-img-wrap">
+                    <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
+                  </div>
+                  <div className="crop-thumb-label">
+                    <span className="crop-thumb-num">{c.num}</span>
+                    <span className="crop-thumb-name">{c.name}</span>
+                  </div>
+                </a>
+              );
+            }
+            if (c.active) {
+              return (
+                <Link key={c.slug + i} to="/crop/$slug" params={{ slug: c.slug }} className="crop-thumb-card active">
+                  <div className="crop-thumb-img-wrap">
+                    <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
+                  </div>
+                  <div className="crop-thumb-label">
+                    <span className="crop-thumb-num">{c.num}</span>
+                    <span className="crop-thumb-name">{c.name}</span>
+                  </div>
+                </Link>
+              );
+            }
+            return (
+              <div key={c.slug + i} className="crop-thumb-card inactive">
+                <div className="crop-thumb-img-wrap">
+                  <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--inactive" />
+                  <div className="crop-thumb-soon">Coming Soon</div>
+                </div>
+                <div className="crop-thumb-label">
+                  <span className="crop-thumb-num">{c.num}</span>
+                  <span className="crop-thumb-name">{c.name}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <Link to="/gallery" className="gallery-link">
+          → Process Gallery — crops, GIFs &amp; reference images
+        </Link>
+        <a href="/tools" className="gallery-link" style={{ display: "block" }}>
+          → GPX Crop Tool — process &amp; export your routes
+        </a>
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">ABOUT FIVECROPS</h2>
+        <div className="section-body">
+          <p>FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.</p>
+          <p>Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.</p>
+          <p>Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.</p>
+          <p>FiveCrops is a rhizomatic detour within Flowing Cartographies — a cartographic laboratory where interpretive tools are built, tested and iterated in small portions of territory.</p>
+        </div>
+        <div className="section-links">
+          <a href="/system" className="gallery-link" style={{ display: "block" }}>→ System — how the interpretive system works</a>
+          <a href="/sources.html" className="gallery-link" style={{ display: "block" }}>→ Data Sources — real-time environmental inputs</a>
+          <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">→ PedaLúDico Research Wiki</a>
+          <a href="https://chela.org.ar" target="_blank" rel="noreferrer">→ CHELA</a>
+          <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer">→ REMAP UCLA</a>
+        </div>
+      </section>
+
+      <div className="hero-map" aria-label="Cycling map of Los Angeles with five crop markers">
+        <img src="/la-map.png" alt="Cycling map of Los Angeles" className="map-img" />
+        {CROPS.map((c, i) => {
+          const { x, y } = project(c.lat, c.lon);
+          return (
+            <div
+              key={c.slug + i}
+              className={`crop-marker ${c.active ? "active" : ""}`}
+              style={{ left: `${x}%`, top: `${y}%` }}
+              onClick={() => {
+                if (!c.active) return;
+                if (c.href) window.location.href = c.href;
+                else navigate({ to: "/crop/$slug", params: { slug: c.slug } });
+              }}
+              role={c.active ? "link" : undefined}
+            >
+              {!c.active && <span className="crop-tooltip">Coming Soon</span>}
+              <span className="dot" />
+              <span className="pulse" />
+              <span className="crop-label">{c.num} · {c.name}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <footer className="landing-footer">
+        FiveCrops 2026 — CHELA / UCLA REMAP / PedaLúdico
+      </footer>
+    </div>
+  );
+}

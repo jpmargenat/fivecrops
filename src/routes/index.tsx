@@ -1,228 +1,156 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FiveCrops — Five urban extractions from a cycling map of Los Angeles" },
+      { title: "Meandering L.A. — Flowing Cartographies" },
       {
         name: "description",
         content:
-          "FiveCrops is an experimental tool for S.A.L.I., extracting five urban crops from a cycling map of Los Angeles built day by day through bodily experience.",
+          "Archive, analysis and visualization of situationist and pedaludic practices in urban and non-urban territories. Visiting Scholar Residency UCLA/REMAP 2026.",
       },
-      { property: "og:title", content: "FiveCrops — A cycling cartography of Los Angeles" },
+      { property: "og:title", content: "Meandering L.A. — Flowing Cartographies" },
       {
         property: "og:description",
-        content:
-          "Five urban extractions from an accumulated cycling map of Los Angeles. PedaLúdico / UCLA REMAP 2026.",
+        content: "Flowing Cartographies — UCLA/REMAP 2026. Juan Pablo Margenat.",
       },
     ],
   }),
-  component: Landing,
+  component: FlowingCartographies,
 });
 
-type Crop = {
-  slug: string;
-  num: string;
-  name: string;
-  lat: number;
-  lon: number;
-  active: boolean;
-  href?: string;
-};
-
-const CROPS: Crop[] = [
-  { slug: "lincoln-heights", num: "01", name: "Lincoln Heights", lat: 34.07, lon: -118.21, active: true },
-  { slug: "west-hollywood", num: "02", name: "West Hollywood", lat: 34.09, lon: -118.36, active: true },
-  { slug: "downtown-la", num: "03", name: "Downtown LA", lat: 34.048, lon: -118.253, active: true, href: "/SPL_Crop05.html" },
-  { slug: "downtown-la", num: "04", name: "Dogtown", lat: 34.05, lon: -118.24, active: true, href: "/dogtown" },
-  { slug: "venice", num: "05", name: "Venice", lat: 33.981, lon: -118.467, active: true },
+const SECTIONS = [
+  {
+    num: "01",
+    slug: "/fivecrops",
+    title: "FiveCrops",
+    subtitle: "Cartographic Laboratory",
+    description: "A rhizomatic detour within the research. Five urban extractions from a cycling map of Los Angeles — where interpretive tools are built, tested and iterated in small portions of territory.",
+    status: "active",
+  },
+  {
+    num: "02",
+    slug: "/pliss",
+    title: "PLISS",
+    subtitle: "PedaLudic Interpretive Situationist Spheres",
+    description: "The live transmission and archive platform for situationist pedaludic experiences. Spherical captures, environmental data and collective dialogue assembled in real time.",
+    status: "coming",
+  },
+  {
+    num: "03",
+    slug: "/tools",
+    title: "Tools",
+    subtitle: "Knowledge built to share",
+    description: "Instruments, scripts and methodologies developed during the research — open and available for other practices.",
+    status: "active",
+  },
+  {
+    num: "04",
+    slug: "/credits",
+    title: "Credits",
+    subtitle: "",
+    description: "",
+    status: "active",
+  },
 ];
 
-const BOUNDS = { minLat: 33.95, maxLat: 34.18, minLon: -118.50, maxLon: -118.15 };
-
-function project(lat: number, lon: number) {
-  const x = ((lon - BOUNDS.minLon) / (BOUNDS.maxLon - BOUNDS.minLon)) * 100;
-  const y = (1 - (lat - BOUNDS.minLat) / (BOUNDS.maxLat - BOUNDS.minLat)) * 100;
-  return { x, y };
-}
-
-function Landing() {
-  const navigate = useNavigate();
-
+function FlowingCartographies() {
   return (
     <div className="landing">
-      <header className="landing-header">
-        <h1 className="landing-title">FIVECROPS</h1>
-        <p className="landing-subtitle">Five urban extractions from a cycling map of Los Angeles</p>
-        <p className="landing-meta">An experimental tool for S.A.L.I. — PedaLúdico / UCLA REMAP 2026</p>
+      <header className="landing-header" style={{ paddingBottom: "48px" }}>
+        <p className="landing-meta" style={{ marginBottom: "4px", letterSpacing: "0.3em", opacity: 0.35 }}>
+          MEANDERING L.A.
+        </p>
+        <h1 className="landing-title" style={{ fontSize: "clamp(1.8rem, 6vw, 4rem)", letterSpacing: "0.12em" }}>
+          FLOWING CARTOGRAPHIES
+        </h1>
+        <p className="landing-subtitle" style={{ maxWidth: "580px", margin: "16px auto 0" }}>
+          Archive, analysis and visualization of situationist and pedaludic practices in urban and non-urban territories
+        </p>
+        <p className="landing-meta" style={{ marginTop: "24px", lineHeight: "2", opacity: 0.5 }}>
+          Juan Pablo Margenat — Visiting Scholar UCLA/REMAP 2026
+          <br />
+          Research Director: Fabián Wagmister &nbsp;·&nbsp; REMAP Development: Jeff Burke
+          <br />
+          cheLA &nbsp;·&nbsp; Fundación Williams
+        </p>
       </header>
 
-      {/* THUMBNAILS */}
-      <section className="section thumbs-section">
-        <div className="crop-thumbs-grid">
-          {CROPS.map((c, i) => {
-            const imgSrc = `/t${i + 1}.png`;
-            if (c.active && c.href) {
-              return (
-                <a key={c.slug} href={c.href} className="crop-thumb-card active" style={{ textDecoration: "none" }}>
-                  <div className="crop-thumb-img-wrap">
-                    <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
-                  </div>
-                  <div className="crop-thumb-label">
-                    <span className="crop-thumb-num">{c.num}</span>
-                    <span className="crop-thumb-name">{c.name}</span>
-                  </div>
-                </a>
-              );
-            }
-            if (c.active) {
-              return (
-                <Link key={c.slug} to="/crop/$slug" params={{ slug: c.slug }} className="crop-thumb-card active">
-                  <div className="crop-thumb-img-wrap">
-                    <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--active" />
-                  </div>
-                  <div className="crop-thumb-label">
-                    <span className="crop-thumb-num">{c.num}</span>
-                    <span className="crop-thumb-name">{c.name}</span>
-                  </div>
-                </Link>
-              );
-            }
-            return (
-              <div key={c.slug} className="crop-thumb-card inactive">
-                <div className="crop-thumb-img-wrap">
-                  <img src={imgSrc} alt={c.name} className="crop-thumb-img crop-thumb-img--inactive" />
-                  <div className="crop-thumb-soon">Coming Soon</div>
-                </div>
-                <div className="crop-thumb-label">
-                  <span className="crop-thumb-num">{c.num}</span>
-                  <span className="crop-thumb-name">{c.name}</span>
-                </div>
-              </div>
-            );
-          })}
+      {/* INTRO */}
+      <section className="section" style={{ maxWidth: "640px", margin: "0 auto 64px" }}>
+        <div className="section-body" style={{ textAlign: "center" }}>
+          <p>
+            There is a moment when cycling becomes more than a mechanical movement.
+            The body finds its rhythm, the territory begins to speak in ways that only slow and sustained movement allows,
+            and something we decided to call knowledge — embodied, situated, unrepeatable — starts to take shape.
+          </p>
+          <p>
+            Flowing Cartographies investigates that moment: how to record it, express it, and above all how to expand it.
+          </p>
+          <p style={{ opacity: 0.5, fontSize: "0.82rem", marginTop: "24px" }}>
+            Developed within a Visiting Scholar residency at UCLA/REMAP, in dialogue with Professors Fabián Wagmister and Jeff Burke,
+            building on the corpus of experiences generated during <em>Flujos y Diacronías</em> (2025).
+            Its practical horizon is S.A.L.I. — a collective pedaludic drift crossing the province of Buenos Aires, September 2026.
+          </p>
         </div>
-        <Link to="/gallery" className="gallery-link">
-          → Process Gallery — crops, GIFs &amp; reference images
-        </Link>
-        <a href="/tools" className="gallery-link" style={{ display: "block" }}>
-          → GPX Crop Tool — process &amp; export your routes
-        </a>
       </section>
 
+      {/* NAVIGATION */}
       <section className="section">
-        <h2 className="section-title">ABOUT FIVECROPS</h2>
-        <div className="section-body">
-          <p>FiveCrops emerged from the daily practice of cycling through Los Angeles. After two months of pedaling, a map was built through movement: street by street, neighborhood by neighborhood. From this accumulated cartography, five areas of particular density were extracted: arbitrary yet precise cutouts in the urban fabric.</p>
-          <p>Each cutout visualizes all the times I've passed through that area, superimposed and animated. The accumulated routes reveal something invisible in everyday experience: the weight of presence, the rhythm of the return, the texture of a neighborhood absorbed by the body on the bicycle.</p>
-          <p>Sound responds to a possible representation of contextual data: elevation becomes audible frequency, and speed shapes that sound; the wind modulates the result. The city expresses itself through its own physical parameters.</p>
-          <p>FiveCrops is an exercise in creating tools within the research branch on the idea of Interpretive Cartographies within PedaLúdico. This work was developed during a visiting researcher residency at UCLA/REMAP. It is integrated into S.A.L.I. (Always to the Left), a broader psychogeographical research project that explores situationist and pedaludic practices in urban and non-urban territories.</p>
-        </div>
-        <div className="section-links">
-          <a href="/system" className="gallery-link" style={{ display: "block" }}>
-            → System — how the interpretive system works
-          </a>
-          <a href="/sources.html" className="gallery-link" style={{ display: "block" }}>
-            → Data Sources — real-time environmental inputs
-          </a>
-          <a href="https://wiki.chela.org.ar/flowingcartographies" target="_blank" rel="noreferrer">
-            → PedaLúDico Research Wiki
-          </a>
-          <a href="https://chela.org.ar" target="_blank" rel="noreferrer">
-            → CHELA
-          </a>
-          <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer">
-            → REMAP UCLA
-          </a>
-        </div>
-      </section>
-
-      <div className="hero-map" aria-label="Cycling map of Los Angeles with five crop markers">
-        <img src="/la-map.png" alt="Cycling map of Los Angeles" className="map-img" />
-        {CROPS.map((c) => {
-          const { x, y } = project(c.lat, c.lon);
-          return (
-            <div
-              key={c.slug}
-              className={`crop-marker ${c.active ? "active" : ""}`}
-              style={{ left: `${x}%`, top: `${y}%` }}
-              onClick={() => {
-                if (!c.active) return;
-                if (c.href) window.location.href = c.href;
-                else navigate({ to: "/crop/$slug", params: { slug: c.slug } });
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "2px", maxWidth: "960px", margin: "0 auto" }}>
+          {SECTIONS.map((s) => (
+            <a
+              key={s.slug}
+              href={s.status === "coming" ? undefined : s.slug}
+              style={{
+                display: "block",
+                padding: "32px 28px",
+                background: "rgba(255,255,255,0.03)",
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+                textDecoration: "none",
+                color: "inherit",
+                cursor: s.status === "coming" ? "default" : "pointer",
+                opacity: s.status === "coming" ? 0.45 : 1,
+                transition: "background 0.2s",
               }}
-              role={c.active ? "link" : undefined}
+              onMouseEnter={(e) => { if (s.status !== "coming") (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; }}
             >
-              {!c.active && <span className="crop-tooltip">Coming Soon</span>}
-              <span className="dot" />
-              <span className="pulse" />
-              <span className="crop-label">
-                {c.num} · {c.name}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <section className="section">
-        <h2 className="section-title">CREDITS</h2>
-
-        <div className="credits-block">
-          <div className="credits-name"><strong>Juan Pablo Margenat</strong></div>
-          <div className="credits-role">
-            Architect & Professor, Universidad de Buenos Aires
-            <br />
-            Visiting Scholar, UCLA/REMAP 2026
-            <br />
-            Home institution: <strong>cheLA</strong> — Centro Heurístico Experimental Latinoamericano —{" "}
-            <a href="https://chela.org.ar" target="_blank" rel="noreferrer">chela.org.ar</a>
-            <br />
-            Funded by: <strong>Fundación Williams</strong>
-          </div>
-        </div>
-
-        <div className="credits-block">
-          <div className="credits-name">Research Director</div>
-          <div className="credits-role"><strong>Fabián Wagmister</strong> — UCLA/REMAP</div>
-        </div>
-
-        <div className="credits-block">
-          <div className="credits-name">REMAP Development</div>
-          <div className="credits-role"><strong>Jeff Burke</strong> — UCLA/REMAP</div>
-        </div>
-
-        <div className="credits-block">
-          <div className="credits-name">Academic context at UCLA</div>
-          <div className="credits-role">
-            Generative Art — <strong>Refik Anadol</strong>, Design Media Arts, UCLA
-            <br />
-            Production Practice in Theater with Emerging Technologies I — <strong>Jeff Burke</strong>
-            <br />
-            REMAP/UCLA — <strong>Jeff Burke</strong> &amp; <strong>Fabián Wagmister</strong>
-          </div>
-        </div>
-
-        <div className="credits-block">
-          <div className="credits-name">Research framework</div>
-          <div className="credits-role">
-            PedaLúdico —{" "}
-            <a href="https://wiki.chela.org.ar/PedaLúdico" target="_blank" rel="noreferrer">
-              wiki.chela.org.ar/PedaLúdico
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                <span style={{ fontFamily: "'Courier New', monospace", fontSize: "0.65rem", letterSpacing: "0.2em", opacity: 0.35 }}>
+                  {s.num}
+                </span>
+                {s.status === "coming" && (
+                  <span style={{ fontFamily: "'Courier New', monospace", fontSize: "0.6rem", letterSpacing: "0.15em", opacity: 0.4 }}>
+                    COMING SOON
+                  </span>
+                )}
+                {s.status === "active" && s.description && (
+                  <span style={{ fontFamily: "'Courier New', monospace", fontSize: "0.6rem", letterSpacing: "0.15em", opacity: 0.4 }}>
+                    →
+                  </span>
+                )}
+              </div>
+              <h2 style={{ fontFamily: "'Courier New', monospace", fontSize: "clamp(1rem, 2.5vw, 1.3rem)", letterSpacing: "0.15em", fontWeight: "normal", marginBottom: "6px" }}>
+                {s.title}
+              </h2>
+              {s.subtitle && (
+                <p style={{ fontFamily: "'Courier New', monospace", fontSize: "0.65rem", letterSpacing: "0.1em", opacity: 0.5, marginBottom: "16px" }}>
+                  {s.subtitle}
+                </p>
+              )}
+              {s.description && (
+                <p style={{ fontFamily: "'Courier New', monospace", fontSize: "0.72rem", lineHeight: "1.7", opacity: 0.6 }}>
+                  {s.description}
+                </p>
+              )}
             </a>
-          </div>
-        </div>
-
-        <div className="credits-block">
-          <div className="credits-name">Institutional support</div>
-          <div className="credits-role">
-            REMAP —{" "}
-            <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer">remap.ucla.edu</a>
-          </div>
+          ))}
         </div>
       </section>
 
-      <footer className="landing-footer">
-        FiveCrops 2026 — CHELA / UCLA REMAP / PedaLúdico
+      <footer className="landing-footer" style={{ marginTop: "80px" }}>
+        Flowing Cartographies 2026 — CHELA / UCLA REMAP / PedaLúdico / Fundación Williams
       </footer>
     </div>
   );
