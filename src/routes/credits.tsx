@@ -87,7 +87,16 @@ function CreditsPage() {
           <div className="credits-role">
             <strong>Fundación Williams</strong>
             <br />
-            <span style={{ fontStyle: "italic", opacity: 0.7 }}>
+            <span style={{
+              display: "inline-block",
+              marginTop: "8px",
+              padding: "10px 16px",
+              border: "1px solid rgba(255,255,255,0.3)",
+              color: "rgba(255,255,255,0.9)",
+              fontStyle: "italic",
+              letterSpacing: "0.05em",
+              fontSize: "0.85rem",
+            }}>
               Esta investigación fue realizada mediante un subsidio de la Fundación Williams
             </span>
           </div>
