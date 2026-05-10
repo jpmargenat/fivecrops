@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PLISS — Dogtown</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#000; overflow:hidden; touch-action:none; }
+  #sphere { position:fixed; inset:0; display:block; }
+  #title {
+    position:fixed; top:20px; left:24px;
+    color:#fff; font-size:0.65rem; letter-spacing:0.2em;
+    text-transform:uppercase; opacity:0.5; pointer-events:none; line-height:1.9;
+    font-family:'Courier New',monospace;
+  }
+  #gyro-btn {
+    position:fixed; top:20px; right:24px;
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.3);
+    color:#fff; font-family:'Courier New',monospace;
+    font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+    padding:10px 14px; cursor:pointer; display:none;
+  }
+  #gyro-btn.on { border-color:rgba(100,200,255,0.7); color:rgba(100,200,255,1); }
+  #hint {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    color:#fff; font-size:0.56rem; letter-spacing:0.15em; opacity:0.3;
+    pointer-events:none; font-family:'Courier New',monospace; white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+<canvas id="sphere"></canvas>
+<div id="title">PLISS<br><span style="opacity:0.4;font-size:0.55rem">Dogtown · Downtown LA</span></div>
+<button id="gyro-btn" onclick="enableGyro()">⊕ Giroscopio</button>
+<div id="hint">arrastrá · pellizco zoom</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const LINES_DATA = {"line1": [{"lat": 34.055502, "lon": -118.242207, "ele": 96.8, "spd": 15}, {"lat": 34.055024, "lon": -118.242646, "ele": 97.3, "spd": 15}, {"lat": 34.054274, "lon": -118.243386, "ele": 94.8, "spd": 15}, {"lat": 34.053564, "lon": -118.244022, "ele": 91.9, "spd": 15}, {"lat": 34.052978, "lon": -118.244277, "ele": 88.7, "spd": 15}, {"lat": 34.052658, "lon": -118.244775, "ele": 89, "spd": 15}, {"lat": 34.052049, "lon": -118.245417, "ele": 88.2, "spd": 15}, {"lat": 34.0521, "lon": -118.246068, "ele": 87.7, "spd": 15}, {"lat": 34.052294, "lon": -118.246732, "ele": 88.1, "spd": 15}, {"lat": 34.051738, "lon": -118.247204, "ele": 87.7, "spd": 15}, {"lat": 34.051322, "lon": -118.247558, "ele": 87.7, "spd": 15}, {"lat": 34.050877, "lon": -118.247989, "ele": 87.3, "spd": 15}, {"lat": 34.050308, "lon": -118.248514, "ele": 86.4, "spd": 15}, {"lat": 34.049753, "lon": -118.249058, "ele": 85.4, "spd": 15}, {"lat": 34.049435, "lon": -118.249589, "ele": 85.1, "spd": 15}, {"lat": 34.04887, "lon": -118.250064, "ele": 84.4, "spd": 15}, {"lat": 34.04824, "lon": -118.250692, "ele": 83.2, "spd": 15}, {"lat": 34.0486, "lon": -118.251556, "ele": 83.5, "spd": 15}, {"lat": 34.049054, "lon": -118.252404, "ele": 83.9, "spd": 15}, {"lat": 34.049489, "lon": -118.252903, "ele": 84.8, "spd": 15}, {"lat": 34.0499, "lon": -118.253478, "ele": 88.2, "spd": 15}, {"lat": 34.050374, "lon": -118.253553, "ele": 95.7, "spd": 14.82920517688458}, {"lat": 34.050568, "lon": -118.253457, "ele": 99.9, "spd": 15}, {"lat": 34.050833, "lon": -118.253187, "ele": 104.4, "spd": 15}, {"lat": 34.051195, "lon": -118.252901, "ele": 110.8, "spd": 15}, {"lat": 34.051489, "lon": -118.252509, "ele": 114.2, "spd": 15}, {"lat": 34.051963, "lon": -118.252047, "ele": 117, "spd": 15}, {"lat": 34.052527, "lon": -118.251541, "ele": 117.5, "spd": 15}, {"lat": 34.053125, "lon": -118.251049, "ele": 117.8, "spd": 15}, {"lat": 34.053691, "lon": -118.25051, "ele": 118.3, "spd": 15}, {"lat": 34.054315, "lon": -118.249931, "ele": 118.7, "spd": 15}, {"lat": 34.054755, "lon": -118.249349, "ele": 119.1, "spd": 15}, {"lat": 34.055203, "lon": -118.248932, "ele": 119.3, "spd": 15}, {"lat": 34.05544, "lon": -118.248662, "ele": 118.6, "spd": 15}, {"lat": 34.055106, "lon": -118.249768, "ele": 119.7, "spd": 15}, {"lat": 34.054267, "lon": -118.250349, "ele": 122.4, "spd": 15}, {"lat": 34.054474, "lon": -118.250826, "ele": 134.9, "spd": 7.883823369672357}, {"lat": 34.054454, "lon": -118.250311, "ele": 135.8, "spd": 15}, {"lat": 34.054322, "lon": -118.24981, "ele": 126.1, "spd": 15}, {"lat": 34.054682, "lon": -118.249466, "ele": 125.9, "spd": 15}, {"lat": 34.055054, "lon": -118.2491, "ele": 126.9, "spd": 15}, {"lat": 34.054912, "lon": -118.249218, "ele": 127.1, "spd": 15}, {"lat": 34.054671, "lon": -118.249895, "ele": 126.8, "spd": 15}, {"lat": 34.054276, "lon": -118.25026, "ele": 126.6, "spd": 15}, {"lat": 34.053762, "lon": -118.250762, "ele": 126.3, "spd": 15}, {"lat": 34.053225, "lon": -118.251311, "ele": 126.2, "spd": 15}, {"lat": 34.052649, "lon": -118.251835, "ele": 126.1, "spd": 15}, {"lat": 34.052101, "lon": -118.252369, "ele": 125.1, "spd": 15}, {"lat": 34.051552, "lon": -118.252846, "ele": 122.4, "spd": 15}, {"lat": 34.051839, "lon": -118.253458, "ele": 122, "spd": 15}, {"lat": 34.052391, "lon": -118.254439, "ele": 122.3, "spd": 15}, {"lat": 34.052726, "lon": -118.255297, "ele": 120.7, "spd": 15}, {"lat": 34.052634, "lon": -118.255896, "ele": 120, "spd": 15}, {"lat": 34.053474, "lon": -118.255412, "ele": 119.1, "spd": 15}, {"lat": 34.054308, "lon": -118.254544, "ele": 119.3, "spd": 15}, {"lat": 34.053787, "lon": -118.254924, "ele": 114.7, "spd": 15}, {"lat": 34.053978, "lon": -118.255486, "ele": 114.5, "spd": 15}, {"lat": 34.054359, "lon": -118.255697, "ele": 114.1, "spd": 15}, {"lat": 34.054367, "lon": -118.254901, "ele": 105.5, "spd": 15}, {"lat": 34.054991, "lon": -118.25448, "ele": 106.3, "spd": 15}, {"lat": 34.055341, "lon": -118.254099, "ele": 106.5, "spd": 15}, {"lat": 34.055943, "lon": -118.253506, "ele": 107.2, "spd": 13.995347055142105}, {"lat": 34.056374, "lon": -118.253174, "ele": 107.5, "spd": 15}, {"lat": 34.057057, "lon": -118.252513, "ele": 108.6, "spd": 15}, {"lat": 34.056872, "lon": -118.256445, "ele": 117.9, "spd": 15}, {"lat": 34.056587, "lon": -118.25672, "ele": 121.1, "spd": 15}, {"lat": 34.056169, "lon": -118.257118, "ele": 124.2, "spd": 15}, {"lat": 34.055694, "lon": -118.257577, "ele": 126.5, "spd": 15}, {"lat": 34.054941, "lon": -118.258236, "ele": 125.2, "spd": 15}, {"lat": 34.054039, "lon": -118.25907, "ele": 123.9, "spd": 15}, {"lat": 34.053426, "lon": -118.25962, "ele": 125.5, "spd": 15}, {"lat": 34.0534, "lon": -118.260307, "ele": 127.3, "spd": 15}, {"lat": 34.053719, "lon": -118.261097, "ele": 130, "spd": 15}, {"lat": 34.053881, "lon": -118.262348, "ele": 125.7, "spd": 15}, {"lat": 34.052974, "lon": -118.262995, "ele": 122.4, "spd": 15}, {"lat": 34.0525, "lon": -118.263504, "ele": 118.3, "spd": 15}, {"lat": 34.044897, "lon": -118.263928, "ele": 85.6, "spd": 15}, {"lat": 34.045498, "lon": -118.263398, "ele": 86.1, "spd": 15}, {"lat": 34.046026, "lon": -118.262834, "ele": 87.1, "spd": 15}, {"lat": 34.046412, "lon": -118.262491, "ele": 88, "spd": 15}, {"lat": 34.047101, "lon": -118.261893, "ele": 88.9, "spd": 15}, {"lat": 34.047825, "lon": -118.261328, "ele": 89.9, "spd": 15}, {"lat": 34.047505, "lon": -118.260718, "ele": 90.4, "spd": 15}, {"lat": 34.04706, "lon": -118.259934, "ele": 90.2, "spd": 15}, {"lat": 34.046544, "lon": -118.259055, "ele": 89.2, "spd": 15}, {"lat": 34.046033, "lon": -118.25834, "ele": 89.8, "spd": 15}, {"lat": 34.045593, "lon": -118.257742, "ele": 90.5, "spd": 15}, {"lat": 34.045108, "lon": -118.256983, "ele": 90.1, "spd": 9.583335343273482}, {"lat": 34.045449, "lon": -118.256555, "ele": 90.4, "spd": 15}, {"lat": 34.046206, "lon": -118.255921, "ele": 90.7, "spd": 15}, {"lat": 34.046911, "lon": -118.25518, "ele": 91.7, "spd": 15}, {"lat": 34.04771, "lon": -118.254476, "ele": 92.1, "spd": 15}, {"lat": 34.047762, "lon": -118.253863, "ele": 92.9, "spd": 15}, {"lat": 34.04725, "lon": -118.253019, "ele": 91.8, "spd": 15}, {"lat": 34.046737, "lon": -118.252251, "ele": 90.8, "spd": 15}, {"lat": 34.047161, "lon": -118.251768, "ele": 91, "spd": 15}, {"lat": 34.047866, "lon": -118.251103, "ele": 91.7, "spd": 15}, {"lat": 34.048264, "lon": -118.250531, "ele": 92.7, "spd": 15}, {"lat": 34.049011, "lon": -118.249801, "ele": 93.8, "spd": 15}, {"lat": 34.04941, "lon": -118.249169, "ele": 95.1, "spd": 15}, {"lat": 34.048965, "lon": -118.248449, "ele": 94.8, "spd": 15}, {"lat": 34.048452, "lon": -118.247611, "ele": 94.8, "spd": 15}, {"lat": 34.048554, "lon": -118.24681, "ele": 94.2, "spd": 15}, {"lat": 34.04917, "lon": -118.246207, "ele": 95.3, "spd": 15}, {"lat": 34.049979, "lon": -118.245461, "ele": 96.7, "spd": 15}, {"lat": 34.050738, "lon": -118.244611, "ele": 96, "spd": 15}, {"lat": 34.051676, "lon": -118.243779, "ele": 96.9, "spd": 15}, {"lat": 34.052164, "lon": -118.243345, "ele": 96.4, "spd": 15}, {"lat": 34.052903, "lon": -118.24269, "ele": 96.6, "spd": 15}], "line2": [{"lat": 34.057112, "lon": -118.242582, "ele": 104.2, "spd": 15}, {"lat": 34.056543, "lon": -118.243071, "ele": 104.6, "spd": 15}, {"lat": 34.055881, "lon": -118.243744, "ele": 106.5, "spd": 15}, {"lat": 34.055117, "lon": -118.244555, "ele": 99.4, "spd": 15}, {"lat": 34.055, "lon": -118.24477, "ele": 104.6, "spd": 15}, {"lat": 34.055552, "lon": -118.245504, "ele": 106.3, "spd": 15}, {"lat": 34.056209, "lon": -118.246183, "ele": 111.6, "spd": 15}, {"lat": 34.056302, "lon": -118.246859, "ele": 112.2, "spd": 15}, {"lat": 34.05644, "lon": -118.247567, "ele": 117.5, "spd": 15}, {"lat": 34.056959, "lon": -118.247862, "ele": 121.9, "spd": 15}, {"lat": 34.056315, "lon": -118.248301, "ele": 121.5, "spd": 15}, {"lat": 34.05591, "lon": -118.24877, "ele": 121.6, "spd": 15}, {"lat": 34.055349, "lon": -118.249264, "ele": 122.7, "spd": 15}, {"lat": 34.054888, "lon": -118.249575, "ele": 120.9, "spd": 15}, {"lat": 34.054375, "lon": -118.250143, "ele": 120.1, "spd": 15}, {"lat": 34.053791, "lon": -118.250629, "ele": 121.7, "spd": 15}, {"lat": 34.053269, "lon": -118.251121, "ele": 120.3, "spd": 15}, {"lat": 34.053611, "lon": -118.251946, "ele": 116.6, "spd": 15}, {"lat": 34.053461, "lon": -118.252569, "ele": 116.3, "spd": 15}, {"lat": 34.05345, "lon": -118.253368, "ele": 117.3, "spd": 15}, {"lat": 34.053283, "lon": -118.254185, "ele": 116.8, "spd": 15}, {"lat": 34.052735, "lon": -118.254867, "ele": 116, "spd": 13.212187729758355}, {"lat": 34.05231, "lon": -118.254751, "ele": 114.2, "spd": 13.016162793239427}, {"lat": 34.052101, "lon": -118.2548, "ele": 113.7, "spd": 15}, {"lat": 34.051732, "lon": -118.25492, "ele": 114, "spd": 15}, {"lat": 34.051245, "lon": -118.2558, "ele": 114.1, "spd": 15}, {"lat": 34.051358, "lon": -118.256361, "ele": 114.2, "spd": 15}, {"lat": 34.05139, "lon": -118.257596, "ele": 114.2, "spd": 15}, {"lat": 34.051987, "lon": -118.257166, "ele": 114.6, "spd": 15}, {"lat": 34.05255, "lon": -118.256742, "ele": 114.8, "spd": 15}, {"lat": 34.052583, "lon": -118.256337, "ele": 111.1, "spd": 15}, {"lat": 34.052545, "lon": -118.255764, "ele": 111.4, "spd": 15}, {"lat": 34.052497, "lon": -118.256337, "ele": 111.5, "spd": 15}, {"lat": 34.052758, "lon": -118.255723, "ele": 106.8, "spd": 9.603791037669447}, {"lat": 34.052661, "lon": -118.256121, "ele": 103.3, "spd": 15}, {"lat": 34.052493, "lon": -118.255908, "ele": 103.7, "spd": 15}, {"lat": 34.052181, "lon": -118.254608, "ele": 96.2, "spd": 15}, {"lat": 34.053023, "lon": -118.254023, "ele": 100.6, "spd": 15}, {"lat": 34.053671, "lon": -118.253539, "ele": 101.4, "spd": 15}, {"lat": 34.053171, "lon": -118.253876, "ele": 99.2, "spd": 15}, {"lat": 34.052384, "lon": -118.255337, "ele": 95.6, "spd": 15}, {"lat": 34.051631, "lon": -118.256418, "ele": 93.9, "spd": 15}, {"lat": 34.050931, "lon": -118.257137, "ele": 93.7, "spd": 15}, {"lat": 34.050419, "lon": -118.257616, "ele": 93.5, "spd": 15}, {"lat": 34.049696, "lon": -118.257979, "ele": 91.1, "spd": 15}, {"lat": 34.04906, "lon": -118.258903, "ele": 88.1, "spd": 15}, {"lat": 34.048145, "lon": -118.259785, "ele": 86.5, "spd": 15}, {"lat": 34.047253, "lon": -118.260355, "ele": 85.7, "spd": 15}, {"lat": 34.046551, "lon": -118.260927, "ele": 83.3, "spd": 15}, {"lat": 34.045966, "lon": -118.261509, "ele": 81.3, "spd": 15}, {"lat": 34.04558, "lon": -118.261953, "ele": 81.2, "spd": 15}, {"lat": 34.044841, "lon": -118.262597, "ele": 80.6, "spd": 15}, {"lat": 34.043959, "lon": -118.263171, "ele": 79, "spd": 15}, {"lat": 34.046463, "lon": -118.263928, "ele": 84, "spd": 15}, {"lat": 34.046253, "lon": -118.263328, "ele": 85.4, "spd": 15}, {"lat": 34.04622, "lon": -118.262718, "ele": 85.3, "spd": 15}, {"lat": 34.046106, "lon": -118.262152, "ele": 84.7, "spd": 15}, {"lat": 34.045857, "lon": -118.261888, "ele": 85.5, "spd": 15}, {"lat": 34.045279, "lon": -118.26082, "ele": 85.8, "spd": 15}, {"lat": 34.044726, "lon": -118.259876, "ele": 86.3, "spd": 15}, {"lat": 34.044438, "lon": -118.259124, "ele": 86.5, "spd": 15}, {"lat": 34.044402, "lon": -118.258349, "ele": 87.7, "spd": 15}, {"lat": 34.044643, "lon": -118.257351, "ele": 87, "spd": 15}, {"lat": 34.045083, "lon": -118.257238, "ele": 88.4, "spd": 15}, {"lat": 34.045718, "lon": -118.256992, "ele": 87.9, "spd": 15}, {"lat": 34.046407, "lon": -118.256038, "ele": 86.9, "spd": 15}, {"lat": 34.047052, "lon": -118.255198, "ele": 89.4, "spd": 15}, {"lat": 34.047093, "lon": -118.254663, "ele": 89.5, "spd": 15}, {"lat": 34.047125, "lon": -118.253247, "ele": 90.6, "spd": 15}, {"lat": 34.047247, "lon": -118.252944, "ele": 89.5, "spd": 15}, {"lat": 34.046982, "lon": -118.252376, "ele": 89.2, "spd": 15}, {"lat": 34.046293, "lon": -118.252405, "ele": 87.5, "spd": 15}, {"lat": 34.045977, "lon": -118.252717, "ele": 87.8, "spd": 15}, {"lat": 34.045446, "lon": -118.253077, "ele": 87.3, "spd": 15}, {"lat": 34.044973, "lon": -118.253688, "ele": 88.3, "spd": 15}, {"lat": 34.044467, "lon": -118.254148, "ele": 87, "spd": 15}, {"lat": 34.044061, "lon": -118.254673, "ele": 87, "spd": 15}, {"lat": 34.043792, "lon": -118.254858, "ele": 86, "spd": 9.318416255518553}, {"lat": 34.043648, "lon": -118.254474, "ele": 86.6, "spd": 15}, {"lat": 34.043861, "lon": -118.254575, "ele": 86.6, "spd": 15}, {"lat": 34.043773, "lon": -118.254754, "ele": 86.1, "spd": 15}, {"lat": 34.04361, "lon": -118.254449, "ele": 86.3, "spd": 15}, {"lat": 34.043981, "lon": -118.254899, "ele": 86.3, "spd": 15}, {"lat": 34.043182, "lon": -118.255456, "ele": 87.5, "spd": 15}, {"lat": 34.042697, "lon": -118.255871, "ele": 85.3, "spd": 15}, {"lat": 34.042309, "lon": -118.256327, "ele": 85.8, "spd": 15}, {"lat": 34.041676, "lon": -118.256832, "ele": 85.4, "spd": 15}, {"lat": 34.041148, "lon": -118.25758, "ele": 84.8, "spd": 15}, {"lat": 34.041638, "lon": -118.258364, "ele": 84.9, "spd": 15}, {"lat": 34.042015, "lon": -118.258927, "ele": 85.3, "spd": 15}, {"lat": 34.042451, "lon": -118.259486, "ele": 85.9, "spd": 15}, {"lat": 34.042981, "lon": -118.260325, "ele": 85.7, "spd": 15}, {"lat": 34.043485, "lon": -118.261131, "ele": 84.3, "spd": 15}, {"lat": 34.044438, "lon": -118.261163, "ele": 85.5, "spd": 15}, {"lat": 34.045294, "lon": -118.260155, "ele": 86.1, "spd": 15}, {"lat": 34.045912, "lon": -118.259706, "ele": 87.4, "spd": 15}, {"lat": 34.046331, "lon": -118.25899, "ele": 88, "spd": 15}, {"lat": 34.047367, "lon": -118.258264, "ele": 90.1, "spd": 15}, {"lat": 34.048223, "lon": -118.257841, "ele": 91.3, "spd": 15}, {"lat": 34.048817, "lon": -118.257168, "ele": 92.2, "spd": 15}, {"lat": 34.049348, "lon": -118.256759, "ele": 93.2, "spd": 15}, {"lat": 34.04987, "lon": -118.255978, "ele": 94, "spd": 15}, {"lat": 34.050006, "lon": -118.256993, "ele": 97.1, "spd": 15}, {"lat": 34.052308, "lon": -118.255402, "ele": 97.9, "spd": 15}], "bounds": {"minLat": 34.03921, "maxLat": 34.05722, "minLon": -118.264, "maxLon": -118.242}};
+const BOUNDS = LINES_DATA.bounds;
+const CENTER_LAT = (BOUNDS.minLat+BOUNDS.maxLat)/2;
+const CENTER_LON = (BOUNDS.minLon+BOUNDS.maxLon)/2;
+const RANGE_LAT  = BOUNDS.maxLat-BOUNDS.minLat;
+const RANGE_LON  = BOUNDS.maxLon-BOUNDS.minLon;
+const ELE_MIN=63, ELE_MAX=136;
+
+// Map GPS → equirectangular UV on the crop canvas
+// The crop fills a 120° horizontal × 50° vertical zone centered at front
+const H_DEG=120, V_DEG=50;
+const H_RAD=H_DEG*Math.PI/180, V_RAD=V_DEG*Math.PI/180;
+
+// Equirectangular canvas size (the "video" that wraps the sphere)
+const EQ_W=4096, EQ_H=2048;
+
+function gpsToEqXY(lat, lon) {
+  const nx = (lon-CENTER_LON)/(RANGE_LON*.5); // -1..1
+  const ny = (lat-CENTER_LAT)/(RANGE_LAT*.5); // -1..1
+  const lonRad = nx * H_RAD * .5;
+  const latRad = ny * V_RAD * .5;
+  // equirectangular: lon→x, lat→y
+  const u = (lonRad/Math.PI)*.5 + .5;
+  const v = (latRad/(Math.PI*.5))*.5 + .5;
+  return { x: u*EQ_W, y: (1-v)*EQ_H };
+}
+
+// ── CROP ANIMATION CANVAS (equirectangular) ───────────────────────────────────
+const eqCanvas = document.createElement('canvas');
+eqCanvas.width = EQ_W; eqCanvas.height = EQ_H;
+const eqCtx = eqCanvas.getContext('2d');
+
+// Animation state
+let head1=0, head2=0;
+const FADE_SECS=60;
+const births1=new Array(LINES_DATA.line1.length).fill(null);
+const births2=new Array(LINES_DATA.line2.length).fill(null);
+let playSpeed=8; // points per tick
+let lastTick=0;
+
+function tickCrop(now) {
+  if(now-lastTick < 80) return; // ~12fps advance
+  lastTick=now;
+  for(let s=0;s<playSpeed;s++){
+    if(head1<LINES_DATA.line1.length){ births1[head1]=now; head1++; }
+    else { head1=0; births1.fill(null); }
+    if(head2<LINES_DATA.line2.length){ births2[head2]=now; head2++; }
+    else { head2=0; births2.fill(null); }
+  }
+}
+
+function drawCrop(now) {
+  // Fade existing drawing — creates trail effect
+  eqCtx.fillStyle='rgba(0,0,0,0.012)';
+  eqCtx.fillRect(0,0,EQ_W,EQ_H);
+
+  const lines = [
+    { pts:LINES_DATA.line1, births:births1, r:0.78,g:0.32,b:1.0 },
+    { pts:LINES_DATA.line2, births:births2, r:0.22,g:0.80,b:1.0 },
+  ];
+
+  lines.forEach(({pts,births,r,g,b})=>{
+    for(let i=1;i<pts.length;i++){
+      if(births[i]===null)continue;
+      const age=(now-births[i])/1000;
+      if(age>FADE_SECS)continue;
+      const fadeAlpha=Math.max(0,1-(age/FADE_SECS));
+
+      const p0=pts[i-1], p1=pts[i];
+      const c0=gpsToEqXY(p0.lat,p0.lon);
+      const c1=gpsToEqXY(p1.lat,p1.lon);
+      if(Math.abs(c0.x-c1.x)>500||Math.abs(c0.y-c1.y)>500)continue;
+
+      const ele=p1.ele||100;
+      const bright=0.5+(ele-ELE_MIN)/(ELE_MAX-ELE_MIN)*.5;
+      const spd=p1.spd||3;
+      const w=Math.max(3, (8-(spd/12)*6)) * (EQ_W/800); // scale to eq canvas
+
+      // glow
+      eqCtx.beginPath();eqCtx.moveTo(c0.x,c0.y);eqCtx.lineTo(c1.x,c1.y);
+      eqCtx.strokeStyle=`rgba(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)},${fadeAlpha*0.25})`;
+      eqCtx.lineWidth=w*3.5;eqCtx.lineCap='round';eqCtx.stroke();
+      // line
+      eqCtx.beginPath();eqCtx.moveTo(c0.x,c0.y);eqCtx.lineTo(c1.x,c1.y);
+      eqCtx.strokeStyle=`rgba(${Math.round(r*bright*255)},${Math.round(g*bright*255)},${Math.round(b*bright*255)},${fadeAlpha*0.95})`;
+      eqCtx.lineWidth=w;eqCtx.stroke();
+    }
+  });
+}
+
+// ── WEBGL SPHERE ──────────────────────────────────────────────────────────────
+const sphere = document.getElementById('sphere');
+const gl = sphere.getContext('webgl')||sphere.getContext('experimental-webgl');
+
+const vsrc = `
+  attribute vec2 a;
+  varying vec2 v;
+  void main(){ v=a*.5+.5; gl_Position=vec4(a,0,1); }
+`;
+const fsrc = `
+  precision mediump float;
+  varying vec2 v;
+  uniform sampler2D u_t;
+  uniform mat3 u_r;
+  uniform vec2 u_res;
+  uniform float u_fov;
+  const float PI=3.14159265;
+  void main(){
+    float asp=u_res.x/u_res.y;
+    float x=(v.x*2.-1.)*asp, y=v.y*2.-1.;
+    vec3 ray=normalize(vec3(x*u_fov, y*u_fov, -1.));
+    ray=u_r*ray;
+    float lon=atan(ray.x,-ray.z);
+    float lat=asin(clamp(ray.y,-1.,1.));
+    float u=(lon/PI)*.5+.5;
+    float vv=(lat/(PI*.5))*.5+.5;
+    gl_FragColor=texture2D(u_t,vec2(u,1.-vv));
+  }
+`;
+
+function mkS(src,t){const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+const prog=gl.createProgram();
+gl.attachShader(prog,mkS(vsrc,gl.VERTEX_SHADER));
+gl.attachShader(prog,mkS(fsrc,gl.FRAGMENT_SHADER));
+gl.linkProgram(prog);gl.useProgram(prog);
+
+const qb=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+const aL=gl.getAttribLocation(prog,'a');
+gl.enableVertexAttribArray(aL);gl.vertexAttribPointer(aL,2,gl.FLOAT,false,0,0);
+const uR=gl.getUniformLocation(prog,'u_r');
+const uT=gl.getUniformLocation(prog,'u_t');
+const uRes=gl.getUniformLocation(prog,'u_res');
+const uFov=gl.getUniformLocation(prog,'u_fov');
+
+// Dynamic texture from eqCanvas
+const tex=gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D,tex);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+let yaw=0,pitch=0,velX=0,velY=0,fov=0.82;
+const FOV_MIN=0.2,FOV_MAX=1.4;
+let dragging=false,lastX=0,lastY=0;
+let gyroOn=false,gyroYaw=0,gyroPitch=0,gyroA0=null,gyroB0=null;
+const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+if(isMobile)document.getElementById('gyro-btn').style.display='block';
+
+sphere.addEventListener('mousedown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;velX=velY=0;});
+window.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const dx=e.clientX-lastX,dy=e.clientY-lastY;
+  velX=dx;velY=dy;
+  yaw-=dx*.004*fov;pitch-=dy*.003*fov;
+  pitch=Math.max(-1.4,Math.min(1.4,pitch));
+  lastX=e.clientX;lastY=e.clientY;
+});
+window.addEventListener('mouseup',()=>dragging=false);
+sphere.addEventListener('wheel',e=>{
+  e.preventDefault();fov*=(1+e.deltaY*.001);
+  fov=Math.max(FOV_MIN,Math.min(FOV_MAX,fov));
+},{passive:false});
+
+let pd0=null,fv0=fov;
+sphere.addEventListener('touchstart',e=>{
+  e.preventDefault();velX=velY=0;
+  if(e.touches.length===1){dragging=true;lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;}
+  else{dragging=false;pd0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);fv0=fov;}
+},{passive:false});
+sphere.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&dragging){
+    const dx=e.touches[0].clientX-lastX,dy=e.touches[0].clientY-lastY;
+    velX=dx;velY=dy;
+    yaw-=dx*.005*fov;pitch-=dy*.004*fov;
+    pitch=Math.max(-1.4,Math.min(1.4,pitch));
+    lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;
+  }else if(e.touches.length===2&&pd0){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    fov=Math.max(FOV_MIN,Math.min(FOV_MAX,fv0*(pd0/d)));
+  }
+},{passive:false});
+sphere.addEventListener('touchend',e=>{
+  e.preventDefault();
+  if(e.touches.length<2)pd0=null;
+  if(!e.touches.length)dragging=false;
+},{passive:false});
+
+function enableGyro(){
+  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function')
+    DeviceOrientationEvent.requestPermission().then(s=>{if(s==='granted')startGyro();});
+  else startGyro();
+}
+function startGyro(){
+  gyroOn=true;
+  const b=document.getElementById('gyro-btn');b.classList.add('on');b.textContent='⊕ ON';
+  document.getElementById('hint').textContent='mové el cuerpo · pellizco zoom';
+  window.addEventListener('deviceorientation',e=>{
+    if(gyroA0===null){gyroA0=e.alpha;gyroB0=e.beta;}
+    let da=e.alpha-gyroA0;
+    if(da>180)da-=360;if(da<-180)da+=360;
+    // Correct direction: turning right increases alpha → view goes left = yaw increases
+    gyroYaw = da*Math.PI/180;
+    // Tilting forward increases beta → view goes up = pitch decreases
+    gyroPitch = (e.beta-gyroB0)*Math.PI/180*.6;
+    gyroPitch=Math.max(-1.3,Math.min(1.3,gyroPitch));
+  },true);
+}
+
+function rotMat(y,p){
+  const cy=Math.cos(y),sy=Math.sin(y),cp=Math.cos(p),sp=Math.sin(p);
+  return[cy,sy*sp,sy*cp, 0,cp,-sp, -sy,cy*sp,cy*cp];
+}
+
+function resize(){
+  const dpr=Math.min(devicePixelRatio,2);
+  sphere.width=window.innerWidth*dpr;sphere.height=window.innerHeight*dpr;
+  sphere.style.width=window.innerWidth+'px';sphere.style.height=window.innerHeight+'px';
+  gl.viewport(0,0,sphere.width,sphere.height);
+}
+resize();window.addEventListener('resize',resize);
+
+// ── RENDER LOOP ───────────────────────────────────────────────────────────────
+function render(now){
+  // inertia
+  if(!dragging&&!gyroOn){
+    yaw+=velX*.0006;velX*=.90;
+    pitch+=velY*.0006;velY*=.90;
+    pitch=Math.max(-1.4,Math.min(1.4,pitch));
+  }
+  const ty=yaw+(gyroOn?gyroYaw:0);
+  const tp=pitch+(gyroOn?gyroPitch:0);
+
+  // Advance and draw crop animation
+  tickCrop(now);
+  drawCrop(now);
+
+  // Upload equirectangular canvas as texture
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,eqCanvas);
+
+  // Render sphere
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER,qb);
+  gl.vertexAttribPointer(aL,2,gl.FLOAT,false,0,0);
+  gl.uniform1i(uT,0);
+  gl.uniform2f(uRes,sphere.width,sphere.height);
+  gl.uniform1f(uFov,fov);
+  gl.uniformMatrix3fv(uR,false,rotMat(ty,tp));
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
