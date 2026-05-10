@@ -64,26 +64,9 @@ function FlowingCartographies() {
         <h1 className="landing-title" style={{ fontSize: "clamp(1.8rem, 6vw, 4rem)", letterSpacing: "0.12em" }}>
           FLOWING CARTOGRAPHIES
         </h1>
-        <div style={{
-          display: "inline-block",
-          marginTop: "20px",
-          padding: "20px 32px",
-          border: "1px solid rgba(255,255,255,0.15)",
-          maxWidth: "640px",
-          width: "100%",
-        }}>
-          <p style={{
-            fontSize: "14px",
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "var(--text-secondary)",
-            textAlign: "justify",
-            textAlignLast: "center",
-            lineHeight: "1.9",
-          }}>
-            Archive, analysis and visualization of situationist and pedaludic practices in urban and non-urban territories
-          </p>
-        </div>
+        <p className="landing-subtitle" style={{ maxWidth: "580px", margin: "16px auto 0" }}>
+          Archive, analysis and visualization of situationist and pedaludic practices in urban and non-urban territories
+        </p>
         <p className="landing-meta" style={{ marginTop: "24px", lineHeight: "2", opacity: 0.5 }}>
           Juan Pablo Margenat — Visiting Scholar UCLA/REMAP 2026
           <br />
@@ -95,7 +78,7 @@ function FlowingCartographies() {
 
       {/* INTRO */}
       <section className="section" style={{ maxWidth: "640px", margin: "0 auto 64px" }}>
-        <div className="section-body" style={{ textAlign: "center" }}>
+        <div className="section-body" style={{ textAlign: "justify", textAlignLast: "left" }}>
           <p>
             There is a moment when cycling becomes more than a mechanical movement.
             The body finds its rhythm, the territory begins to speak in ways that only slow and sustained movement allows,
@@ -104,7 +87,7 @@ function FlowingCartographies() {
           <p>
             Flowing Cartographies investigates that moment: how to record it, express it, and above all how to expand it.
           </p>
-          <p style={{ opacity: 0.5, fontSize: "0.82rem", marginTop: "24px" }}>
+          <p style={{ opacity: 0.55, fontSize: "0.88rem", marginTop: "24px" }}>
             Developed within a Visiting Scholar residency at UCLA/REMAP, in dialogue with Professors Fabián Wagmister and Jeff Burke,
             building on the corpus of experiences generated during <em>Flujos y Diacronías</em> (2025).
             Its practical horizon is S.A.L.I. — a collective pedaludic drift crossing the province of Buenos Aires, September 2026.
