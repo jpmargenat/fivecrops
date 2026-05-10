@@ -28,6 +28,23 @@
 <canvas id="main-canvas"></canvas>
 <div id="overlay"></div>
 <div id="title">DOGTOWN<br><span style="opacity:0.3;font-size:0.56rem">Los Angeles · 1952—1981 · S.A.L.I.</span></div>
+<div id="pliss-title" style="
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  color:#fff;
+  font-family:'Courier New',monospace;
+  font-size:clamp(14px,3vw,32px);
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  text-align:center;
+  line-height:2.2;
+  opacity:0.35;
+  pointer-events:none;
+  white-space:nowrap;
+">
+  PedaLudic<br>Interpretive<br>Situationist<br>Spheres
+</div>
 <button id="gyro-btn" onclick="enableGyro()">⊕ Giroscopio</button>
 <div id="wind-hud"><div id="wind-line">viento: —</div><div id="quake-line">sismo: —</div></div>
 <div id="hint">arrastrá · pellizco zoom</div>
@@ -236,6 +253,30 @@ function drawParticles(){
 const overlay=document.getElementById('overlay');
 const labelEls=[];
 function buildLabels(){
+  // PLISS title — single line on equator, below the photos zone
+  // Spread across the back of the sphere (lon ~ PI = behind)
+  // so it's visible when you turn around, not competing with photos
+  const plissText = 'PedaLudic   Interpretive   Situationist   Spheres';
+  const el=document.createElement('div');
+  el.className='label';
+  el.textContent=plissText;
+  el.style.cssText=`
+    font-family:'Courier New',monospace;
+    color:#fff;
+    font-size:clamp(16px,3.5vw,44px);
+    letter-spacing:0.45em;
+    font-weight:normal;
+    white-space:nowrap;
+    text-shadow:0 0 20px rgba(255,255,255,0.25);
+    opacity:1;
+  `;
+  // Place at equator (lat=0), bottom of sphere (lon=PI = behind)
+  // UV: lon=PI → u=1.0 (same as u=0 due to wrap), lat=0 → v=0.5
+  // We place at slight downward tilt: latRad = -0.08
+  const {u:pu, v:pv} = angleToUV(Math.PI * 0.85, -0.08);
+  el.dataset.u=pu; el.dataset.v=1-pv;
+  overlay.appendChild(el); labelEls.push(el);
+
   WIKI_TEXTS.forEach((txt,i)=>{
     const lon=(i/WIKI_TEXTS.length)*2*Math.PI-Math.PI;
     const lat=(Math.random()-.5)*.7;
