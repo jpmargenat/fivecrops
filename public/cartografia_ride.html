@@ -9,10 +9,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Courier New',monospace;background:#0d0d0d;color:#ddd;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-#topbar{padding:6px 14px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:16px;flex-shrink:0;background:#0a0a0a}
-#topbar a{font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.22em;color:rgba(255,255,255,0.85);text-decoration:none;text-transform:uppercase;transition:color 0.2s}
-#topbar a:hover{color:#fff}
-#topbar .sep{color:rgba(255,255,255,0.12);font-size:10px}
 #hdr{padding:5px 14px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 #hdr h1{font-size:12px;letter-spacing:.18em;color:#ccc;font-weight:400}
 #hdr .sub{font-size:11px;color:#777;letter-spacing:.1em}
@@ -82,11 +78,6 @@ body{font-family:'Courier New',monospace;background:#0d0d0d;color:#ddd;height:10
 </style>
 </head>
 <body>
-<div id="topbar">
-  <a href="https://five-crops.lovable.app/">← MEANDERING L.A.</a>
-  <span class="sep">/</span>
-  <a href="/" style="opacity:0.5;pointer-events:none">Cartografía Ride</a>
-</div>
 <div id="hdr">
   <h1><span id="sd"></span>CROPS · CARTOGRAFÍA</h1>
   <span class="sub">LOS ÁNGELES · VUELTA AL SUPER · 10.05.2026</span>
@@ -875,6 +866,209 @@ document.getElementById('fds').oninput=e=>{
   document.getElementById('fdv').textContent=s+'s';
   FADE_END=s*1000; FADE_START=Math.min(8000,FADE_END*.2);
 };
+
+// ── TELEGRAM ──────────────────────────────────────────────────
+const TG_TOKEN='8292313956:AAHQxGj5WHQH68fF7AFVlk8y91DLmgdSIxM';
+const TG_CHAT='-1003921884533';
+let tgOffset=0;
+let tgActive=false;
+
+function addTgFeed(user,text,ts){
+  const feed=document.getElementById('feed');
+  const d=document.createElement('div');
+  d.className='fc';
+  const t=new Date(ts*1000);
+  const hm=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  d.innerHTML=`<div style="padding:7px 9px;border-left:2px solid #7ff;"><div style="font-size:10px;color:#7ff;letter-spacing:.1em;margin-bottom:3px">TG · ${hm} · ${user}</div><div style="font-size:12px;color:#ddd;line-height:1.4">${text}</div></div>`;
+  feed.insertBefore(d,feed.firstChild);
+  const cnt=document.getElementById('cnt');
+  cnt.textContent=(parseInt(cnt.textContent)||0)+1+' elementos';
+}
+
+function showTgWord(user,text){
+  const base=lastBikePos||[map.getCenter().lat,map.getCenter().lng];
+  const jlat=base[0]+(Math.random()-.5)*.003;
+  const jlon=base[1]+(Math.random()-.5)*.004;
+  const pt=map.latLngToLayerPoint([jlat,jlon]);
+  const el=document.createElement('div');
+  el.style.cssText=`position:absolute;left:${pt.x}px;top:${pt.y}px;transform:translate(-50%,-50%);pointer-events:none;z-index:1200;text-align:center;`;
+  el.innerHTML=`<div style="color:#7ff;font-family:'Courier New',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 0 8px rgba(119,255,255,.7);opacity:0;transition:opacity .5s">${user}</div><div style="color:#aee;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.08em;margin-top:2px;text-shadow:0 0 6px rgba(170,238,238,.5);opacity:0;transition:opacity .5s .1s">${text.slice(0,80)}</div>`;
+  const mapEl=document.getElementById('map');
+  mapEl.appendChild(el);
+  requestAnimationFrame(()=>{
+    el.querySelectorAll('div').forEach(d=>{d.style.opacity='1';});
+    setTimeout(()=>{
+      el.querySelectorAll('div').forEach(d=>{d.style.opacity='0';});
+      setTimeout(()=>el.remove(),800);
+    },20000);
+  });
+}
+
+async function fetchTgAudio(fileId,user,label,ts){
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${TG_TOKEN}/getFile?file_id=${fileId}`);
+    const d=await r.json();
+    if(!d.ok) return;
+    const path=d.result.file_path;
+    const audioUrl=`https://api.telegram.org/file/bot${TG_TOKEN}/${path}`;
+    addTgAudioFeed(user,audioUrl,label,ts);
+    showTgAudioWord(user,label);
+    // autoplay: crear audio element y reproducir
+    autoplayTgAudio(audioUrl);
+  }catch(e){}
+}
+
+function autoplayTgAudio(url){
+  const a=new Audio(url);
+  a.volume=1;
+  // intentar play directo; si falla por policy, encolar para el próximo gesto
+  const p=a.play();
+  if(p!==undefined){
+    p.catch(()=>{
+      // guardar para reproducir cuando el usuario interactúe
+      pendingTgAudio.push(a);
+      showAutoplayHint();
+    });
+  }
+}
+
+const pendingTgAudio=[];
+function showAutoplayHint(){
+  let hint=document.getElementById('tg-hint');
+  if(!hint){
+    hint=document.createElement('div');
+    hint.id='tg-hint';
+    hint.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#111;border:1px solid #f7a;color:#f7a;font-family:Courier New,monospace;font-size:11px;letter-spacing:.1em;padding:6px 14px;z-index:9000;cursor:pointer;';
+    hint.textContent='▶ TAP PARA ESCUCHAR AUDIO TG';
+    hint.onclick=()=>{
+      pendingTgAudio.forEach(a=>a.play().catch(()=>{}));
+      pendingTgAudio.length=0;
+      hint.remove();
+    };
+    document.body.appendChild(hint);
+  }
+}
+
+function addTgAudioFeed(user,audioUrl,label,ts){
+  const feed=document.getElementById('feed');
+  const d=document.createElement('div');
+  d.className='fc';
+  const t=new Date(ts*1000);
+  const hm=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  // crear el audio element para tener control real
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='padding:7px 9px;border-left:2px solid #f7a;';
+  wrapper.innerHTML=`<div style="font-size:10px;color:#f7a;letter-spacing:.1em;margin-bottom:4px">TG · ${hm} · ${user}</div><div style="font-size:11px;color:#ddd;margin-bottom:6px">${label}</div>`;
+  const audio=document.createElement('audio');
+  audio.controls=true;
+  audio.style.cssText='width:100%;height:28px;filter:invert(1) hue-rotate(90deg);';
+  audio.src=audioUrl;
+  wrapper.appendChild(audio);
+  d.appendChild(wrapper);
+  feed.insertBefore(d,feed.firstChild);
+  const cnt=document.getElementById('cnt');
+  cnt.textContent=(parseInt(cnt.textContent)||0)+1+' elementos';
+}
+
+function showTgAudioWord(user,label){
+  const base=lastBikePos||[map.getCenter().lat,map.getCenter().lng];
+  const jlat=base[0]+(Math.random()-.5)*.003;
+  const jlon=base[1]+(Math.random()-.5)*.004;
+  const pt=map.latLngToLayerPoint([jlat,jlon]);
+  const el=document.createElement('div');
+  el.style.cssText=`position:absolute;left:${pt.x}px;top:${pt.y}px;transform:translate(-50%,-50%);pointer-events:none;z-index:1200;text-align:center;`;
+  el.innerHTML=`<div style="opacity:0;transition:opacity .5s;">
+    <div style="color:#f7a;font-family:'Courier New',monospace;font-size:13px;letter-spacing:.15em;text-shadow:0 0 10px rgba(255,120,170,.8);">♪</div>
+    <div style="color:#f7a;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 8px rgba(255,120,170,.6);margin-top:2px">${user}</div>
+    <div style="color:#fcc;font-family:'Courier New',monospace;font-size:9px;letter-spacing:.07em;margin-top:1px">${label.slice(0,30)}</div>
+  </div>`;
+  document.getElementById('map').appendChild(el);
+  requestAnimationFrame(()=>{
+    el.querySelector('div').style.opacity='1';
+    setTimeout(()=>{
+      el.querySelector('div').style.opacity='0';
+      setTimeout(()=>el.remove(),800);
+    },20000);
+  });
+}
+
+async function fetchTgPhoto(fileId,user,caption,ts){
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${TG_TOKEN}/getFile?file_id=${fileId}`);
+    const d=await r.json();
+    if(!d.ok) return;
+    const path=d.result.file_path;
+    const imgUrl=`https://api.telegram.org/file/bot${TG_TOKEN}/${path}`;
+    addTgPhotoFeed(user,imgUrl,caption,ts);
+    showTgPhoto(imgUrl,user);
+  }catch(e){}
+}
+
+function addTgPhotoFeed(user,imgUrl,caption,ts){
+  const feed=document.getElementById('feed');
+  const d=document.createElement('div');
+  d.className='fc';
+  const t=new Date(ts*1000);
+  const hm=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  d.innerHTML=`<div style="padding:7px 9px;border-left:2px solid #7ff;"><div style="font-size:10px;color:#7ff;letter-spacing:.1em;margin-bottom:4px">TG · ${hm} · ${user}</div><img src="${imgUrl}" style="width:100%;max-height:140px;object-fit:cover;display:block;filter:saturate(.8);border:1px solid #333;" />${caption?'<div style="font-size:10px;color:#aaa;margin-top:4px">'+caption+'</div>':''}</div>`;
+  feed.insertBefore(d,feed.firstChild);
+  const cnt=document.getElementById('cnt');
+  cnt.textContent=(parseInt(cnt.textContent)||0)+1+' elementos';
+}
+
+function showTgPhoto(imgUrl,user){
+  const base=lastBikePos||[map.getCenter().lat,map.getCenter().lng];
+  const jlat=base[0]+(Math.random()-.5)*.003;
+  const jlon=base[1]+(Math.random()-.5)*.004;
+  const pt=map.latLngToLayerPoint([jlat,jlon]);
+  const el=document.createElement('div');
+  el.style.cssText=`position:absolute;left:${pt.x}px;top:${pt.y}px;transform:translate(-50%,-100%);pointer-events:none;z-index:1200;text-align:center;`;
+  el.innerHTML=`<div style="opacity:0;transition:opacity .5s;"><div style="font-size:10px;color:#7ff;font-family:'Courier New',monospace;letter-spacing:.1em;margin-bottom:3px;text-shadow:0 0 6px rgba(119,255,255,.7)">${user}</div><img src="${imgUrl}" style="width:120px;height:90px;object-fit:cover;border:1px solid rgba(119,255,255,.5);filter:saturate(.75);display:block;"/></div>`;
+  document.getElementById('map').appendChild(el);
+  requestAnimationFrame(()=>{
+    el.querySelector('div').style.opacity='1';
+    setTimeout(()=>{
+      el.querySelector('div').style.opacity='0';
+      setTimeout(()=>el.remove(),800);
+    },20000);
+  });
+}
+
+async function pollTelegram(){
+  try{
+    const url=`https://api.telegram.org/bot${TG_TOKEN}/getUpdates?offset=${tgOffset}&timeout=20&allowed_updates=["message"]&chat_id=${TG_CHAT}`;
+    const r=await fetch(url);
+    const d=await r.json();
+    if(d.ok && d.result && d.result.length){
+      d.result.forEach(upd=>{
+        tgOffset=upd.update_id+1;
+        const msg=upd.message;
+        if(!msg) return;
+        if(String(msg.chat.id)!==TG_CHAT) return;
+        const user=msg.from.first_name||(msg.from.username||'?');
+        if(msg.photo && msg.photo.length){
+          const best=msg.photo[msg.photo.length-1];
+          fetchTgPhoto(best.file_id,user,msg.caption||'',msg.date);
+        } else if(msg.voice){
+          fetchTgAudio(msg.voice.file_id,user,'🎙️ voz',msg.date);
+        } else if(msg.audio){
+          const label=msg.audio.title||msg.audio.file_name||'🎵 audio';
+          fetchTgAudio(msg.audio.file_id,user,label,msg.date);
+        } else if(msg.text){
+          addTgFeed(user,msg.text,msg.date);
+          showTgWord(user,msg.text);
+        }
+      });
+    }
+  }catch(e){}
+  if(tgActive) setTimeout(pollTelegram,5000);
+}
+
+// auto-arranca el polling al cargar
+window.addEventListener('load',()=>{
+  tgActive=true;
+  pollTelegram();
+});
 </script>
 </body>
 </html>
