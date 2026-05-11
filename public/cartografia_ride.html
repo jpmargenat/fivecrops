@@ -1036,7 +1036,7 @@ function showTgPhoto(imgUrl,user){
 
 async function pollTelegram(){
   try{
-    const url=`https://api.telegram.org/bot${TG_TOKEN}/getUpdates?offset=${tgOffset}&timeout=20&allowed_updates=["message"]&chat_id=${TG_CHAT}`;
+    const url=`https://api.telegram.org/bot${TG_TOKEN}/getUpdates?offset=${tgOffset}&timeout=5&allowed_updates=["message"]`;
     const r=await fetch(url);
     const d=await r.json();
     if(d.ok && d.result && d.result.length){
@@ -1044,7 +1044,7 @@ async function pollTelegram(){
         tgOffset=upd.update_id+1;
         const msg=upd.message;
         if(!msg) return;
-        if(String(msg.chat.id)!==TG_CHAT) return;
+        if(String(msg.chat.id)!==String(TG_CHAT)) return;
         const user=msg.from.first_name||(msg.from.username||'?');
         if(msg.photo && msg.photo.length){
           const best=msg.photo[msg.photo.length-1];
