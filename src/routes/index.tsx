@@ -38,10 +38,10 @@ const SECTIONS = [
   },
   {
     num: "03",
-    slug: "/tools",
-    title: "Tools",
+    slug: "/pedaludic_tools.html",
+    title: "PedaLudic Tools",
     subtitle: "Knowledge built to share",
-    description: "Instruments, scripts and methodologies developed during the research — open and available for other practices.",
+    description: "Instruments developed during the research — live GPS tracking, ride archive, GPX cropping and route merging. Open and available for other pedaludic practices.",
     status: "active",
   },
   {
@@ -94,14 +94,58 @@ function FlowingCartographies() {
             There is a moment when cycling becomes more than a mechanical movement.
             The body finds its rhythm, the territory begins to speak in ways that only slow and sustained movement allows,
             and something we decided to call knowledge — embodied, situated, unrepeatable — starts to take shape.
-          </p>
-          <p>
             Flowing Cartographies investigates that moment: how to record it, express it, and above all how to expand it.
           </p>
-          <p style={{ opacity: 0.55, fontSize: "0.88rem", marginTop: "24px" }}>
-            Developed within a Visiting Scholar residency at UCLA/REMAP, in dialogue with Professors Fabián Wagmister and Jeff Burke,
-            building on the corpus of experiences generated during <em>Flujos y Diacronías</em> (2025).
-            Its practical horizon is S.A.L.I. — a collective pedaludic drift crossing the province of Buenos Aires, September 2026.
+          <p>
+            This research develops a theoretical and practice-based framework and a digital platform for analyzing
+            and expressing situationist and pedaludic practices in urban and non-urban territories.
+            Drawing on the UCLA/REMAP <em>Flows and Diachronies</em> project as a primary case study, it investigates
+            how embodied movement and drift can interrupt dominant psychogeographies and enable alternative forms
+            of territorial understanding. The work advances the long-standing PedaLúdico/UCLA collaboration
+            and contributes prototype tools directly to Professor Wagmister's Engaged Media Production course.
+          </p>
+          <p style={{ opacity: 0.55, fontSize: "0.85rem", marginTop: "24px" }}>
+            Developed within a Visiting Scholar residency at UCLA/REMAP, in close dialogue with Professor Fabián Wagmister
+            and Professor Jeff Burke (REMAP). Its practical horizon is S.A.L.I. — a collective pedaludic drift
+            crossing the province of Buenos Aires, September 2026.
+          </p>
+        </div>
+
+        {/* LINKS */}
+        <div className="section-links" style={{ marginTop: "32px" }}>
+          <a href="https://chela.org.ar" target="_blank" rel="noreferrer" className="gallery-link" style={{ display: "block" }}>
+            → cheLA — Centro Heurístico Experimental Latinoamericano
+          </a>
+          <a href="https://remap.ucla.edu" target="_blank" rel="noreferrer" className="gallery-link" style={{ display: "block" }}>
+            → REMAP UCLA
+          </a>
+        </div>
+
+        {/* ACKNOWLEDGEMENTS */}
+        <div style={{ marginTop: "40px", paddingTop: "28px", borderTop: "1px solid var(--border-faint)" }}>
+          <p style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: "0.72rem",
+            letterSpacing: "0.1em",
+            color: "var(--text-secondary)",
+            lineHeight: "2",
+            textTransform: "uppercase",
+          }}>
+            With the support of Metabolic Studio
+          </p>
+          <p style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: "0.72rem",
+            letterSpacing: "0.1em",
+            color: "var(--text-secondary)",
+            lineHeight: "2",
+            textTransform: "uppercase",
+            marginTop: "8px",
+            padding: "12px 18px",
+            border: "1px solid rgba(255,255,255,0.12)",
+            display: "inline-block",
+          }}>
+            Esta investigación fue realizada mediante un subsidio de la Fundación Williams
           </p>
         </div>
       </section>

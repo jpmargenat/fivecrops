@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PedaLudic Tools — FiveCrops</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --border: rgba(232,232,224,0.1);
+  --accent: #c8f5d0;
+  --accent2: #f5c8c8;
+  --accent3: #c8e0f5;
+  --accent4: #f5f0c8;
+  --text: rgba(232,232,224,0.92);
+  --muted: rgba(232,232,224,0.4);
+  --mono: 'Space Mono', monospace;
+  --display: 'Unbounded', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { min-height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+nav {
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+}
+nav a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+nav a:hover { text-decoration: underline; }
+nav span { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; }
+
+header {
+  padding: 56px 40px 48px;
+  border-bottom: 1px solid var(--border);
+}
+header h1 {
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+header h1 span { color: var(--accent); }
+header p {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  max-width: 480px;
+  line-height: 1.8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border-left: 1px solid var(--border);
+}
+
+@media (max-width: 700px) {
+  .grid { grid-template-columns: 1fr; }
+  nav { padding: 16px 20px; }
+  header { padding: 36px 20px 32px; }
+}
+
+.tool {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.tool:hover { background: rgba(232,232,224,0.02); }
+.tool:hover .tool-arrow { transform: translate(3px, -3px); }
+
+.tool-num {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.tool-icon {
+  font-size: 28px;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+.tool-title {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.tool-tag {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+  border: 1px solid;
+  align-self: flex-start;
+}
+
+.tool-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+  flex: 1;
+}
+
+.tool-arrow {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  font-size: 16px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+
+/* colores por herramienta */
+.t1 .tool-title, .t1 .tool-tag { color: var(--accent); border-color: rgba(200,245,208,0.3); }
+.t1 .tool-tag { background: rgba(200,245,208,0.05); }
+
+.t2 .tool-title, .t2 .tool-tag { color: var(--accent3); border-color: rgba(200,224,245,0.3); }
+.t2 .tool-tag { background: rgba(200,224,245,0.05); }
+
+.t3 .tool-title, .t3 .tool-tag { color: var(--accent4); border-color: rgba(245,240,200,0.3); }
+.t3 .tool-tag { background: rgba(245,240,200,0.05); }
+
+.t4 .tool-title, .t4 .tool-tag { color: var(--accent2); border-color: rgba(245,200,200,0.3); }
+.t4 .tool-tag { background: rgba(245,200,200,0.05); }
+
+footer {
+  padding: 24px 40px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/">← Flowing Cartographies</a>
+  <span>PedaLudic Tools</span>
+</nav>
+
+<header>
+  <h1>PedaLudic <span>Tools</span></h1>
+  <p>Instruments for pedaludic cartography — field recording, live tracking, data processing and route analysis.</p>
+</header>
+
+<div class="grid">
+
+  <a href="envivo.html" class="tool t1">
+    <div class="tool-num">01</div>
+    <div class="tool-icon">◉</div>
+    <div class="tool-title">En Vivo</div>
+    <div class="tool-tag">GPS · Live · Multi-rider</div>
+    <p class="tool-desc">Real-time GPS tracking with live trail, environmental data, PDIs and Telegram integration. Multiple riders visible simultaneously on the same map.</p>
+    <span class="tool-arrow">↗</span>
+  </a>
+
+  <a href="cartografia_ride.html" class="tool t2">
+    <div class="tool-num">02</div>
+    <div class="tool-icon">◎</div>
+    <div class="tool-title">Ride Archivo</div>
+    <div class="tool-tag">GPX · Simulation · Archive</div>
+    <p class="tool-desc">Playback of a recorded ride with full cartographic layer — trail, geopoints, photos, audio, seismic and wind data. Vuelta al Super · 10.05.2026.</p>
+    <span class="tool-arrow">↗</span>
+  </a>
+
+  <a href="tools.html" class="tool t3">
+    <div class="tool-num">03</div>
+    <div class="tool-icon">⊡</div>
+    <div class="tool-title">Cropear</div>
+    <div class="tool-tag">GPX · GeoJSON · Bounding Box</div>
+    <p class="tool-desc">Clip GPX or GeoJSON routes to a defined bounding box. Set center coordinates and delta, filter by point count, export as JSON, GeoJSON or p5.js sketch.</p>
+    <span class="tool-arrow">↗</span>
+  </a>
+
+  <a href="JoinFromStart.html" class="tool t4">
+    <div class="tool-num">04</div>
+    <div class="tool-icon">⊕</div>
+    <div class="tool-title">Unir por Origen</div>
+    <div class="tool-tag">GPX · Multi-track · Merge</div>
+    <p class="tool-desc">Rebase multiple GPX tracks to a shared origin point. Generates a bouquet-like multi-track GPX where all rides start from the same coordinate.</p>
+    <span class="tool-arrow">↗</span>
+  </a>
+
+</div>
+
+<footer>
+  FiveCrops · Flowing Cartographies · Pedaludico · Los Ángeles 2026
+</footer>
+
+</body>
+</html>
