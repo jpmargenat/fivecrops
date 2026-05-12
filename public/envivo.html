@@ -687,7 +687,24 @@ function triggerPoint(p){
     pw.onclick=e=>{const r=pw.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;};
     ap2.appendChild(btn); ap2.appendChild(pw); ap2.appendChild(tm);
     ac.appendChild(ap2); card.appendChild(ac);
-    setTimeout(()=>{initAudio(audio);audio.play().catch(()=>{});btn.innerHTML='&#9646;&#9646;';},400);
+    setTimeout(()=>{
+      // pausar cualquier audio que esté sonando
+      Object.values(audioEls).forEach(a=>{
+        if(a!==audio && !a.paused){ a.pause(); a.currentTime=0; }
+      });
+      // initAudio solo si no hay contexto; si ya hay uno, conectar este elemento también
+      if(!audioCtx){
+        initAudio(audio);
+      } else {
+        try{
+          const src2=audioCtx.createMediaElementSource(audio);
+          src2.connect(masterGain);
+        }catch(e){}
+      }
+      if(audioCtx) audioCtx.resume().then(()=>audio.play().catch(()=>{}));
+      else audio.play().catch(()=>{});
+      btn.innerHTML='&#9646;&#9646;';
+    },400);
   } else {
     const fi=document.createElement('div'); fi.className='fi';
     const im=document.createElement('img'); im.src=p.photos[0].src; im.alt=p.label;
@@ -755,8 +772,6 @@ let gpsBroadcastTimer=null;
 const GPS_TAG='📍GPS';  // prefijo para distinguir de mensajes normales
 
 async function broadcastPos(lat,lon,spd){
-  // obtener nombre propio (pedirlo si no está)
-  if(!window.MY_NAME) window.MY_NAME=prompt('¿Tu nombre para el mapa?','ciclista')||'ciclista';
   const txt=GPS_TAG+' '+window.MY_NAME+' '+lat.toFixed(6)+','+lon.toFixed(6)+(spd?','+spd.toFixed(1):'');
   try{
     await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,{
@@ -771,6 +786,12 @@ function startGPS(){
   if(!navigator.geolocation){
     document.getElementById('sl').textContent='GPS no disponible';
     return;
+  }
+  // pedir nombre antes de arrancar
+  if(!window.MY_NAME){
+    const n=prompt('Tu nombre en el mapa:','ciclista');
+    if(n===null) return; // canceló
+    window.MY_NAME=n||'ciclista';
   }
   gpsMode=1;
   const btn=document.getElementById('bp'),dot=document.getElementById('sd');

@@ -772,7 +772,23 @@ function triggerPoint(p){
     pw.onclick=e=>{const r=pw.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;};
     ap2.appendChild(btn); ap2.appendChild(pw); ap2.appendChild(tm);
     ac.appendChild(ap2); card.appendChild(ac);
-    setTimeout(()=>{initAudio(audio);audio.play().catch(()=>{});btn.innerHTML='&#9646;&#9646;';},400);
+    setTimeout(()=>{
+      // pausar cualquier audio que esté sonando
+      Object.values(audioEls).forEach(a=>{
+        if(a!==audio && !a.paused){ a.pause(); a.currentTime=0; }
+      });
+      if(!audioCtx){
+        initAudio(audio);
+      } else {
+        try{
+          const src2=audioCtx.createMediaElementSource(audio);
+          src2.connect(masterGain);
+        }catch(e){}
+      }
+      if(audioCtx) audioCtx.resume().then(()=>audio.play().catch(()=>{}));
+      else audio.play().catch(()=>{});
+      btn.innerHTML='&#9646;&#9646;';
+    },400);
   } else {
     const fi=document.createElement('div'); fi.className='fi';
     const im=document.createElement('img'); im.src=p.photos[0].src; im.alt=p.label;
