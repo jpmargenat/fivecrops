@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PLISS — Inmersión 360 · UCLA Westwood</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:'Courier New', monospace; }
+
+/* LAYOUT DATALAND (9216x2592) */
+#layout {
+  position: absolute;
+  height: 100vh;
+  width: calc(100vh * 9216 / 2592);
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: 2592fr 4032fr 2592fr;
+  max-width: 100vw;
+}
+
+@media (max-aspect-ratio: 9216/2592) {
+  #layout {
+    width: 100vw;
+    height: calc(100vw * 2592 / 9216);
+    top: 50%; left: 0; transform: translateY(-50%);
+  }
+}
+
+/* PANELES */
+#panel-left { background: #04040a; padding: 4% 5%; border-right: 1px solid rgba(255,60,40,0.2); display: flex; flex-direction: column; }
+#panel-center { background: #050509; position: relative; overflow: hidden; }
+#panel-right { background: #000; border-left: 1px solid rgba(255,60,40,0.2); position: relative; overflow: hidden; }
+
+/* UI */
+.panel-title { font-size: 1.1vh; letter-spacing: 0.4vh; color: rgba(255,255,255,0.18); margin-bottom: 3vh; text-transform: uppercase; }
+.node { display: flex; align-items: center; gap: 1.2vh; margin-bottom: 0.5vh; }
+.node-dot { width: 0.8vh; height: 0.8vh; border-radius: 50%; flex-shrink: 0; }
+.node-label { font-size: 1vh; color: rgba(255,255,255,0.32); text-transform: uppercase; flex: 1; }
+.node-val { font-size: 1.3vh; font-weight: bold; text-align: right; min-width: 7vh; }
+.node-src { font-size: 0.75vh; color: rgba(255,255,255,0.15); margin-left: 2vh; margin-bottom: 1.5vh; }
+
+#sphere-ui { position: absolute; top: 2vh; left: 2vh; color: rgba(255,140,0,0.6); font-size: 0.9vh; z-index: 10; letter-spacing: 0.2vh; pointer-events: none; }
+#statusbar { position: fixed; bottom: 0; left: 0; right: 0; height: 2.2vh; background: rgba(0,0,0,0.8); display: flex; align-items: center; padding: 0 2vh; gap: 3vh; border-top: 1px solid rgba(255,255,255,0.04); z-index: 100; }
+.sb-item { font-size: 0.7vh; color: rgba(255,255,255,0.18); }
+</style>
+</head>
+<body>
+
+<div id="layout">
+  <div id="panel-left">
+    <div class="panel-title">Input · Afectaciones</div>
+    <div class="node"><div class="node-dot" style="background:#ff3020;"></div><div class="node-label">Sismo</div><div class="node-val" id="left-seis">—</div></div>
+    <div class="node-src">USGS Hazards</div>
+    <div class="node"><div class="node-dot" id="aqi-dot" style="background:#00e400;"></div><div class="node-label">Aire (AQI)</div><div class="node-val" id="left-aqi">—</div></div>
+    <div class="node-src">Open-Meteo AQI</div>
+    <div class="node"><div class="node-dot" style="background:#4af;"></div><div class="node-label">Viento</div><div class="node-val" id="left-wind">—</div></div>
+    <div class="node-src">Open-Meteo Wind</div>
+  </div>
+
+  <div id="panel-center">
+    <canvas id="bg-canvas"></canvas>
+    <div style="position:absolute; bottom:2vh; left:50%; transform:translateX(-50%); font-size:0.75vh; color:rgba(255,255,255,0.1);">UCLA WESTWOOD · 34.0722°N 118.4402°W</div>
+  </div>
+
+  <div id="panel-right">
+    <div id="sphere-ui">PROYECCIÓN ESFÉRICA · MODO INMERSIVO</div>
+    <div id="canvas-360" style="width:100%; height:100%;"></div>
+  </div>
+</div>
+
+<div id="statusbar">
+  <div class="sb-item">PLISS · CARTOGRAPHY SYSTEM</div>
+  <div class="sb-item" id="sb-time">00:00:00</div>
+  <div class="sb-item" style="margin-left:auto;">AQI <span id="sb-aqi">—</span> | WIND <span id="sb-wind">—</span></div>
+</div>
+
+<script>
+// ══ ESTADO Y CONFIG ═══════════════════════════════════════════════════════
+const env = { aqi: 45, windSpd: 3.2, windDir: 210 };
+const TG_TOKEN = '8292313956:AAHQxGj5WHQH68fF7AFVlk8y91DLmgdSIxM';
+
+// ══ THREE.JS: MODO INMERSIVO (CÁMARA INTERNA) ════════════════════════════
+let scene, camera, renderer, photoGroup, starField;
+
+function init360() {
+  const container = document.getElementById('canvas-360');
+  const w = container.offsetWidth, h = container.offsetHeight;
+
+  scene = new THREE.Scene();
+  // Cámara adentro con campo visual amplio (tipo Insta360)
+  camera = new THREE.PerspectiveCamera(85, w / h, 0.1, 1000);
+  camera.position.set(0, 0, 0.1);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(w, h);
+  container.appendChild(renderer.domElement);
+
+  // Bóveda de datos (Esfera invertida)
+  const sphereGeom = new THREE.SphereGeometry(100, 64, 64);
+  sphereGeom.scale(-1, 1, 1); // Ver desde adentro
+  
+  const sphereMat = new THREE.MeshBasicMaterial({
+    color: 0x112244,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.1
+  });
+  const sky = new THREE.Mesh(sphereGeom, sphereMat);
+  scene.add(sky);
+
+  photoGroup = new THREE.Group();
+  scene.add(photoGroup);
+
+  // Control suave con el mouse para simular paneo 360
+  document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth) - 0.5;
+    const y = (e.clientY / window.innerHeight) - 0.5;
+    camera.rotation.y = -x * 0.8;
+    camera.rotation.x = -y * 0.5;
+  });
+
+  animate();
+  
+  // SIMULACIÓN: Inyectar datos si Telegram tarda
+  setTimeout(() => addPhotoTo360("https://picsum.photos/400/300"), 3000);
+}
+
+function addPhotoTo360(url) {
+  const loader = new THREE.TextureLoader();
+  loader.setCrossOrigin('anonymous');
+  loader.load(url, (tex) => {
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(24, 18),
+      new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, transparent:true, opacity:0.9 })
+    );
+    const angle = Math.random() * Math.PI * 2;
+    plane.position.set(Math.cos(angle) * 80, (Math.random()-0.5)*30, Math.sin(angle) * 80);
+    plane.lookAt(0, 0, 0);
+    photoGroup.add(plane);
+  });
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  photoGroup.rotation.y += 0.001; // Rotación lenta de los datos
+  renderer.render(scene, camera);
+}
+
+// ══ CARTOGRAFÍA CENTRAL ══════════════════════════════════════════════════
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let cw, ch, particles = [];
+
+function resize() {
+  const p = document.getElementById('panel-center');
+  cw = canvas.width = p.offsetWidth;
+  ch = canvas.height = p.offsetHeight;
+}
+
+function updateCanvas() {
+  if (particles.length < 200 && Math.random() < 0.2) {
+    particles.push({
+      x: Math.random() * cw, y: Math.random() * ch,
+      v: (env.windSpd * 0.4) + 1,
+      a: (env.windDir + 180) * Math.PI / 180,
+      l: Math.random() * 15 + 5
+    });
+  }
+  ctx.fillStyle = 'rgba(5, 5, 9, 0.2)';
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.strokeStyle = 'rgba(100, 200, 255, 0.15)';
+  particles.forEach((p, i) => {
+    p.x += Math.sin(p.a) * p.v; p.y -= Math.cos(p.a) * p.v;
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x - Math.sin(p.a) * p.l, p.y + Math.cos(p.a) * p.l); ctx.stroke();
+    if (p.x < -20 || p.x > cw + 20 || p.y < -20 || p.y > ch + 20) particles.splice(i, 1);
+  });
+  requestAnimationFrame(updateCanvas);
+}
+
+// ══ APIS Y TELEGRAM ══════════════════════════════════════════════════════
+const aqiColor = v => v <= 50 ? '#00e400' : v <= 100 ? '#ffff00' : '#ff7e00';
+
+async function fetchData() {
+  try {
+    const rA = await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=34.0722&longitude=-118.4402&current=us_aqi');
+    if (rA.ok) { const d = await rA.json(); env.aqi = d.current.us_aqi; }
+    const rW = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.0722&longitude=-118.4402&current=wind_speed_10m,wind_direction_10m');
+    if (rW.ok) { const d = await rW.json(); env.windSpd = d.current.wind_speed_10m; env.windDir = d.current.wind_direction_10m; }
+  } catch(e) {}
+  const c = aqiColor(env.aqi);
+  document.getElementById('left-aqi').textContent = Math.round(env.aqi);
+  document.getElementById('left-aqi').style.color = c;
+  document.getElementById('aqi-dot').style.background = c;
+  document.getElementById('left-wind').textContent = env.windSpd.toFixed(1) + 'm/s';
+}
+
+async function pollTelegram() {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/getUpdates?limit=5`);
+    const d = await r.json();
+    if (d.ok && d.result.length) {
+      d.result.forEach(u => {
+        if (u.message && u.message.photo) {
+          const fid = u.message.photo[u.message.photo.length - 1].file_id;
+          fetch(`https://api.telegram.org/bot${TG_TOKEN}/getFile?file_id=${fid}`)
+            .then(res => res.json()).then(data => {
+              addPhotoTo360(`https://api.telegram.org/file/bot${TG_TOKEN}/${data.result.file_path}`);
+            });
+        }
+      });
+    }
+  } catch(e) {}
+}
+
+// ══ INIT ═════════════════════════════════════════════════════════════════
+window.onload = () => {
+  resize(); init360(); updateCanvas(); fetchData();
+  setInterval(fetchData, 60000);
+  setInterval(pollTelegram, 5000);
+  setInterval(() => { document.getElementById('sb-time').textContent = new Date().toLocaleTimeString('es-AR'); }, 1000);
+};
+window.onresize = resize;
+</script>
+</body>
+</html>
