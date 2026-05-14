@@ -712,7 +712,7 @@ function addTextToSphere(text,color){
     c.fillText(t,512,128);
   }
   var mesh=new THREE.Mesh(
-    new THREE.PlaneGeometry(40,10),
+    new THREE.PlaneGeometry(55,14),
     new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c2),side:THREE.DoubleSide,transparent:true,opacity:0.9})
   );
   placeInSphere(mesh,1);
@@ -930,7 +930,7 @@ function renderTgMsg(msg){
   var text=msg.text||msg.caption||'';
   if(text){
     document.getElementById('left-tg-preview').textContent=text;
-    addTextToSphere(text,'rgba(41,182,246,0.9)');
+    addTextToSphere(text,'rgba(240,230,210,0.95)');
   }
   if(msg.photo){
     // obtener URL de la foto via getFile
@@ -946,13 +946,13 @@ function renderTgMsg(msg){
         // también analizar con Claude via URL directa (sin proxy — Claude la fetch por su lado)
         analyzeImageWithClaude(tgUrl);
       }).catch(function(){
-        addTextToSphere('[📷 foto]','rgba(41,182,246,0.6)');
+        addTextToSphere('[📷 foto]','rgba(240,230,210,0.7)');
       });
   }
   // location / PDI
   if(msg.location){
     var loc='PDI '+msg.location.latitude.toFixed(4)+', '+msg.location.longitude.toFixed(4);
-    addTextToSphere('📍 '+loc,'rgba(100,255,100,0.9)');
+    addTextToSphere('📍 '+loc,'rgba(180,255,160,0.95)');
     document.getElementById('left-tg-preview').textContent=loc;
   }
 }
