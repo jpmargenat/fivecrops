@@ -833,20 +833,38 @@ var NEWS_FEEDS=[
   {url:'https://www.latimes.com/california/rss2.0.xml',label:'LA Times'},
 ];
 var newsItems=[],newsIdx=0;
+
+async function fetchRSS(url){
+  // usar corsproxy para evitar CORS en el RSS
+  var proxy='https://corsproxy.io/?'+encodeURIComponent(url);
+  var r=await fetch(proxy);
+  if(!r.ok) throw new Error('RSS fetch failed: '+r.status);
+  var text=await r.text();
+  // parsear XML
+  var parser=new DOMParser();
+  var xml=parser.parseFromString(text,'text/xml');
+  var items=xml.querySelectorAll('item');
+  var results=[];
+  items.forEach(function(item){
+    var title=item.querySelector('title');
+    var pubDate=item.querySelector('pubDate');
+    if(title) results.push({
+      title:title.textContent.trim(),
+      pubDate:pubDate?pubDate.textContent:new Date().toISOString()
+    });
+  });
+  return results.slice(0,5);
+}
+
 async function fetchNews(){
   for(var i=0;i<NEWS_FEEDS.length;i++){
     var feed=NEWS_FEEDS[i];
     try{
-      var r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(feed.url)+'&count=4');
-      if(r.ok){
-        var d=await r.json();
-        if(d.items&&d.items.length){
-          for(var j=0;j<d.items.length;j++){
-            newsItems.push({title:d.items[j].title,pubDate:d.items[j].pubDate,source:feed.label});
-          }
-        }
+      var items=await fetchRSS(feed.url);
+      for(var j=0;j<items.length;j++){
+        newsItems.push({title:items[j].title,pubDate:items[j].pubDate,source:feed.label});
       }
-    }catch(e){}
+    }catch(e){ console.log('RSS error '+feed.label+':',e); }
   }
   var seen=new Map();
   newsItems.forEach(function(i){if(!seen.has(i.title))seen.set(i.title,i);});
@@ -913,13 +931,27 @@ function renderTgMsg(msg){
     addTextToSphere(text,'rgba(41,182,246,0.9)');
   }
   if(msg.photo){
+    // obtener URL de la foto via getFile
     var chosen=msg.photo[Math.min(msg.photo.length-1,msg.photo.length-2)];
     fetch(TG_API+'/getFile?file_id='+chosen.file_id)
       .then(function(r){return r.json();})
       .then(function(d){
         if(!d.ok)return;
-        addPhotoToSphere('https://api.telegram.org/file/bot'+TG_TOKEN+'/'+d.result.file_path);
-      }).catch(function(){});
+        // usar corsproxy para cargar la imagen evitando CORS
+        var tgUrl='https://api.telegram.org/file/bot'+TG_TOKEN+'/'+d.result.file_path;
+        var proxiedUrl='https://corsproxy.io/?'+encodeURIComponent(tgUrl);
+        addPhotoToSphere(proxiedUrl);
+        // también analizar con Claude via URL directa (sin proxy — Claude la fetch por su lado)
+        analyzeImageWithClaude(tgUrl);
+      }).catch(function(){
+        addTextToSphere('[📷 foto]','rgba(41,182,246,0.6)');
+      });
+  }
+  // location / PDI
+  if(msg.location){
+    var loc='PDI '+msg.location.latitude.toFixed(4)+', '+msg.location.longitude.toFixed(4);
+    addTextToSphere('📍 '+loc,'rgba(100,255,100,0.9)');
+    document.getElementById('left-tg-preview').textContent=loc;
   }
 }
 
