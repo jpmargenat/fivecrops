@@ -838,7 +838,7 @@ var newsItems=[],newsIdx=0;
 
 async function fetchRSS(url){
   // usar corsproxy para evitar CORS en el RSS
-  var proxy='https://corsproxy.io/?'+encodeURIComponent(url);
+  var proxy='https://tg-proxy.jpmargenat.workers.dev/?url='+encodeURIComponent(url);
   var r=await fetch(proxy);
   if(!r.ok) throw new Error('RSS fetch failed: '+r.status);
   var text=await r.text();
@@ -941,7 +941,7 @@ function renderTgMsg(msg){
         if(!d.ok)return;
         // usar corsproxy para cargar la imagen evitando CORS
         var tgUrl='https://api.telegram.org/file/bot'+TG_TOKEN+'/'+d.result.file_path;
-        var proxiedUrl='https://corsproxy.io/?'+encodeURIComponent(tgUrl);
+        var proxiedUrl='https://tg-proxy.jpmargenat.workers.dev/?url='+encodeURIComponent(tgUrl);
         addPhotoToSphere(proxiedUrl);
         // también analizar con Claude via URL directa (sin proxy — Claude la fetch por su lado)
         analyzeImageWithClaude(tgUrl);
