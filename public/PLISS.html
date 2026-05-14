@@ -692,26 +692,28 @@ function addBigNumber(value, label, color){
 function addTextToSphere(text,color){
   if(!scene)return;
   var c2=document.createElement('canvas');
-  c2.width=512;c2.height=128;
+  c2.width=1024;c2.height=256;
   var c=c2.getContext('2d');
-  c.clearRect(0,0,512,128);
-  c.font='22px Courier New';
-  c.fillStyle=color||'rgba(255,255,255,0.75)';
+  c.clearRect(0,0,1024,256);
+  var col=color||'rgba(240,230,210,0.92)';
+  c.fillStyle=col;
   c.textAlign='center';
   c.textBaseline='middle';
-  // wrap en 2 líneas si es largo
-  var t=text.length>50?text.substring(0,49)+'…':text;
+  var t=text.length>60?text.substring(0,59)+'…':text;
   if(t.length>28){
     var mid=t.lastIndexOf(' ',28);
     if(mid<0)mid=28;
-    c.fillText(t.substring(0,mid),256,48);
-    c.fillText(t.substring(mid+1),256,88);
+    c.font='bold 52px Courier New';
+    c.fillText(t.substring(0,mid),512,88);
+    c.font='bold 46px Courier New';
+    c.fillText(t.substring(mid+1).substring(0,35),512,170);
   } else {
-    c.fillText(t,256,64);
+    c.font='bold 56px Courier New';
+    c.fillText(t,512,128);
   }
   var mesh=new THREE.Mesh(
-    new THREE.PlaneGeometry(28,7),
-    new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c2),side:THREE.DoubleSide,transparent:true,opacity:0.82})
+    new THREE.PlaneGeometry(40,10),
+    new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c2),side:THREE.DoubleSide,transparent:true,opacity:0.9})
   );
   placeInSphere(mesh,1);
 }
@@ -828,8 +830,8 @@ function triggerSeismic(mag){
 
 // noticias
 var NEWS_FEEDS=[
-  {url:'https://newsroom.ucla.edu/rss',label:'UCLA'},
-  {url:'https://dailybruin.com/feed',label:'Daily Bruin'},
+  {url:'https://newsroom.ucla.edu/rss.xml',label:'UCLA'},
+  {url:'https://dailybruin.com/category/news/feed',label:'Daily Bruin'},
   {url:'https://www.latimes.com/california/rss2.0.xml',label:'LA Times'},
 ];
 var newsItems=[],newsIdx=0;
