@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>BikeSnds — Flowing Cartographies</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:'Courier New', monospace; }
+
+/* ── LAYOUT 4032 × 2592 — canvas 2592 | panel 1440 ── */
+#app {
+  position: absolute;
+  /* altura = 100vh, ancho = 100vh * (4032/2592) */
+  height: 100vh;
+  width: calc(100vh * 4032 / 2592);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 100vw;
+  display: flex;
+}
+@media (max-aspect-ratio: 4032/2592) {
+  #app {
+    width: 100vw;
+    height: calc(100vw * 2592 / 4032);
+    top: 50%; left: 0;
+    transform: translateY(-50%);
+  }
+}
+
+/* ── CANVAS CUADRADO ── */
+#canvas-wrap {
+  flex-shrink: 0;
+  /* 2592/4032 = 64.28% del total */
+  width: calc(100% * 2592 / 4032);
+  height: 100%;
+  position: relative;
+  background: #000;
+}
+#c { display:block; width:100%; height:100%; }
+
+/* ── PANEL DERECHO ── */
+#panel {
+  flex: 1;
+  height: 100%;
+  background: #060608;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+/* header del panel */
+.panel-header {
+  padding: 3% 6% 2%;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
+}
+.panel-title {
+  font-size: 2.2vh; letter-spacing: 0.5vh;
+  color: rgba(255,255,255,0.95); text-transform: uppercase;
+  font-weight: 400;
+}
+.panel-sub {
+  font-size: 0.85vh; letter-spacing: 0.2vh;
+  color: rgba(255,255,255,0.4); margin-top: 0.5vh;
+}
+
+/* transport */
+.transport {
+  padding: 3% 6% 2%;
+  display: flex; gap: 3%;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
+}
+.btn {
+  flex: 1; padding: 2% 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  font-family: 'Courier New', monospace;
+  font-size: 1.1vh; letter-spacing: 0.25vh;
+  text-transform: uppercase; cursor: pointer;
+  transition: all 0.15s;
+}
+.btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.btn.active { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.4); }
+.btn.danger { border-color: rgba(255,60,40,0.3); color: rgba(255,80,60,0.6); }
+.btn.danger:hover { background: rgba(255,60,40,0.1); color: rgba(255,100,80,0.9); }
+
+/* secciones */
+.section {
+  padding: 2.5% 6% 1.5%;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  flex-shrink: 0;
+}
+.section-title {
+  font-size: 1.1vh; letter-spacing: 0.3vh;
+  color: rgba(255,255,255,0.75); text-transform: uppercase;
+  margin-bottom: 2%;
+}
+
+/* sliders */
+.row {
+  display: flex; align-items: center;
+  gap: 3%; margin-bottom: 1.8%;
+}
+.row label {
+  font-size: 1.05vh; letter-spacing: 0.15vh;
+  color: rgba(255,255,255,0.85); text-transform: uppercase;
+  width: 32%; flex-shrink: 0;
+}
+.row input[type=range] {
+  flex: 1; accent-color: rgba(255,255,255,0.5);
+  height: 2px; cursor: pointer;
+}
+.row .val {
+  font-size: 1.15vh; color: #fff;
+  width: 24%; text-align: right; flex-shrink: 0;
+}
+
+/* toggle switches */
+.toggle-row {
+  display: flex; align-items: center; gap: 3%; margin-bottom: 1.8%;
+}
+.toggle-row label {
+  font-size: 1.05vh; letter-spacing: 0.15vh;
+  color: rgba(255,255,255,0.85); text-transform: uppercase;
+  flex: 1;
+}
+.toggle {
+  width: 5vh; height: 2.5vh;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 99px; cursor: pointer;
+  position: relative; transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle.on { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.35); }
+.toggle::after {
+  content: '';
+  position: absolute; top: 15%; left: 8%;
+  width: 70%; height: 70%;
+  background: rgba(255,255,255,0.4);
+  border-radius: 99px; transition: transform 0.2s;
+}
+.toggle.on::after { transform: translateX(60%); background: #fff; }
+
+/* live data readout */
+.readout {
+  flex-shrink: 0;
+  padding: 2.5% 6%;
+  display: flex; flex-direction: column; gap: 1.5%;
+}
+.readout-title {
+  font-size: 1vh; letter-spacing: 0.3vh;
+  color: rgba(255,255,255,0.7); text-transform: uppercase;
+  margin-bottom: 1%; flex-shrink: 0;
+}
+.data-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2.5%;
+}
+.data-cell {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 5% 6%;
+}
+.data-label {
+  font-size: 0.95vh; letter-spacing: 0.2vh;
+  color: rgba(255,255,255,0.7); text-transform: uppercase;
+  margin-bottom: 1%;
+}
+.data-val {
+  font-size: 2.8vh; font-weight: bold;
+  color: #fff;
+}
+
+/* progress bar */
+.progress-wrap {
+  padding: 0 6% 2%;
+  flex-shrink: 0;
+}
+.progress-bar {
+  width: 100%; height: 2px;
+  background: rgba(255,255,255,0.06);
+  position: relative; cursor: pointer;
+}
+.progress-fill {
+  height: 100%; background: rgba(255,255,255,0.35);
+  transition: width 0.1s linear;
+  width: 0%;
+}
+.progress-labels {
+  display: flex; justify-content: space-between;
+  font-size: 1vh; color: rgba(255,255,255,0.75);
+  margin-top: 1%;
+}
+
+/* wind display */
+.wind-row {
+  display: flex; align-items: center; gap: 3%; padding: 3% 6%;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.02);
+}
+.wind-compass-mini {
+  width: 3vh; height: 3vh; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  position: relative; flex-shrink: 0;
+}
+.wind-needle {
+  position: absolute; top: 50%; left: 50%;
+  width: 1px; height: 40%;
+  background: rgba(100,180,255,0.7);
+  transform-origin: bottom center;
+  transform: translate(-50%,-100%) rotate(0deg);
+  transition: transform 1s ease;
+}
+.wind-info {
+  font-size: 1.1vh; color: rgba(255,255,255,0.8);
+  letter-spacing: 0.1vh;
+}
+.wind-info span { color: rgba(100,180,255,0.6); }
+
+/* upload GPX */
+.gpx-drop {
+  margin: 0 6% 0;
+  border: 1px dashed rgba(255,255,255,0.15);
+  padding: 1.2% 4%;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  flex-shrink: 0;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.gpx-drop:hover, .gpx-drop.drag { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.03); }
+.gpx-drop input { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
+.gpx-drop-label {
+  font-size: 1.05vh; letter-spacing: 0.2vh;
+  color: rgba(255,255,255,0.75); text-transform: uppercase;
+  pointer-events: none;
+}
+.gpx-info {
+  font-size: 0.9vh; color: rgba(100,255,150,0.85);
+  margin-top: 1.5%; letter-spacing: 0.1vh;
+  min-height: 1.2vh;
+}
+
+/* start overlay */
+#start {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: #000; z-index: 100;
+  cursor: pointer; gap: 2vh;
+}
+#start h1 {
+  font-size: 2vh; letter-spacing: 0.8vh;
+  color: rgba(255,255,255,0.9); text-transform: uppercase; font-weight: 400;
+}
+#start p { font-size: 1.2vh; letter-spacing: 0.3vh; color: rgba(255,255,255,0.6); }
+</style>
+</head>
+<body>
+
+<div id="start">
+  <h1>BikeSnds</h1>
+  <p>click to start · Flowing Cartographies</p>
+</div>
+
+<div id="app">
+
+  <!-- ── PANEL DE CONTROL ── -->
+  <div id="panel">
+
+    <div class="panel-header">
+      <div class="panel-title">BikeSnds</div>
+      <div class="panel-sub">RanchoUCLA · 32 min · 195 pts GPS</div>
+    </div>
+
+    <!-- TRANSPORT -->
+    <div class="transport">
+      <button class="btn" id="btn-play">▶ Play</button>
+      <button class="btn" id="btn-pause">⏸ Pause</button>
+      <button class="btn" id="btn-mute">⊘ Mute</button>
+      <button class="btn danger" id="btn-reset">↺ Reset</button>
+    </div>
+
+    <!-- UPLOAD GPX -->
+    <div class="gpx-drop" id="gpx-drop">
+      <input type="file" id="gpx-file" accept=".gpx">
+      <div class="gpx-drop-label">⬆ Cargar GPX</div>
+      <div class="gpx-info" id="gpx-info"></div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-labels">
+        <span id="prog-time">0:00</span>
+        <span id="prog-pt">pt 0 / 195</span>
+        <span>32:00</span>
+      </div>
+    </div>
+
+    <!-- VELOCIDAD -->
+    <div class="section">
+      <div class="section-title">Velocidad</div>
+      <div class="row">
+        <label>Tempo</label>
+        <input type="range" id="spd" min="0" max="1" step="0.001" value="0">
+        <span class="val" id="spd-v">1.0x · 32:00</span>
+      </div>
+    </div>
+
+    <!-- VISUAL -->
+    <div class="section">
+      <div class="section-title">Visual</div>
+      <div class="row">
+        <label>Espesor</label>
+        <input type="range" id="wid" min="0.5" max="14" step="0.5" value="3">
+        <span class="val" id="wid-v">3.0</span>
+      </div>
+      <div class="row">
+        <label>Fade</label>
+        <input type="range" id="fad" min="0.01" max="0.5" step="0.01" value="0.1">
+        <span class="val" id="fad-v">0.10</span>
+      </div>
+      <div class="row">
+        <label>HR color</label>
+        <input type="range" id="hrm" min="0" max="1" step="0.05" value="1">
+        <span class="val" id="hrm-v">1.00</span>
+      </div>
+      <div class="row">
+        <label>Glow</label>
+        <input type="range" id="glow" min="0" max="1" step="0.05" value="0.4">
+        <span class="val" id="glow-v">0.40</span>
+      </div>
+    </div>
+
+    <!-- AUDIO -->
+    <div class="section">
+      <div class="section-title">Audio</div>
+      <div class="row">
+        <label>Master</label>
+        <input type="range" id="master" min="0" max="1" step="0.05" value="0.8">
+        <span class="val" id="master-v">0.80</span>
+      </div>
+      <div class="row">
+        <label>Osc vol</label>
+        <input type="range" id="ovol" min="0" max="1" step="0.05" value="0.25">
+        <span class="val" id="ovol-v">0.25</span>
+      </div>
+      <div class="row">
+        <label>Click vol</label>
+        <input type="range" id="clvol" min="0" max="1" step="0.05" value="0.35">
+        <span class="val" id="clvol-v">0.35</span>
+      </div>
+      <div class="row">
+        <label>Kick vol</label>
+        <input type="range" id="kvol" min="0" max="1" step="0.05" value="0.5">
+        <span class="val" id="kvol-v">0.50</span>
+      </div>
+      <div class="row">
+        <label>Delay mix</label>
+        <input type="range" id="dmix" min="0" max="1" step="0.05" value="0.3">
+        <span class="val" id="dmix-v">0.30</span>
+      </div>
+    </div>
+
+    <!-- TOGGLES -->
+    <div class="section">
+      <div class="section-title">On / Off</div>
+      <div class="toggle-row">
+        <label>Oscilador</label>
+        <div class="toggle on" id="tog-osc"></div>
+      </div>
+      <div class="toggle-row">
+        <label>Click GPS</label>
+        <div class="toggle on" id="tog-click"></div>
+      </div>
+      <div class="toggle-row">
+        <label>Kick cadencia</label>
+        <div class="toggle on" id="tog-kick"></div>
+      </div>
+      <div class="toggle-row">
+        <label>Filtro HR</label>
+        <div class="toggle on" id="tog-filter"></div>
+      </div>
+      <div class="toggle-row">
+        <label>Delay heading</label>
+        <div class="toggle on" id="tog-delay"></div>
+      </div>
+      <div class="toggle-row">
+        <label>LFO viento</label>
+        <div class="toggle on" id="tog-lfo"></div>
+      </div>
+    </div>
+
+    <!-- LIVE DATA -->
+    <div class="readout">
+      <div class="readout-title">Live data</div>
+      <div class="data-grid">
+        <div class="data-cell"><div class="data-label">Elevación</div><div class="data-val" id="d-ele">—</div></div>
+        <div class="data-cell"><div class="data-label">FC</div><div class="data-val" id="d-hr">—</div></div>
+        <div class="data-cell"><div class="data-label">Cadencia</div><div class="data-val" id="d-cad">—</div></div>
+        <div class="data-cell"><div class="data-label">Velocidad</div><div class="data-val" id="d-spd">—</div></div>
+      </div>
+      <div style="display:none"><span id="d-head"></span><span id="d-filt"></span></div>
+    </div>
+
+    <!-- WIND -->
+    <div class="wind-row">
+      <div class="wind-compass-mini">
+        <div class="wind-needle" id="wind-needle"></div>
+      </div>
+      <div class="wind-info">
+        WIND <span id="wv">—</span> m/s &nbsp; <span id="wd">—</span>°
+        &nbsp;·&nbsp; LFO <span id="lfo-rate">—</span> Hz
+      </div>
+    </div>
+
+  </div><!-- /panel -->
+
+  <!-- ── CANVAS CUADRADO ── -->
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ══ TRACK ════════════════════════════════════════════════════════════════
+const TRACK = [{"nx":0.84766,"ny":0.85068,"ele":47.8,"cadence":0,"hr":85,"heading":0,"speed":0,"dt":1},{"nx":0.83271,"ny":0.85193,"ele":47.7,"cadence":0,"hr":88,"heading":258.5,"speed":3.92,"dt":10.0},{"nx":0.81978,"ny":0.85275,"ele":47.6,"cadence":51,"hr":89,"heading":261.3,"speed":3.37,"dt":10.0},{"nx":0.81437,"ny":0.85394,"ele":47.6,"cadence":0,"hr":88,"heading":241.8,"speed":1.58,"dt":10.0},{"nx":0.81867,"ny":0.84949,"ele":47.6,"cadence":44,"hr":87,"heading":21.7,"speed":3.0,"dt":10.0},{"nx":0.81082,"ny":0.8443,"ele":48.0,"cadence":51,"hr":89,"heading":328.1,"speed":3.83,"dt":10.0},{"nx":0.80243,"ny":0.83897,"ele":48.3,"cadence":56,"hr":93,"heading":327.1,"speed":3.98,"dt":10.0},{"nx":0.79358,"ny":0.83388,"ele":48.7,"cadence":56,"hr":97,"heading":324.4,"speed":3.92,"dt":10.0},{"nx":0.78556,"ny":0.82814,"ele":49.2,"cadence":58,"hr":101,"heading":330.1,"speed":4.15,"dt":10.0},{"nx":0.77617,"ny":0.8222,"ele":49.5,"cadence":60,"hr":107,"heading":327.0,"speed":4.43,"dt":10.0},{"nx":0.7675,"ny":0.81589,"ele":49.8,"cadence":64,"hr":108,"heading":330.5,"speed":4.54,"dt":10.0},{"nx":0.75807,"ny":0.81124,"ele":50.5,"cadence":61,"hr":109,"heading":320.2,"speed":3.79,"dt":10.0},{"nx":0.7394,"ny":0.81525,"ele":50.5,"cadence":69,"hr":109,"heading":242.4,"speed":5.42,"dt":10.0},{"nx":0.72163,"ny":0.81964,"ele":50.6,"cadence":62,"hr":111,"heading":239.0,"speed":5.34,"dt":10.0},{"nx":0.7031,"ny":0.8242,"ele":50.3,"cadence":59,"hr":109,"heading":239.1,"speed":5.56,"dt":10.0},{"nx":0.69103,"ny":0.82117,"ele":50.6,"cadence":48,"hr":107,"heading":301.3,"speed":3.64,"dt":10.0},{"nx":0.67978,"ny":0.81675,"ele":51.4,"cadence":44,"hr":105,"heading":313.7,"speed":4.01,"dt":10.0},{"nx":0.67286,"ny":0.81564,"ele":52.5,"cadence":44,"hr":103,"heading":291.2,"speed":1.91,"dt":10.0},{"nx":0.66569,"ny":0.81724,"ele":52.4,"cadence":41,"hr":99,"heading":241.5,"speed":2.1,"dt":10.0},{"nx":0.66559,"ny":0.81724,"ele":52.3,"cadence":0,"hr":97,"heading":270.0,"speed":0.03,"dt":10.0},{"nx":0.66469,"ny":0.81733,"ele":52.3,"cadence":0,"hr":90,"heading":256.4,"speed":0.24,"dt":10.0},{"nx":0.66028,"ny":0.81374,"ele":52.6,"cadence":33,"hr":85,"heading":333.2,"speed":2.52,"dt":10.0},{"nx":0.65286,"ny":0.80724,"ele":52.7,"cadence":58,"hr":88,"heading":334.9,"speed":4.5,"dt":10.0},{"nx":0.64276,"ny":0.8013,"ele":53.6,"cadence":63,"hr":98,"heading":325.0,"speed":4.54,"dt":10.0},{"nx":0.63265,"ny":0.79554,"ele":53.8,"cadence":58,"hr":104,"heading":324.2,"speed":4.45,"dt":10.0},{"nx":0.62226,"ny":0.79003,"ele":54.4,"cadence":57,"hr":105,"heading":322.2,"speed":4.37,"dt":10.0},{"nx":0.61323,"ny":0.78491,"ele":55.1,"cadence":58,"hr":110,"heading":324.1,"speed":3.96,"dt":10.0},{"nx":0.60367,"ny":0.77886,"ele":55.9,"cadence":58,"hr":110,"heading":326.9,"speed":4.52,"dt":10.0},{"nx":0.5941,"ny":0.7733,"ele":56.5,"cadence":62,"hr":111,"heading":324.7,"speed":4.27,"dt":10.0},{"nx":0.58381,"ny":0.7674,"ele":57.0,"cadence":70,"hr":110,"heading":324.4,"speed":4.55,"dt":10.0},{"nx":0.57417,"ny":0.76188,"ele":57.6,"cadence":70,"hr":110,"heading":324.3,"speed":4.25,"dt":10.0},{"nx":0.56665,"ny":0.7579,"ele":58.2,"cadence":36,"hr":108,"heading":322.2,"speed":3.16,"dt":10.0},{"nx":0.55837,"ny":0.75227,"ele":58.7,"cadence":60,"hr":105,"heading":328.9,"speed":4.12,"dt":10.0},{"nx":0.54773,"ny":0.74638,"ele":59.4,"cadence":74,"hr":110,"heading":323.4,"speed":4.59,"dt":10.0},{"nx":0.53677,"ny":0.74073,"ele":59.9,"cadence":69,"hr":112,"heading":321.4,"speed":4.53,"dt":10.0},{"nx":0.52695,"ny":0.735,"ele":60.6,"cadence":73,"hr":112,"heading":324.8,"speed":4.39,"dt":10.0},{"nx":0.51827,"ny":0.73031,"ele":61.1,"cadence":67,"hr":113,"heading":322.8,"speed":3.69,"dt":10.0},{"nx":0.50935,"ny":0.72482,"ele":61.5,"cadence":44,"hr":109,"heading":326.3,"speed":4.14,"dt":10.0},{"nx":0.49889,"ny":0.71904,"ele":62.0,"cadence":69,"hr":110,"heading":323.3,"speed":4.51,"dt":10.0},{"nx":0.49033,"ny":0.71415,"ele":62.5,"cadence":68,"hr":111,"heading":324.2,"speed":3.77,"dt":10.0},{"nx":0.48058,"ny":0.70866,"ele":63.2,"cadence":68,"hr":110,"heading":323.9,"speed":4.26,"dt":10.0},{"nx":0.47266,"ny":0.70258,"ele":63.5,"cadence":68,"hr":109,"heading":331.8,"speed":4.32,"dt":10.0},{"nx":0.48681,"ny":0.69765,"ele":63.3,"cadence":76,"hr":108,"heading":49.8,"speed":4.77,"dt":10.0},{"nx":0.50233,"ny":0.69323,"ele":63.3,"cadence":76,"hr":109,"heading":55.2,"speed":4.86,"dt":10.0},{"nx":0.51727,"ny":0.68871,"ele":63.7,"cadence":84,"hr":107,"heading":53.7,"speed":4.77,"dt":10.0},{"nx":0.53186,"ny":0.68308,"ele":63.5,"cadence":82,"hr":107,"heading":46.8,"speed":5.15,"dt":10.0},{"nx":0.52214,"ny":0.67751,"ele":64.0,"cadence":71,"hr":106,"heading":324.3,"speed":4.29,"dt":10.0},{"nx":0.51229,"ny":0.67152,"ele":64.7,"cadence":73,"hr":106,"heading":325.9,"speed":4.53,"dt":10.0},{"nx":0.50165,"ny":0.66553,"ele":65.3,"cadence":76,"hr":108,"heading":323.9,"speed":4.65,"dt":10.0},{"nx":0.49147,"ny":0.6594,"ele":66.0,"cadence":74,"hr":110,"heading":325.7,"speed":4.65,"dt":10.0},{"nx":0.48151,"ny":0.65323,"ele":66.6,"cadence":75,"hr":111,"heading":326.4,"speed":4.64,"dt":10.0},{"nx":0.47119,"ny":0.64756,"ele":67.3,"cadence":75,"hr":114,"heading":323.2,"speed":4.43,"dt":10.0},{"nx":0.46094,"ny":0.64181,"ele":67.8,"cadence":76,"hr":116,"heading":323.7,"speed":4.46,"dt":10.0},{"nx":0.45023,"ny":0.63559,"ele":68.1,"cadence":72,"hr":114,"heading":324.7,"speed":4.77,"dt":10.0},{"nx":0.4398,"ny":0.63006,"ele":68.3,"cadence":71,"hr":110,"heading":322.2,"speed":4.38,"dt":10.0},{"nx":0.44732,"ny":0.62604,"ele":68.3,"cadence":65,"hr":104,"heading":37.6,"speed":3.18,"dt":10.0},{"nx":0.45087,"ny":0.62256,"ele":68.4,"cadence":0,"hr":100,"heading":22.7,"speed":2.37,"dt":10.0},{"nx":0.45721,"ny":0.62144,"ele":68.1,"cadence":0,"hr":94,"heading":66.8,"speed":1.78,"dt":10.0},{"nx":0.4575,"ny":0.62137,"ele":68.2,"cadence":0,"hr":84,"heading":58.9,"speed":0.09,"dt":10.0},{"nx":0.45768,"ny":0.62123,"ele":68.3,"cadence":0,"hr":84,"heading":27.4,"speed":0.1,"dt":10.0},{"nx":0.4603,"ny":0.62071,"ele":68.2,"cadence":0,"hr":84,"heading":64.4,"speed":0.75,"dt":10.0},{"nx":0.44664,"ny":0.62011,"ele":68.3,"cadence":55,"hr":86,"heading":276.1,"speed":3.53,"dt":10.0},{"nx":0.42995,"ny":0.62155,"ele":68.8,"cadence":73,"hr":97,"heading":258.2,"speed":4.39,"dt":10.0},{"nx":0.41672,"ny":0.61762,"ele":69.5,"cadence":75,"hr":101,"heading":305.9,"speed":4.2,"dt":10.0},{"nx":0.40622,"ny":0.61188,"ele":70.3,"cadence":71,"hr":107,"heading":323.1,"speed":4.5,"dt":10.0},{"nx":0.39863,"ny":0.60752,"ele":72.0,"cadence":67,"hr":113,"heading":324.4,"speed":3.36,"dt":10.0},{"nx":0.39261,"ny":0.60411,"ele":74.0,"cadence":73,"hr":117,"heading":324.1,"speed":2.64,"dt":10.0},{"nx":0.38644,"ny":0.6006,"ele":76.2,"cadence":77,"hr":120,"heading":324.1,"speed":2.71,"dt":10.0},{"nx":0.38025,"ny":0.59705,"ele":77.7,"cadence":78,"hr":124,"heading":324.4,"speed":2.74,"dt":10.0},{"nx":0.37444,"ny":0.59381,"ele":78.8,"cadence":73,"hr":127,"heading":323.6,"speed":2.52,"dt":10.0},{"nx":0.36881,"ny":0.59028,"ele":79.6,"cadence":72,"hr":128,"heading":326.8,"speed":2.65,"dt":10.0},{"nx":0.36107,"ny":0.58622,"ele":80.3,"cadence":68,"hr":127,"heading":321.9,"speed":3.23,"dt":10.0},{"nx":0.35391,"ny":0.5818,"ele":80.9,"cadence":73,"hr":124,"heading":326.4,"speed":3.33,"dt":10.0},{"nx":0.34714,"ny":0.57803,"ele":81.5,"cadence":72,"hr":124,"heading":323.5,"speed":2.93,"dt":10.0},{"nx":0.33986,"ny":0.57383,"ele":82.2,"cadence":71,"hr":122,"heading":324.5,"speed":3.23,"dt":10.0},{"nx":0.33173,"ny":0.56948,"ele":82.8,"cadence":72,"hr":120,"heading":322.5,"speed":3.44,"dt":10.0},{"nx":0.32456,"ny":0.56494,"ele":83.4,"cadence":74,"hr":116,"heading":327.0,"speed":3.39,"dt":10.0},{"nx":0.31711,"ny":0.56062,"ele":84.4,"cadence":72,"hr":117,"heading":324.7,"speed":3.32,"dt":10.0},{"nx":0.30965,"ny":0.55648,"ele":85.1,"cadence":71,"hr":116,"heading":323.5,"speed":3.23,"dt":10.0},{"nx":0.30392,"ny":0.55207,"ele":85.7,"cadence":74,"hr":117,"heading":331.9,"speed":3.13,"dt":10.0},{"nx":0.30969,"ny":0.54926,"ele":86.2,"cadence":57,"hr":114,"heading":40.2,"speed":2.3,"dt":10.0},{"nx":0.31757,"ny":0.54672,"ele":86.2,"cadence":0,"hr":110,"heading":51.9,"speed":2.58,"dt":10.0},{"nx":0.31209,"ny":0.54261,"ele":86.6,"cadence":64,"hr":107,"heading":331.2,"speed":2.93,"dt":10.0},{"nx":0.30618,"ny":0.53954,"ele":87.1,"cadence":61,"hr":99,"heading":321.7,"speed":2.45,"dt":10.0},{"nx":0.29679,"ny":0.53401,"ele":87.4,"cadence":65,"hr":101,"heading":325.1,"speed":4.22,"dt":10.0},{"nx":0.28661,"ny":0.52825,"ele":88.1,"cadence":42,"hr":105,"heading":324.0,"speed":4.46,"dt":10.0},{"nx":0.27719,"ny":0.523,"ele":87.5,"cadence":0,"hr":108,"heading":323.5,"speed":4.08,"dt":10.0},{"nx":0.27038,"ny":0.51829,"ele":89.2,"cadence":49,"hr":110,"heading":329.3,"speed":3.43,"dt":10.0},{"nx":0.2649,"ny":0.51378,"ele":90.6,"cadence":42,"hr":120,"heading":333.5,"speed":3.16,"dt":10.0},{"nx":0.25845,"ny":0.5088,"ele":90.4,"cadence":44,"hr":123,"heading":332.0,"speed":3.53,"dt":10.0},{"nx":0.25099,"ny":0.50219,"ele":88.6,"cadence":61,"hr":121,"heading":335.1,"speed":4.56,"dt":10.0},{"nx":0.24286,"ny":0.49618,"ele":88.0,"cadence":0,"hr":117,"heading":330.9,"speed":4.31,"dt":10.0},{"nx":0.23705,"ny":0.49303,"ele":87.6,"cadence":0,"hr":109,"heading":322.8,"speed":2.47,"dt":10.0},{"nx":0.23232,"ny":0.487,"ele":88.0,"cadence":50,"hr":106,"heading":342.1,"speed":3.97,"dt":10.0},{"nx":0.22519,"ny":0.48064,"ele":88.4,"cadence":61,"hr":106,"heading":335.3,"speed":4.39,"dt":10.0},{"nx":0.23021,"ny":0.47668,"ele":89.5,"cadence":48,"hr":104,"heading":27.5,"speed":2.8,"dt":10.0},{"nx":0.2372,"ny":0.47237,"ele":91.5,"cadence":43,"hr":106,"heading":33.7,"speed":3.24,"dt":10.0},{"nx":0.2301,"ny":0.46608,"ele":91.0,"cadence":0,"hr":116,"heading":335.1,"speed":4.34,"dt":10.0},{"nx":0.22032,"ny":0.45879,"ele":90.3,"cadence":73,"hr":125,"heading":331.1,"speed":5.21,"dt":10.0},{"nx":0.2095,"ny":0.45179,"ele":90.7,"cadence":69,"hr":121,"heading":327.6,"speed":5.2,"dt":10.0},{"nx":0.2023,"ny":0.44706,"ele":91.9,"cadence":55,"hr":118,"heading":328.0,"speed":3.49,"dt":10.0},{"nx":0.1928,"ny":0.44274,"ele":92.9,"cadence":47,"hr":114,"heading":317.9,"speed":3.65,"dt":10.0},{"nx":0.18391,"ny":0.43765,"ele":93.5,"cadence":52,"hr":117,"heading":324.3,"speed":3.92,"dt":10.0},{"nx":0.1751,"ny":0.43253,"ele":94.3,"cadence":52,"hr":116,"heading":324.7,"speed":3.93,"dt":10.0},{"nx":0.16775,"ny":0.4274,"ele":95.0,"cadence":51,"hr":116,"heading":329.6,"speed":3.73,"dt":10.0},{"nx":0.16661,"ny":0.42462,"ele":95.4,"cadence":0,"hr":115,"heading":350.4,"speed":1.76,"dt":10.0},{"nx":0.16632,"ny":0.42462,"ele":95.4,"cadence":0,"hr":108,"heading":270.0,"speed":0.07,"dt":10.0},{"nx":0.16618,"ny":0.42405,"ele":95.5,"cadence":0,"hr":94,"heading":354.1,"speed":0.36,"dt":10.0},{"nx":0.16679,"ny":0.41883,"ele":96.1,"cadence":35,"hr":89,"heading":2.7,"speed":3.28,"dt":10.0},{"nx":0.16743,"ny":0.41223,"ele":96.7,"cadence":63,"hr":100,"heading":2.3,"speed":4.13,"dt":10.0},{"nx":0.16718,"ny":0.405,"ele":97.4,"cadence":73,"hr":109,"heading":359.2,"speed":4.53,"dt":10.0},{"nx":0.167,"ny":0.39918,"ele":97.8,"cadence":73,"hr":111,"heading":359.3,"speed":3.64,"dt":10.0},{"nx":0.16797,"ny":0.39292,"ele":98.3,"cadence":40,"hr":109,"heading":3.6,"speed":3.93,"dt":10.0},{"nx":0.16815,"ny":0.38626,"ele":99.0,"cadence":64,"hr":109,"heading":0.6,"speed":4.17,"dt":10.0},{"nx":0.16689,"ny":0.37998,"ele":100.0,"cadence":68,"hr":111,"heading":355.3,"speed":3.94,"dt":10.0},{"nx":0.16865,"ny":0.37682,"ele":100.2,"cadence":63,"hr":112,"heading":12.8,"speed":2.03,"dt":10.0},{"nx":0.17162,"ny":0.37236,"ele":100.7,"cadence":45,"hr":105,"heading":15.3,"speed":2.9,"dt":10.0},{"nx":0.16962,"ny":0.36535,"ele":101.2,"cadence":69,"hr":108,"heading":353.3,"speed":4.42,"dt":10.0},{"nx":0.17001,"ny":0.35886,"ele":101.9,"cadence":69,"hr":112,"heading":1.4,"speed":4.06,"dt":10.0},{"nx":0.17105,"ny":0.35339,"ele":102.5,"cadence":65,"hr":114,"heading":4.5,"speed":3.44,"dt":10.0},{"nx":0.17428,"ny":0.35086,"ele":103.0,"cadence":0,"hr":110,"heading":27.7,"speed":1.79,"dt":10.0},{"nx":0.17363,"ny":0.3458,"ele":103.4,"cadence":48,"hr":106,"heading":357.0,"speed":3.18,"dt":10.0},{"nx":0.17309,"ny":0.33959,"ele":104.4,"cadence":60,"hr":108,"heading":358.0,"speed":3.89,"dt":10.0},{"nx":0.17238,"ny":0.33392,"ele":105.3,"cadence":63,"hr":112,"heading":357.0,"speed":3.56,"dt":10.0},{"nx":0.17585,"ny":0.32821,"ele":106.1,"cadence":62,"hr":112,"heading":14.1,"speed":3.68,"dt":10.0},{"nx":0.17693,"ny":0.32197,"ele":107.1,"cadence":64,"hr":113,"heading":4.0,"speed":3.92,"dt":10.0},{"nx":0.17854,"ny":0.31705,"ele":107.6,"cadence":59,"hr":116,"heading":7.7,"speed":3.11,"dt":10.0},{"nx":0.17943,"ny":0.31557,"ele":107.8,"cadence":0,"hr":114,"heading":14.0,"speed":0.95,"dt":10.0},{"nx":0.17943,"ny":0.31316,"ele":108.0,"cadence":53,"hr":108,"heading":0.0,"speed":1.51,"dt":10.0},{"nx":0.17721,"ny":0.30754,"ele":108.6,"cadence":46,"hr":105,"heading":350.8,"speed":3.56,"dt":10.0},{"nx":0.18073,"ny":0.30112,"ele":109.4,"cadence":49,"hr":106,"heading":12.7,"speed":4.12,"dt":10.0},{"nx":0.18201,"ny":0.29401,"ele":110.3,"cadence":51,"hr":110,"heading":4.3,"speed":4.47,"dt":10.0},{"nx":0.18381,"ny":0.28736,"ele":111.1,"cadence":70,"hr":112,"heading":6.3,"speed":4.19,"dt":10.0},{"nx":0.18671,"ny":0.28174,"ele":112.1,"cadence":59,"hr":115,"heading":12.0,"speed":3.6,"dt":10.0},{"nx":0.18746,"ny":0.27648,"ele":113.0,"cadence":53,"hr":116,"heading":3.4,"speed":3.3,"dt":10.0},{"nx":0.18746,"ny":0.27099,"ele":113.6,"cadence":60,"hr":116,"heading":0.0,"speed":3.44,"dt":10.0},{"nx":0.18789,"ny":0.265,"ele":114.3,"cadence":61,"hr":116,"heading":1.7,"speed":3.75,"dt":10.0},{"nx":0.18689,"ny":0.25916,"ele":114.7,"cadence":53,"hr":115,"heading":356.0,"speed":3.66,"dt":10.0},{"nx":0.18596,"ny":0.25509,"ele":115.4,"cadence":54,"hr":111,"heading":354.6,"speed":2.56,"dt":10.0},{"nx":0.18664,"ny":0.25122,"ele":115.6,"cadence":67,"hr":108,"heading":4.1,"speed":2.43,"dt":10.0},{"nx":0.1866,"ny":0.24731,"ele":115.8,"cadence":69,"hr":104,"heading":359.8,"speed":2.45,"dt":10.0},{"nx":0.18789,"ny":0.24302,"ele":115.6,"cadence":70,"hr":100,"heading":7.1,"speed":2.7,"dt":10.0},{"nx":0.18925,"ny":0.23879,"ele":116.1,"cadence":72,"hr":94,"heading":7.5,"speed":2.67,"dt":10.0},{"nx":0.19158,"ny":0.23506,"ele":116.9,"cadence":77,"hr":93,"heading":14.4,"speed":2.41,"dt":10.0},{"nx":0.19158,"ny":0.22999,"ele":117.3,"cadence":63,"hr":100,"heading":0.0,"speed":3.17,"dt":10.0},{"nx":0.19359,"ny":0.22612,"ele":118.2,"cadence":67,"hr":104,"heading":12.0,"speed":2.48,"dt":10.0},{"nx":0.19466,"ny":0.22101,"ele":118.6,"cadence":74,"hr":106,"heading":4.9,"speed":3.21,"dt":10.0},{"nx":0.19409,"ny":0.21568,"ele":119.0,"cadence":80,"hr":105,"heading":357.5,"speed":3.34,"dt":10.0},{"nx":0.1942,"ny":0.21068,"ele":120.0,"cadence":74,"hr":104,"heading":0.5,"speed":3.13,"dt":10.0},{"nx":0.19524,"ny":0.20588,"ele":120.6,"cadence":71,"hr":108,"heading":5.1,"speed":3.02,"dt":10.0},{"nx":0.19703,"ny":0.20174,"ele":121.2,"cadence":67,"hr":109,"heading":10.1,"speed":2.63,"dt":10.0},{"nx":0.20928,"ny":0.20153,"ele":121.5,"cadence":76,"hr":108,"heading":87.6,"speed":3.16,"dt":10.0},{"nx":0.22688,"ny":0.20149,"ele":121.6,"cadence":72,"hr":109,"heading":89.7,"speed":4.53,"dt":10.0},{"nx":0.23903,"ny":0.20041,"ele":121.6,"cadence":0,"hr":104,"heading":77.7,"speed":3.2,"dt":10.0},{"nx":0.2382,"ny":0.20023,"ele":121.7,"cadence":0,"hr":101,"heading":297.7,"speed":0.24,"dt":10.0},{"nx":0.23831,"ny":0.20016,"ele":128.7,"cadence":0,"hr":104,"heading":31.9,"speed":0.09,"dt":6.0},{"nx":0.23817,"ny":0.20028,"ele":130.9,"cadence":0,"hr":107,"heading":205.3,"speed":0.06,"dt":14.0},{"nx":0.24171,"ny":0.19852,"ele":131.1,"cadence":0,"hr":103,"heading":39.6,"speed":1.43,"dt":10.0},{"nx":0.25504,"ny":0.19637,"ele":131.3,"cadence":35,"hr":106,"heading":68.6,"speed":3.69,"dt":10.0},{"nx":0.27002,"ny":0.19659,"ele":131.8,"cadence":44,"hr":105,"heading":92.0,"speed":3.86,"dt":10.0},{"nx":0.28543,"ny":0.19682,"ele":132.7,"cadence":73,"hr":105,"heading":92.1,"speed":3.97,"dt":10.0},{"nx":0.29969,"ny":0.19796,"ele":133.3,"cadence":72,"hr":114,"heading":101.0,"speed":3.74,"dt":10.0},{"nx":0.31567,"ny":0.19797,"ele":133.5,"cadence":72,"hr":113,"heading":90.2,"speed":4.11,"dt":10.0},{"nx":0.32467,"ny":0.19493,"ele":133.9,"cadence":77,"hr":113,"heading":50.6,"speed":3.0,"dt":10.0},{"nx":0.32624,"ny":0.18907,"ele":134.4,"cadence":0,"hr":110,"heading":6.3,"speed":3.7,"dt":10.0},{"nx":0.32574,"ny":0.18572,"ele":136.6,"cadence":42,"hr":110,"heading":356.5,"speed":2.1,"dt":10.0},{"nx":0.31954,"ny":0.18165,"ele":137.2,"cadence":39,"hr":116,"heading":328.0,"speed":3.01,"dt":10.0},{"nx":0.32653,"ny":0.17904,"ele":138.1,"cadence":0,"hr":119,"heading":47.7,"speed":2.43,"dt":10.0},{"nx":0.32943,"ny":0.17435,"ele":138.4,"cadence":0,"hr":120,"heading":14.3,"speed":3.03,"dt":10.0},{"nx":0.32983,"ny":0.16688,"ele":138.8,"cadence":54,"hr":118,"heading":1.2,"speed":4.68,"dt":10.0},{"nx":0.32273,"ny":0.16405,"ele":139.2,"cadence":0,"hr":114,"heading":314.1,"speed":2.54,"dt":10.0},{"nx":0.33384,"ny":0.16188,"ele":139.9,"cadence":53,"hr":112,"heading":64.6,"speed":3.16,"dt":10.0},{"nx":0.33975,"ny":0.16064,"ele":140.0,"cadence":40,"hr":114,"heading":62.9,"speed":1.71,"dt":10.0},{"nx":0.34144,"ny":0.15419,"ele":140.3,"cadence":78,"hr":108,"heading":6.1,"speed":4.06,"dt":10.0},{"nx":0.34151,"ny":0.14841,"ele":139.8,"cadence":0,"hr":105,"heading":0.3,"speed":3.62,"dt":10.0},{"nx":0.34176,"ny":0.14811,"ele":139.6,"cadence":0,"hr":99,"heading":18.8,"speed":0.2,"dt":10.0},{"nx":0.34083,"ny":0.14738,"ele":139.6,"cadence":50,"hr":105,"heading":332.3,"speed":0.52,"dt":10.0},{"nx":0.34348,"ny":0.14588,"ele":139.6,"cadence":54,"hr":99,"heading":36.1,"speed":1.45,"dt":8.0},{"nx":0.35878,"ny":0.14588,"ele":139.6,"cadence":60,"hr":100,"heading":90.0,"speed":3.94,"dt":10.0},{"nx":0.36161,"ny":0.14631,"ele":139.6,"cadence":61,"hr":100,"heading":110.1,"speed":0.71,"dt":11.0},{"nx":0.36935,"ny":0.14549,"ele":139.7,"cadence":49,"hr":100,"heading":75.6,"speed":2.06,"dt":10.0},{"nx":0.37358,"ny":0.14368,"ele":139.7,"cadence":0,"hr":100,"heading":43.8,"speed":1.43,"dt":11.0},{"nx":0.37322,"ny":0.14354,"ele":139.6,"cadence":0,"hr":106,"heading":314.0,"speed":0.13,"dt":10.0},{"nx":0.3734,"ny":0.14336,"ele":139.7,"cadence":0,"hr":105,"heading":22.5,"speed":0.12,"dt":10.0},{"nx":0.37322,"ny":0.14329,"ele":139.7,"cadence":0,"hr":104,"heading":314.0,"speed":0.06,"dt":10.0},{"nx":0.37308,"ny":0.14327,"ele":139.7,"cadence":0,"hr":98,"heading":286.8,"speed":0.04,"dt":10.0},{"nx":0.3734,"ny":0.14364,"ele":139.7,"cadence":0,"hr":93,"heading":160.5,"speed":0.25,"dt":10.0},{"nx":0.37319,"ny":0.1438,"ele":139.7,"cadence":0,"hr":96,"heading":208.9,"speed":0.11,"dt":10.0},{"nx":0.37268,"ny":0.14359,"ele":139.8,"cadence":0,"hr":94,"heading":316.0,"speed":0.19,"dt":10.0},{"nx":0.37319,"ny":0.14357,"ele":139.8,"cadence":0,"hr":98,"heading":85.1,"speed":0.13,"dt":10.0},{"nx":0.3738,"ny":0.14368,"ele":139.8,"cadence":0,"hr":95,"heading":113.1,"speed":0.17,"dt":10.0},{"nx":0.37111,"ny":0.14357,"ele":139.9,"cadence":0,"hr":98,"heading":275.5,"speed":0.69,"dt":10.0},{"nx":0.37512,"ny":0.14604,"ele":140.0,"cadence":48,"hr":96,"heading":146.3,"speed":1.86,"dt":10.0},{"nx":0.37354,"ny":0.14656,"ele":140.1,"cadence":0,"hr":92,"heading":231.5,"speed":0.52,"dt":10.0},{"nx":0.37276,"ny":0.14661,"ele":140.1,"cadence":0,"hr":93,"heading":260.7,"speed":0.21,"dt":10.0}];
+
+const ELE_MIN=47.6,ELE_MAX=140.3,HR_MIN=84,HR_MAX=128,SPD_MAX=5.56;
+
+// ══ CANVAS ════════════════════════════════════════════════════════════════
+const cv=document.getElementById('c');
+const ctx=cv.getContext('2d');
+
+function resizeCanvas(){
+  const wrap=document.getElementById('canvas-wrap');
+  cv.width=wrap.offsetWidth;
+  cv.height=wrap.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize',resizeCanvas);
+
+function nm(v,a,b){if(b===a)return 0.5;return Math.max(0,Math.min(1,(v-a)/(b-a)));}
+
+// ══ STATE ═════════════════════════════════════════════════════════════════
+var playing=false,cycleT=0,lastT=0,lastIdx=-1;
+const FILL=20,DRAIN=7,CYCLE=27;
+
+var P={speed:1,width:3,fade:0.1,hrMix:1,glowAmt:0.4,
+       master:0.8,oscVol:0.25,clickVol:0.35,kickVol:0.5,delayMix:0.3};
+var T={osc:true,click:true,kick:true,filter:true,delay:true,lfo:true};
+
+// ══ PARAMS BINDINGS ═══════════════════════════════════════════════════════
+function bindSlider(id,key,did,fmt){
+  var el=document.getElementById(id),sp=document.getElementById(did);
+  el.addEventListener('input',function(){
+    P[key]=parseFloat(el.value);
+    sp.textContent=fmt(P[key]);
+    onParamChange(key);
+  });
+}
+function f2(v){return v.toFixed(2);}
+function f1(v){return v.toFixed(1);}
+// slider logarítmico: 0→1 mapea 32min→5s
+var REAL_DUR=1920; // duración real de la pedaleada en segundos
+document.getElementById('spd').addEventListener('input',function(){
+  var t=parseFloat(this.value);
+  var dur=REAL_DUR*Math.pow(5/REAL_DUR,t);
+  P.speed=REAL_DUR/dur;
+  var mins=Math.floor(dur/60),secs=Math.round(dur%60);
+  var durStr=dur<60?dur.toFixed(1)+'s':mins+':'+(secs<10?'0':'')+secs;
+  document.getElementById('spd-v').textContent=P.speed.toFixed(1)+'x · '+durStr;
+});
+bindSlider('wid','width','wid-v',f1);
+bindSlider('fad','fade','fad-v',f2);
+bindSlider('hrm','hrMix','hrm-v',f2);
+bindSlider('glow','glowAmt','glow-v',f2);
+bindSlider('master','master','master-v',f2);
+bindSlider('ovol','oscVol','ovol-v',f2);
+bindSlider('clvol','clickVol','clvol-v',f2);
+bindSlider('kvol','kickVol','kvol-v',f2);
+bindSlider('dmix','delayMix','dmix-v',f2);
+
+// toggles
+['osc','click','kick','filter','delay','lfo'].forEach(function(k){
+  var el=document.getElementById('tog-'+k);
+  el.addEventListener('click',function(){
+    T[k]=!T[k];
+    el.classList.toggle('on',T[k]);
+    onToggleChange(k);
+  });
+});
+
+// transport
+document.getElementById('btn-play').addEventListener('click',function(){
+  if(!AC) return;
+  playing=true;
+  document.getElementById('btn-play').classList.add('active');
+  document.getElementById('btn-pause').classList.remove('active');
+});
+document.getElementById('btn-pause').addEventListener('click',function(){
+  playing=false;
+  document.getElementById('btn-pause').classList.add('active');
+  document.getElementById('btn-play').classList.remove('active');
+});
+document.getElementById('btn-reset').addEventListener('click',function(){
+  cycleT=0; lastIdx=-1;
+  ctx.clearRect(0,0,cv.width,cv.height);
+});
+var muted=false;
+document.getElementById('btn-mute').addEventListener('click',function(){
+  muted=!muted;
+  if(AC) masterGain.gain.setTargetAtTime(muted?0:P.master,AC.currentTime,0.05);
+  this.classList.toggle('active',muted);
+  this.textContent=muted?'⊘ Unmute':'⊘ Mute';
+});
+
+// progress bar click para scrubbing
+document.getElementById('progress-bar').addEventListener('click',function(e){
+  var rect=this.getBoundingClientRect();
+  var pct=(e.clientX-rect.left)/rect.width;
+  cycleT=pct*FILL; lastIdx=-1;
+});
+
+// ══ AUDIO ═════════════════════════════════════════════════════════════════
+var AC,masterGain,filterNode,delayNode,delayFeedback,delayWet,delayDry,oscNode,oscGain,lfoNode,lfoGain;
+var windSpd=3,windDir=210;
+
+function initAudio(){
+  AC=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=AC.createGain(); masterGain.gain.value=P.master;
+  masterGain.connect(AC.destination);
+  filterNode=AC.createBiquadFilter(); filterNode.type='lowpass';
+  filterNode.frequency.value=400; filterNode.Q.value=1;
+  filterNode.connect(masterGain);
+  delayNode=AC.createDelay(2.0);
+  delayFeedback=AC.createGain(); delayFeedback.gain.value=0.35;
+  delayWet=AC.createGain(); delayWet.gain.value=P.delayMix;
+  delayDry=AC.createGain(); delayDry.gain.value=1-P.delayMix;
+  filterNode.connect(delayDry); filterNode.connect(delayNode);
+  delayNode.connect(delayFeedback); delayNode.connect(delayWet);
+  delayFeedback.connect(delayNode);
+  delayDry.connect(masterGain); delayWet.connect(masterGain);
+  oscNode=AC.createOscillator(); oscNode.type='triangle';
+  oscNode.frequency.value=80;
+  oscGain=AC.createGain(); oscGain.gain.value=T.osc?P.oscVol*0.3:0;
+  oscNode.connect(oscGain); oscGain.connect(filterNode); oscNode.start();
+  lfoNode=AC.createOscillator(); lfoNode.type='sine'; lfoNode.frequency.value=0.15;
+  lfoGain=AC.createGain(); lfoGain.gain.value=4;
+  lfoNode.connect(lfoGain); lfoGain.connect(oscNode.frequency); lfoNode.start();
+  fetchWind(); setInterval(fetchWind,60000);
+}
+
+function onParamChange(key){
+  if(!AC)return;
+  if(key==='master') masterGain.gain.setTargetAtTime(P.master,AC.currentTime,0.05);
+  if(key==='oscVol') oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
+  if(key==='delayMix'){
+    delayWet.gain.setTargetAtTime(P.delayMix,AC.currentTime,0.1);
+    delayDry.gain.setTargetAtTime(1-P.delayMix,AC.currentTime,0.1);
+  }
+}
+function onToggleChange(key){
+  if(!AC)return;
+  if(key==='osc') oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
+  if(key==='lfo') lfoGain.gain.setTargetAtTime(T.lfo?2+windSpd*0.8:0,AC.currentTime,0.1);
+  if(key==='delay'){
+    delayWet.gain.setTargetAtTime(T.delay?P.delayMix:0,AC.currentTime,0.1);
+    delayDry.gain.setTargetAtTime(T.delay?1-P.delayMix:1,AC.currentTime,0.1);
+  }
+}
+
+async function fetchWind(){
+  try{
+    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.055&longitude=-118.437&current=wind_speed_10m,wind_direction_10m&timezone=America%2FLos_Angeles');
+    if(r.ok){var d=await r.json();if(d.current){windSpd=d.current.wind_speed_10m||windSpd;windDir=d.current.wind_direction_10m||windDir;}}
+  }catch(e){}
+  document.getElementById('wv').textContent=windSpd.toFixed(1);
+  document.getElementById('wd').textContent=Math.round(windDir);
+  document.getElementById('wind-needle').style.transform='translate(-50%,-100%) rotate('+windDir+'deg)';
+  if(lfoNode&&T.lfo){
+    var rate=0.05+windSpd*0.08;
+    lfoNode.frequency.value=rate;
+    document.getElementById('lfo-rate').textContent=rate.toFixed(2);
+  }
+  if(lfoGain&&T.lfo) lfoGain.gain.value=2+windSpd*0.8;
+}
+
+function updateFilter(pt){
+  if(!AC)return;
+  var hrN=nm(pt.hr,window.HR_MIN_DYN||HR_MIN,window.HR_MAX_DYN||HR_MAX),spdN=nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX);
+  if(T.filter){
+    filterNode.frequency.setTargetAtTime(200+hrN*3300,AC.currentTime,0.3);
+    filterNode.Q.setTargetAtTime(0.5+spdN*7.5,AC.currentTime,0.2);
+    document.getElementById('d-filt').textContent=Math.round(200+hrN*3300)+'Hz';
+  }
+  if(T.delay){
+    var headN=pt.heading/360;
+    delayNode.delayTime.setTargetAtTime(0.05+headN*0.45,AC.currentTime,0.5);
+    delayFeedback.gain.setTargetAtTime(0.1+headN*0.5,AC.currentTime,0.5);
+  }
+  oscNode.frequency.setTargetAtTime(pt.ele,AC.currentTime,0.15);
+}
+
+function triggerClick(){
+  if(!AC||!T.click)return;
+  var buf=AC.createBuffer(1,Math.floor(AC.sampleRate*0.015),AC.sampleRate);
+  var d=buf.getChannelData(0);
+  for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+  var src=AC.createBufferSource(); src.buffer=buf;
+  var g=AC.createGain(); g.gain.value=P.clickVol*0.35;
+  src.connect(g); g.connect(filterNode); src.start();
+}
+
+function triggerKick(cad){
+  if(!AC||!T.kick)return;
+  var dur=0.28,o=AC.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(110,AC.currentTime);
+  o.frequency.exponentialRampToValueAtTime(32,AC.currentTime+dur);
+  var env=AC.createGain();
+  env.gain.setValueAtTime(P.kickVol*nm(cad,20,84),AC.currentTime);
+  env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
+  o.connect(env); env.connect(masterGain); o.start(); o.stop(AC.currentTime+dur);
+}
+
+// ══ VIENTO PARTÍCULAS ═════════════════════════════════════════════════════
+var wParts=[];
+var WP_MAX=120;
+
+function spawnWP(){
+  if(wParts.length>=WP_MAX)return;
+  var rad=((windDir+180)%360)*Math.PI/180;
+  var vx0=Math.sin(rad),vy0=-Math.cos(rad);
+  var fromRad=windDir*Math.PI/180;
+  var fx=Math.sin(fromRad),fy=-Math.cos(fromRad);
+  var x,y;
+  if(Math.abs(fx)>Math.abs(fy)){x=fx>0?-0.02:1.02;y=Math.random();}
+  else{x=Math.random();y=fy>0?-0.02:1.02;}
+  wParts.push({x,y,ax:vx0,ay:vy0,life:1,
+    decay:0.006+Math.random()*0.006,
+    len:0.04+windSpd*0.008,
+    alpha:0.5+Math.random()*0.4,
+    no:Math.random()*200});
+}
+
+function updateWindParticles(ts){
+  if(!T.lfo)return;
+  wParts=wParts.filter(function(p){return p.life>0;});
+  var tc=ts*0.00004;
+  var spd=0.003+windSpd*0.0008;
+  for(var i=0;i<wParts.length;i++){
+    var p=wParts[i];
+    var nx2=Math.sin(p.x*6+p.no+tc)*0.0004;
+    var ny2=Math.cos(p.y*6+p.no+tc)*0.0004;
+    p.x+=p.ax*spd+nx2;
+    p.y+=p.ay*spd+ny2;
+    p.life-=p.decay;
+    if(p.x<-0.05||p.x>1.05||p.y<-0.05||p.y>1.05)p.life=0;
+  }
+  if(Math.random()<0.3) spawnWP();
+}
+
+function drawWindParticles(S){
+  if(!T.lfo)return;
+  var spd=0.003+windSpd*0.0008;
+  for(var i=0;i<wParts.length;i++){
+    var p=wParts[i];
+    var px=p.x*S, py=p.y*S;
+    if(px<-5||px>S+5||py<-5||py>S+5)continue;
+    var dx=p.ax*spd*p.len*S;
+    var dy=p.ay*spd*p.len*S;
+    ctx.save();
+    ctx.globalAlpha=p.life*p.alpha;
+    ctx.strokeStyle='rgba(160,210,255,1)';
+    ctx.lineWidth=1.0; ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(px-dx,py-dy);
+    ctx.lineTo(px,py);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ══ VISUAL ═════════════════════════════════════════════════════════════════
+function lineColor(hr,alpha){
+  var HM2=window.HR_MIN_DYN||HR_MIN,HX2=window.HR_MAX_DYN||HR_MAX;
+  var hrN=nm(hr,HM2,HX2);
+  var h=28*(1-P.hrMix)+(220-hrN*220)*P.hrMix;
+  return 'hsla('+h+','+(60+hrN*30)+'%,'+(50+hrN*15)+'%,'+alpha+')';
+}
+
+var frameCount=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  var dt=0;
+  if(playing){
+    dt=Math.min((ts-lastT)/1000,0.05)*P.speed;
+    cycleT=(cycleT+dt)%CYCLE;
+  }
+  lastT=ts;
+  frameCount++;
+
+  var S=cv.width; // cuadrado
+  var filling=cycleT<FILL;
+  var headF=filling?cycleT/FILL:1;
+  var tailF=filling?0:(cycleT-FILL)/DRAIN;
+  var TD=trackData;
+  var n=TD.length;
+  var hi=Math.floor(headF*(n-1));
+  var ti=Math.floor(tailF*(n-1));
+  var EM=window.ELE_MIN_DYN||ELE_MIN,EX=window.ELE_MAX_DYN||ELE_MAX;
+  var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
+
+  // triggers
+  if(playing&&filling&&hi!==lastIdx&&hi<n){
+    var pt=TD[hi];
+    triggerClick();
+    if(pt.cadence>15) triggerKick(pt.cadence);
+    updateFilter(pt);
+    lastIdx=hi;
+    // live data
+    if(frameCount%2===0){
+      document.getElementById('d-ele').textContent=Math.round(pt.ele)+'m';
+      document.getElementById('d-hr').textContent=pt.hr+' bpm';
+      document.getElementById('d-cad').textContent=pt.cadence+' rpm';
+      document.getElementById('d-spd').textContent=pt.speed.toFixed(1)+' m/s';
+      document.getElementById('d-head').textContent=Math.round(pt.heading)+'°';
+    }
+  }
+  if(!playing||!filling) lastIdx=-1;
+
+  // progress
+  if(frameCount%3===0){
+    var pct=filling?cycleT/FILL:1;
+    document.getElementById('progress-fill').style.width=(pct*100)+'%';
+    var secs=Math.round(cycleT/CYCLE*(window.REAL_DUR||REAL_DUR)); // duración real
+    document.getElementById('prog-time').textContent=
+      Math.floor(secs/60)+':'+(secs%60<10?'0':'')+secs%60;
+    document.getElementById('prog-pt').textContent='pt '+hi+' / '+n;
+  }
+
+  // draw
+  ctx.fillStyle='rgba(0,0,0,'+P.fade+')';
+  ctx.fillRect(0,0,S,S);
+
+  // partículas de viento
+  updateWindParticles(ts);
+  drawWindParticles(S);
+  if(hi<=ti)return;
+
+  ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+  var segLen=hi-ti;
+  for(var i=ti+1;i<=hi;i++){
+    var prev=TD[i-1],curr=TD[i];
+    var pos=(i-ti)/segLen;
+    var eleN=nm(curr.ele,EM,EX);
+    var cadN=curr.cadence>0?0.4+nm(curr.cadence,20,84)*0.6:0.22;
+    var lw=P.width*(0.4+eleN*0.8)*cadN;
+    var alpha=filling?(0.5+pos*0.45)*cadN:pos*0.9*cadN;
+    if(P.glowAmt>0.02){
+      ctx.lineWidth=lw+5; ctx.strokeStyle=lineColor(curr.hr,alpha*P.glowAmt*0.3);
+      ctx.beginPath(); ctx.moveTo(prev.nx*S,prev.ny*S); ctx.lineTo(curr.nx*S,curr.ny*S); ctx.stroke();
+    }
+    ctx.lineWidth=lw; ctx.strokeStyle=lineColor(curr.hr,alpha);
+    ctx.beginPath(); ctx.moveTo(prev.nx*S,prev.ny*S); ctx.lineTo(curr.nx*S,curr.ny*S); ctx.stroke();
+  }
+  if(filling&&hi>0&&hi<n){
+    var hpt=TD[hi];
+    var hrN2=nm(hpt.hr,HM,HX),eN2=nm(hpt.ele,EM,EX);
+    ctx.beginPath(); ctx.arc(hpt.nx*S,hpt.ny*S,P.width*0.7+eN2*2+hrN2*1.5,0,Math.PI*2);
+    ctx.fillStyle=lineColor(hpt.hr,1);
+    ctx.shadowColor=lineColor(hpt.hr,0.8); ctx.shadowBlur=8+hrN2*10;
+    ctx.fill(); ctx.shadowBlur=0;
+  }
+  ctx.restore();
+}
+
+// ══ GPX UPLOAD ═══════════════════════════════════════════════════════════════
+var trackData = TRACK.slice(); // copia del track actual
+
+function parseGPX(text){
+  var parser=new DOMParser();
+  var xml=parser.parseFromString(text,'text/xml');
+  var ns='http://www.topografix.com/GPX/1/1';
+  var trkpts=xml.getElementsByTagNameNS(ns,'trkpt');
+  if(trkpts.length===0) trkpts=xml.getElementsByTagName('trkpt');
+  var pts=[];
+  var fmt='%Y-%m-%dT%H:%M:%SZ';
+
+  for(var i=0;i<trkpts.length;i++){
+    var tp=trkpts[i];
+    var lat=parseFloat(tp.getAttribute('lat'));
+    var lon=parseFloat(tp.getAttribute('lon'));
+    var eleEl=tp.getElementsByTagName('ele')[0]||tp.getElementsByTagNameNS('*','ele')[0];
+    var ele=eleEl?parseFloat(eleEl.textContent):90;
+    var timeEl=tp.getElementsByTagName('time')[0]||tp.getElementsByTagNameNS('*','time')[0];
+    var timeStr=timeEl?timeEl.textContent:'';
+    // cadencia
+    var cad=0;
+    var cadEls=tp.getElementsByTagName('cadence');
+    if(cadEls.length===0) cadEls=tp.getElementsByTagNameNS('*','cadence');
+    if(cadEls.length===0) cadEls=tp.getElementsByTagNameNS('*','cad');
+    if(cadEls.length>0) cad=parseInt(cadEls[0].textContent)||0;
+    // HR
+    var hr=100;
+    var hrEls=tp.getElementsByTagName('hr');
+    if(hrEls.length===0) hrEls=tp.getElementsByTagNameNS('*','hr');
+    if(hrEls.length>0) hr=parseInt(hrEls[0].textContent)||100;
+    pts.push({lat,lon,ele,time:timeStr,cadence:cad,hr});
+  }
+  if(pts.length<2) return null;
+
+  // calcular bounds
+  var latMin=Infinity,latMax=-Infinity,lonMin=Infinity,lonMax=-Infinity;
+  var eleMin=Infinity,eleMax=-Infinity,hrMin=Infinity,hrMax=-Infinity,spdMax=0;
+  for(var p of pts){
+    latMin=Math.min(latMin,p.lat); latMax=Math.max(latMax,p.lat);
+    lonMin=Math.min(lonMin,p.lon); lonMax=Math.max(lonMax,p.lon);
+    eleMin=Math.min(eleMin,p.ele); eleMax=Math.max(eleMax,p.ele);
+    hrMin=Math.min(hrMin,p.hr);   hrMax=Math.max(hrMax,p.hr);
+  }
+  var latPad=(latMax-latMin)*0.08, lonPad=(lonMax-lonMin)*0.08;
+  latMin-=latPad; latMax+=latPad; lonMin-=lonPad; lonMax+=lonPad;
+
+  // calcular heading, speed, dt
+  var normalized=[];
+  var totalTime=0;
+  for(var i=0;i<pts.length;i++){
+    var p=pts[i];
+    var nx=0.07+(p.lon-lonMin)/(lonMax-lonMin)*0.86;
+    var ny=0.07+(1-(p.lat-latMin)/(latMax-latMin))*0.86;
+    var heading=0,speed=0,dt=10;
+    if(i>0){
+      var p0=pts[i-1];
+      var dlat=(p.lat-p0.lat)*111320;
+      var dlon=(p.lon-p0.lon)*111320*Math.cos(p0.lat*Math.PI/180);
+      var dist=Math.sqrt(dlat*dlat+dlon*dlon);
+      heading=(Math.atan2(dlon,dlat)*180/Math.PI+360)%360;
+      try{
+        var t0=new Date(p0.time),t1=new Date(p.time);
+        dt=Math.max(1,(t1-t0)/1000);
+      }catch(e){ dt=10; }
+      speed=dist/dt;
+      spdMax=Math.max(spdMax,speed);
+    }
+    totalTime+=dt;
+    normalized.push({nx:Math.round(nx*100000)/100000,ny:Math.round(ny*100000)/100000,
+      ele:p.ele,cadence:p.cadence,hr:p.hr,
+      heading:Math.round(heading*10)/10,
+      speed:Math.round(speed*100)/100,dt:Math.round(dt*10)/10});
+  }
+
+  return {pts:normalized,eleMin,eleMax,hrMin,hrMax,spdMax,
+          totalSecs:Math.round(totalTime),count:pts.length};
+}
+
+function loadGPXData(result){
+  // actualizar constantes globales
+  window.ELE_MIN_DYN=result.eleMin;
+  window.ELE_MAX_DYN=result.eleMax===result.eleMin?result.eleMin+1:result.eleMax;
+  window.HR_MIN_DYN=result.hrMin;
+  window.HR_MAX_DYN=result.hrMax===result.hrMin?result.hrMin+1:result.hrMax;
+  window.SPD_MAX_DYN=result.spdMax<0.1?1:result.spdMax;
+  window.REAL_DUR=result.totalSecs;
+  trackData=result.pts;
+  // reset
+  cycleT=0; lastIdx=-1;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  // actualizar UI
+  var mins=Math.floor(result.totalSecs/60),secs=result.totalSecs%60;
+  document.querySelector('.panel-sub').textContent=
+    result.count+' pts · '+mins+'min '+secs+'s · ele '+Math.round(result.eleMin)+'→'+Math.round(result.eleMax)+'m';
+  document.getElementById('spd').value=0;
+  document.getElementById('spd-v').textContent='1.0x · '+mins+':'+(secs<10?'0':'')+secs;
+  P.speed=1;
+}
+
+// drag & drop + file input
+var gpxDrop=document.getElementById('gpx-drop');
+var gpxFile=document.getElementById('gpx-file');
+
+gpxDrop.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
+gpxDrop.addEventListener('dragleave',function(){this.classList.remove('drag');});
+gpxDrop.addEventListener('drop',function(e){
+  e.preventDefault(); this.classList.remove('drag');
+  var f=e.dataTransfer.files[0];
+  if(f) readGPXFile(f);
+});
+gpxFile.addEventListener('change',function(){
+  if(this.files[0]) readGPXFile(this.files[0]);
+});
+
+function readGPXFile(file){
+  var info=document.getElementById('gpx-info');
+  info.textContent='Cargando...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var result=parseGPX(e.target.result);
+    if(!result){ info.textContent='Error: GPX no válido'; return; }
+    loadGPXData(result);
+    info.textContent=file.name+' · '+result.count+' pts';
+    if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
+  };
+  reader.readAsText(file);
+}
+
+// ══ START ═══════════════════════════════════════════════════════════════════
+document.getElementById('start').addEventListener('click',function(){
+  this.style.display='none';
+  initAudio();
+  playing=true;
+  document.getElementById('btn-play').classList.add('active');
+  requestAnimationFrame(loop);
+});
+</script>
+</body>
+</html>
