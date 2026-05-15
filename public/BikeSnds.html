@@ -59,8 +59,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   flex-shrink: 0;
 }
 .panel-title {
-  font-size: 2.2vh; letter-spacing: 0.5vh;
-  color: rgba(255,255,255,0.95); text-transform: uppercase;
+  font-size: 2.6vh; letter-spacing: 0.5vh;
+  color: #fff; text-transform: uppercase;
   font-weight: 400;
 }
 .panel-sub {
@@ -97,8 +97,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   flex-shrink: 0;
 }
 .section-title {
-  font-size: 1.1vh; letter-spacing: 0.3vh;
-  color: rgba(255,255,255,0.75); text-transform: uppercase;
+  font-size: 1.2vh; letter-spacing: 0.3vh;
+  color: rgba(255,255,255,0.9); text-transform: uppercase;
   margin-bottom: 2%;
 }
 
@@ -108,8 +108,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   gap: 3%; margin-bottom: 1.8%;
 }
 .row label {
-  font-size: 1.05vh; letter-spacing: 0.15vh;
-  color: rgba(255,255,255,0.85); text-transform: uppercase;
+  font-size: 1.2vh; letter-spacing: 0.15vh;
+  color: rgba(255,255,255,0.9); text-transform: uppercase;
   width: 32%; flex-shrink: 0;
 }
 .row input[type=range] {
@@ -117,7 +117,7 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   height: 2px; cursor: pointer;
 }
 .row .val {
-  font-size: 1.15vh; color: #fff;
+  font-size: 1.3vh; color: #fff;
   width: 24%; text-align: right; flex-shrink: 0;
 }
 
@@ -126,8 +126,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   display: flex; align-items: center; gap: 3%; margin-bottom: 1.8%;
 }
 .toggle-row label {
-  font-size: 1.05vh; letter-spacing: 0.15vh;
-  color: rgba(255,255,255,0.85); text-transform: uppercase;
+  font-size: 1.2vh; letter-spacing: 0.15vh;
+  color: rgba(255,255,255,0.9); text-transform: uppercase;
   flex: 1;
 }
 .toggle {
@@ -155,8 +155,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   display: flex; flex-direction: column; gap: 1.5%;
 }
 .readout-title {
-  font-size: 1vh; letter-spacing: 0.3vh;
-  color: rgba(255,255,255,0.7); text-transform: uppercase;
+  font-size: 1.2vh; letter-spacing: 0.3vh;
+  color: rgba(255,255,255,0.9); text-transform: uppercase;
   margin-bottom: 1%; flex-shrink: 0;
 }
 .data-grid {
@@ -169,12 +169,12 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   padding: 5% 6%;
 }
 .data-label {
-  font-size: 0.95vh; letter-spacing: 0.2vh;
-  color: rgba(255,255,255,0.7); text-transform: uppercase;
+  font-size: 1.05vh; letter-spacing: 0.2vh;
+  color: rgba(255,255,255,0.85); text-transform: uppercase;
   margin-bottom: 1%;
 }
 .data-val {
-  font-size: 2.8vh; font-weight: bold;
+  font-size: 3.2vh; font-weight: bold;
   color: #fff;
 }
 
@@ -195,7 +195,7 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 }
 .progress-labels {
   display: flex; justify-content: space-between;
-  font-size: 1vh; color: rgba(255,255,255,0.75);
+  font-size: 1.1vh; color: rgba(255,255,255,0.85);
   margin-top: 1%;
 }
 
@@ -220,7 +220,7 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   transition: transform 1s ease;
 }
 .wind-info {
-  font-size: 1.1vh; color: rgba(255,255,255,0.8);
+  font-size: 1.2vh; color: rgba(255,255,255,0.9);
   letter-spacing: 0.1vh;
 }
 .wind-info span { color: rgba(100,180,255,0.6); }
@@ -250,6 +250,18 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   min-height: 1.2vh;
 }
 
+.patch-section{padding:2% 6% 1%;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;}
+.patch-title{font-size:1.3vh;letter-spacing:0.3vh;color:#fff;text-transform:uppercase;margin-bottom:2%;}
+.patch-col-labels{display:flex;margin-left:8vh;gap:0;}
+.patch-col-label{font-size:0.7vh;color:rgba(255,255,255,0.6);text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);height:5.5vh;width:2vh;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.patch-row{display:flex;align-items:center;margin-bottom:0.5%;gap:0;}
+.patch-row-label{font-size:0.9vh;text-transform:uppercase;width:8vh;flex-shrink:0;text-align:right;padding-right:1.2vh;}
+.patch-dot-wrap{display:flex;align-items:center;justify-content:center;width:2vh;flex-shrink:0;padding:0.2vh 0;}
+.patch-dot{width:1.4vh;height:1.4vh;border-radius:50%;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.03);cursor:pointer;transition:all 0.15s;position:relative;}
+.patch-dot:hover{border-color:rgba(255,255,255,0.5);}
+.patch-dot.active{border-color:transparent;box-shadow:0 0 0.5vh currentColor;}
+.patch-dot.active::after{content:'';position:absolute;inset:25%;border-radius:50%;background:currentColor;}
+.pdi-item{display:flex;align-items:center;gap:3%;font-size:0.85vh;color:rgba(255,255,255,0.6);padding:0.8% 0;border-bottom:1px solid rgba(255,255,255,0.04)}.pdi-dot{width:0.8vh;height:0.8vh;border-radius:50%;background:#fa0;flex-shrink:0}.pdi-name{flex:1}.pdi-del{cursor:pointer;color:rgba(255,80,60,0.6);padding:0 0.5vh}
 /* start overlay */
 #start {
   position: absolute; inset: 0;
@@ -269,7 +281,7 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 
 <div id="start">
   <h1>BikeSnds</h1>
-  <p>click to start · Flowing Cartographies</p>
+  <p>Flowing Cartographies · click to start</p>
 </div>
 
 <div id="app">
@@ -296,6 +308,14 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
       <div class="gpx-drop-label">⬆ Cargar GPX</div>
       <div class="gpx-info" id="gpx-info"></div>
     </div>
+    <div id="mode-wrap" style="display:none;padding:1.5% 6%;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:3%;margin-bottom:1.5%;">
+        <div style="font-size:0.9vh;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.2vh;flex:1;">Modo</div>
+        <button id="btn-mono" class="btn active">MONO</button>
+        <button id="btn-poly" class="btn">POLY</button>
+      </div>
+      <select id="track-sel" style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);font-family:Courier New;font-size:0.9vh;padding:1.5%;cursor:pointer;outline:none;"></select>
+    </div>
 
     <!-- PROGRESS -->
     <div class="progress-wrap">
@@ -307,6 +327,13 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
         <span id="prog-pt">pt 0 / 195</span>
         <span>32:00</span>
       </div>
+    </div>
+
+    <!-- PATCHERA -->
+    <div class="patch-section">
+      <div class="patch-title">Patch Matrix</div>
+      <div class="patch-col-labels" id="patch-col-labels"></div>
+      <div id="patch-grid"></div>
     </div>
 
     <!-- VELOCIDAD -->
@@ -415,6 +442,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
       <div style="display:none"><span id="d-head"></span><span id="d-filt"></span></div>
     </div>
 
+    <!-- PDIs -->
+    <div class="section"><div class="section-title">PDIs</div><div id="pdi-list" style="max-height:5vh;overflow-y:auto;"></div></div>
     <!-- WIND -->
     <div class="wind-row">
       <div class="wind-compass-mini">
@@ -457,7 +486,8 @@ function nm(v,a,b){if(b===a)return 0.5;return Math.max(0,Math.min(1,(v-a)/(b-a))
 
 // ══ STATE ═════════════════════════════════════════════════════════════════
 var playing=false,cycleT=0,lastT=0,lastIdx=-1;
-const FILL=20,DRAIN=7,CYCLE=27;
+var REAL_DUR=1920;
+var FILL=REAL_DUR,DRAIN=Math.round(REAL_DUR*0.15),CYCLE=FILL+DRAIN;
 
 var P={speed:1,width:3,fade:0.1,hrMix:1,glowAmt:0.4,
        master:0.8,oscVol:0.25,clickVol:0.35,kickVol:0.5,delayMix:0.3};
@@ -474,15 +504,13 @@ function bindSlider(id,key,did,fmt){
 }
 function f2(v){return v.toFixed(2);}
 function f1(v){return v.toFixed(1);}
-// slider logarítmico: 0→1 mapea 32min→5s
-var REAL_DUR=1920; // duración real de la pedaleada en segundos
+// slider logarítmico 1x → 60x
 document.getElementById('spd').addEventListener('input',function(){
   var t=parseFloat(this.value);
-  var dur=REAL_DUR*Math.pow(5/REAL_DUR,t);
-  P.speed=REAL_DUR/dur;
+  P.speed=Math.exp(t*Math.log(60));
+  var dur=REAL_DUR/P.speed;
   var mins=Math.floor(dur/60),secs=Math.round(dur%60);
-  var durStr=dur<60?dur.toFixed(1)+'s':mins+':'+(secs<10?'0':'')+secs;
-  document.getElementById('spd-v').textContent=P.speed.toFixed(1)+'x · '+durStr;
+  document.getElementById('spd-v').textContent=P.speed.toFixed(1)+'x '+(dur<60?Math.round(dur)+'s':mins+':'+(secs<10?'0':'')+secs);
 });
 bindSlider('wid','width','wid-v',f1);
 bindSlider('fad','fade','fad-v',f2);
@@ -513,6 +541,7 @@ document.getElementById('btn-play').addEventListener('click',function(){
 });
 document.getElementById('btn-pause').addEventListener('click',function(){
   playing=false;
+  if(AC) oscGain.gain.setTargetAtTime(0,AC.currentTime,0.1);
   document.getElementById('btn-pause').classList.add('active');
   document.getElementById('btn-play').classList.remove('active');
 });
@@ -556,7 +585,7 @@ function initAudio(){
   delayDry.connect(masterGain); delayWet.connect(masterGain);
   oscNode=AC.createOscillator(); oscNode.type='triangle';
   oscNode.frequency.value=80;
-  oscGain=AC.createGain(); oscGain.gain.value=T.osc?P.oscVol*0.3:0;
+  oscGain=AC.createGain(); oscGain.gain.value=0; // silencio hasta que applyPatches lo active
   oscNode.connect(oscGain); oscGain.connect(filterNode); oscNode.start();
   lfoNode=AC.createOscillator(); lfoNode.type='sine'; lfoNode.frequency.value=0.15;
   lfoGain=AC.createGain(); lfoGain.gain.value=4;
@@ -597,22 +626,6 @@ async function fetchWind(){
     document.getElementById('lfo-rate').textContent=rate.toFixed(2);
   }
   if(lfoGain&&T.lfo) lfoGain.gain.value=2+windSpd*0.8;
-}
-
-function updateFilter(pt){
-  if(!AC)return;
-  var hrN=nm(pt.hr,window.HR_MIN_DYN||HR_MIN,window.HR_MAX_DYN||HR_MAX),spdN=nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX);
-  if(T.filter){
-    filterNode.frequency.setTargetAtTime(200+hrN*3300,AC.currentTime,0.3);
-    filterNode.Q.setTargetAtTime(0.5+spdN*7.5,AC.currentTime,0.2);
-    document.getElementById('d-filt').textContent=Math.round(200+hrN*3300)+'Hz';
-  }
-  if(T.delay){
-    var headN=pt.heading/360;
-    delayNode.delayTime.setTargetAtTime(0.05+headN*0.45,AC.currentTime,0.5);
-    delayFeedback.gain.setTargetAtTime(0.1+headN*0.5,AC.currentTime,0.5);
-  }
-  oscNode.frequency.setTargetAtTime(pt.ele,AC.currentTime,0.15);
 }
 
 function triggerClick(){
@@ -714,6 +727,57 @@ function loop(ts){
   frameCount++;
 
   var S=cv.width; // cuadrado
+
+  if(polyMode && allTracks.length>1){
+    if(!polyStates.length) polyStates=allTracks.map(function(){return{cycleT:0,lastIdx:-1};});
+    for(var ti_=0;ti_<allTracks.length;ti_++){
+      var ps=polyStates[ti_], trk=allTracks[ti_];
+      if(playing) ps.cycleT=(ps.cycleT+dt)%CYCLE;
+      var pf=ps.cycleT<FILL;
+      var phF=pf?ps.cycleT/FILL:1, ptF=pf?0:(ps.cycleT-FILL)/DRAIN;
+      var TD2=trk.pts, n2=TD2.length;
+      var hi2=Math.floor(phF*(n2-1)), ti2=Math.floor(ptF*(n2-1));
+      var hue2=POLY_COLORS[ti_%POLY_COLORS.length];
+      var EM2=trk.eleMin, EX2=trk.eleMax;
+      if(ti_===0 && pf && hi2!==ps.lastIdx && hi2<n2){
+        var pt2=TD2[hi2]; triggerClick();
+        if(pt2.cadence>15) triggerKick(pt2.cadence);
+        applyPatches(pt2); checkPDIs(pt2); ps.lastIdx=hi2;
+        if(frameCount%2===0){
+          document.getElementById('d-ele').textContent=Math.round(pt2.ele)+'m';
+          document.getElementById('d-hr').textContent=pt2.hr+' bpm';
+          document.getElementById('d-cad').textContent=pt2.cadence+' rpm';
+          document.getElementById('d-spd').textContent=pt2.speed.toFixed(1)+' m/s';
+        }
+      }
+      if(!pf) ps.lastIdx=-1;
+      if(hi2>ti2){
+        ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+        var segLen2=hi2-ti2;
+        for(var i2=ti2+1;i2<=hi2;i2++){
+          var prev2=TD2[i2-1],curr2=TD2[i2];
+          var pos2=(i2-ti2)/segLen2;
+          var eleN2=nm(curr2.ele,EM2,EX2);
+          var cadN2=curr2.cadence>0?0.4+nm(curr2.cadence,20,84)*0.6:0.22;
+          var lw2=P.width*(window.patchWidth||1)*(0.4+eleN2*0.8)*cadN2;
+          var alp2=pf?(0.5+pos2*0.45)*cadN2:pos2*0.9*cadN2;
+          ctx.lineWidth=lw2+4; ctx.strokeStyle='hsla('+hue2+',50%,60%,'+(alp2*0.1)+')';
+          ctx.beginPath();ctx.moveTo(prev2.nx*S,prev2.ny*S);ctx.lineTo(curr2.nx*S,curr2.ny*S);ctx.stroke();
+          ctx.lineWidth=lw2; ctx.strokeStyle='hsla('+hue2+',80%,62%,'+alp2+')';
+          ctx.beginPath();ctx.moveTo(prev2.nx*S,prev2.ny*S);ctx.lineTo(curr2.nx*S,curr2.ny*S);ctx.stroke();
+        }
+        if(pf&&hi2>0&&hi2<n2){
+          var hpt2=TD2[hi2],eN3=nm(hpt2.ele,EM2,EX2);
+          ctx.beginPath();ctx.arc(hpt2.nx*S,hpt2.ny*S,P.width*0.7+eN3*2+1,0,Math.PI*2);
+          ctx.fillStyle='hsla('+hue2+',90%,80%,1)';ctx.shadowColor='hsla('+hue2+',90%,70%,0.8)';
+          ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
+        }
+        ctx.restore();
+      }
+    }
+    drawPDIs(S); return;
+  }
+
   var filling=cycleT<FILL;
   var headF=filling?cycleT/FILL:1;
   var tailF=filling?0:(cycleT-FILL)/DRAIN;
@@ -729,18 +793,20 @@ function loop(ts){
     var pt=TD[hi];
     triggerClick();
     if(pt.cadence>15) triggerKick(pt.cadence);
-    updateFilter(pt);
+    applyPatches(pt);
+    checkPDIs(pt);
     lastIdx=hi;
-    // live data
-    if(frameCount%2===0){
-      document.getElementById('d-ele').textContent=Math.round(pt.ele)+'m';
-      document.getElementById('d-hr').textContent=pt.hr+' bpm';
-      document.getElementById('d-cad').textContent=pt.cadence+' rpm';
-      document.getElementById('d-spd').textContent=pt.speed.toFixed(1)+' m/s';
-      document.getElementById('d-head').textContent=Math.round(pt.heading)+'°';
-    }
   }
   if(!playing||!filling) lastIdx=-1;
+
+  // live data — actualizar siempre con el punto actual
+  if(hi>=0 && hi<n && TD[hi]){
+    var cur=TD[hi];
+    document.getElementById('d-ele').textContent=Math.round(cur.ele)+'m';
+    document.getElementById('d-hr').textContent=cur.hr+' bpm';
+    document.getElementById('d-cad').textContent=cur.cadence+' rpm';
+    document.getElementById('d-spd').textContent=cur.speed.toFixed(1)+' m/s';
+  }
 
   // progress
   if(frameCount%3===0){
@@ -753,7 +819,8 @@ function loop(ts){
   }
 
   // draw
-  ctx.fillStyle='rgba(0,0,0,'+P.fade+')';
+  var aF=window.patchFade!=null?window.patchFade:P.fade;
+  ctx.fillStyle='rgba(0,0,0,'+aF+')';
   ctx.fillRect(0,0,S,S);
 
   // partículas de viento
@@ -768,7 +835,8 @@ function loop(ts){
     var pos=(i-ti)/segLen;
     var eleN=nm(curr.ele,EM,EX);
     var cadN=curr.cadence>0?0.4+nm(curr.cadence,20,84)*0.6:0.22;
-    var lw=P.width*(0.4+eleN*0.8)*cadN;
+    var pw=window.patchWidth||1;
+    var lw=P.width*pw*(0.4+eleN*0.8)*cadN;
     var alpha=filling?(0.5+pos*0.45)*cadN:pos*0.9*cadN;
     if(P.glowAmt>0.02){
       ctx.lineWidth=lw+5; ctx.strokeStyle=lineColor(curr.hr,alpha*P.glowAmt*0.3);
@@ -786,6 +854,7 @@ function loop(ts){
     ctx.fill(); ctx.shadowBlur=0;
   }
   ctx.restore();
+  drawPDIs(S);
 }
 
 // ══ GPX UPLOAD ═══════════════════════════════════════════════════════════════
@@ -875,6 +944,180 @@ function loadGPXData(result){
   window.HR_MAX_DYN=result.hrMax===result.hrMin?result.hrMin+1:result.hrMax;
   window.SPD_MAX_DYN=result.spdMax<0.1?1:result.spdMax;
   window.REAL_DUR=result.totalSecs;
+  REAL_DUR=result.totalSecs;
+  FILL=REAL_DUR;
+  DRAIN=Math.round(REAL_DUR*0.15);
+  CYCLE=FILL+DRAIN;
+  trackData=result.pts;
+  // reset
+  cycleT=0; lastIdx=-1;
+  ctx.clearRect(0,0,cv.width,cv.height);
+  // actualizar UI
+  var mins=Math.floor(result.totalSecs/60),secs=result.totalSecs%60;
+  document.querySelector('.panel-sub').textContent=
+    result.count+' pts · '+mins+'min '+secs+'s · ele '+Math.round(result.eleMin)+'→'+Math.round(result.eleMax)+'m';
+  document.getElementById('spd').value=0;
+  document.getElementById('spd-v').textContent='1.0x · '+mins+':'+(secs<10?'0':'')+secs;
+  P.speed=1;
+}
+
+// drag & drop + file input
+var gpxDrop=document.getElementById('gpx-drop');
+var gpxFile=document.getElementById('gpx-file');
+
+gpxDrop.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
+gpxDrop.addEventListener('dragleave',function(){this.classList.remove('drag');});
+gpxDrop.addEventListener('drop',function(e){
+  e.preventDefault(); this.classList.remove('drag');
+  var f=e.dataTransfer.files[0];
+  if(f) readGPXFile(f);
+});
+gpxFile.addEventListener('change',function(){
+  if(this.files[0]) readGPXFile(this.files[0]);
+});
+
+
+
+function readGPXFile(file){
+  var info=document.getElementById('gpx-info');info.textContent='Cargando...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var tracks=parseGPXMulti(e.target.result);
+    if(!tracks||!tracks.length){info.textContent='Error';return;}
+    allTracks=tracks;
+    var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel');
+    if(tracks.length>1){
+      wrap.style.display='block';sel.innerHTML='';
+      tracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
+      sel.onchange=function(){loadGPXData(tracks[parseInt(this.value)]);};
+    }else wrap.style.display='none';
+    loadGPXData(tracks[0]);info.textContent=file.name;
+    if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
+  };reader.readAsText(file);
+}
+
+// ══ PATCH MATRIX ══════════════════════════════════════════════════════════════
+const SOURCES=['ELE','HR','CAD','SPD','WIND','LFO'];
+const DESTS=['OSC·F','FILT·C','FILT·R','DLY·T','DLY·F','WIDTH','COLOR','FADE'];
+const SRC_COLORS=['#4af','#f64','#fa0','#8f8','#adf','#d8f'];
+var patches=[[1,0,0,0,0,1,0,0],[0,1,0,0,0,0,1,0],[0,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,1,1,0,0,0],[0,0,0,0,0,0,0,0]];
+var srcVals=[0,0,0,0,0,0];
+function buildPatchMatrix(){
+  var cl=document.getElementById('patch-col-labels'),gr=document.getElementById('patch-grid');
+  if(!cl||!gr)return;cl.innerHTML='';gr.innerHTML='';
+  DESTS.forEach(function(d){var el=document.createElement('div');el.className='patch-col-label';el.textContent=d;cl.appendChild(el);});
+  SOURCES.forEach(function(src,si){
+    var row=document.createElement('div');row.className='patch-row';
+    var lbl=document.createElement('div');lbl.className='patch-row-label';lbl.textContent=src;lbl.style.color=SRC_COLORS[si];row.appendChild(lbl);
+    DESTS.forEach(function(dst,di){
+      var wrap=document.createElement('div');wrap.className='patch-dot-wrap';
+      var dot=document.createElement('div');dot.className='patch-dot';dot.style.color=SRC_COLORS[si];
+      dot.dataset.src=si;dot.dataset.dst=di;dot.title=src+' to '+dst;
+      if(patches[si][di]>0)dot.classList.add('active');
+      dot.addEventListener('click',function(){var s=parseInt(this.dataset.src),d=parseInt(this.dataset.dst);patches[s][d]=patches[s][d]>0?0:1;this.classList.toggle('active',patches[s][d]>0);});
+      wrap.appendChild(dot);row.appendChild(wrap);
+    });gr.appendChild(row);
+  });
+}
+function hasPatch(dst){for(var s=0;s<patches.length;s++)if(patches[s][dst]>0)return true;return false;}
+function updateSrcVals(pt){
+  var EM=window.ELE_MIN_DYN||ELE_MIN,EX=window.ELE_MAX_DYN||ELE_MAX,HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
+  srcVals[0]=nm(pt.ele,EM,EX);srcVals[1]=nm(pt.hr,HM,HX);srcVals[2]=pt.cadence>0?nm(pt.cadence,20,90):0;
+  srcVals[3]=nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX);srcVals[4]=nm(windSpd,0,15);
+  srcVals[5]=(Math.sin(Date.now()*0.001*(0.05+windSpd*0.08))+1)*0.5;
+}
+function getPatchedVal(dst,bv){var t=0,c=0;for(var s=0;s<patches.length;s++){if(patches[s][dst]>0){t+=srcVals[s];c++;}}if(!c)return bv;return Math.max(0,Math.min(1,t/c));}
+function applyPatches(pt){
+  if(!AC)return;updateSrcVals(pt);
+  var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
+  if(hasPatch(0))oscNode.frequency.setTargetAtTime(40+getPatchedVal(0,0.5)*260,AC.currentTime,0.2);
+  else oscNode.frequency.setTargetAtTime(pt.ele,AC.currentTime,0.2);
+  // activar gain del osc solo si toggle está on
+  oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
+  if(T.filter){
+    filterNode.frequency.setTargetAtTime(hasPatch(1)?150+getPatchedVal(1,0.5)*3850:200+nm(pt.hr,HM,HX)*3300,AC.currentTime,0.3);
+    filterNode.Q.setTargetAtTime(hasPatch(2)?0.5+getPatchedVal(2,0.5)*9.5:0.5+nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX)*7.5,AC.currentTime,0.2);
+  }
+  if(T.delay){
+    var hn=pt.heading/360;
+    delayNode.delayTime.setTargetAtTime(hasPatch(3)?0.05+getPatchedVal(3,0.5)*0.45:0.05+hn*0.45,AC.currentTime,0.4);
+    delayFeedback.gain.setTargetAtTime(hasPatch(4)?0.1+getPatchedVal(4,0.5)*0.5:0.1+hn*0.5,AC.currentTime,0.4);
+  }
+  window.patchWidth=hasPatch(5)?0.3+getPatchedVal(5,0.5)*1.4:1.0;
+  window.patchHue=hasPatch(6)?getPatchedVal(6,0.5):null;
+  window.patchFade=hasPatch(7)?P.fade*(0.3+getPatchedVal(7,0.5)*1.4):null;
+}
+
+// ══ MONO / POLY ═══════════════════════════════════════════════════════════════
+document.getElementById('btn-mono').addEventListener('click',function(){
+  polyMode=false;
+  document.getElementById('btn-mono').classList.add('active');
+  document.getElementById('btn-poly').classList.remove('active');
+  document.getElementById('track-sel').style.display='block';
+  var idx=parseInt(document.getElementById('track-sel').value)||0;
+  if(allTracks.length>0) loadGPXData(allTracks[idx]);
+  cycleT=0; lastIdx=-1; ctx.clearRect(0,0,cv.width,cv.height);
+});
+document.getElementById('btn-poly').addEventListener('click',function(){
+  polyMode=true;
+  document.getElementById('btn-poly').classList.add('active');
+  document.getElementById('btn-mono').classList.remove('active');
+  document.getElementById('track-sel').style.display='none';
+  polyStates=allTracks.map(function(){return{cycleT:0,lastIdx:-1};});
+  cycleT=0; ctx.clearRect(0,0,cv.width,cv.height);
+});
+
+// ══ START ═══════════════════════════════════════════════════════════════════
+var pdiList=[];
+document.getElementById('canvas-wrap').addEventListener('click',function(e){
+  if(!trackData||trackData.length<2)return;
+  var rect=cv.getBoundingClientRect();
+  var name=prompt('PDI:','')||'PDI '+(pdiList.length+1);
+  pdiList.push({nx:(e.clientX-rect.left)/rect.width,ny:(e.clientY-rect.top)/rect.height,name:name,triggered:false});
+  renderPDIs();
+});
+function renderPDIs(){var list=document.getElementById('pdi-list');if(!list)return;list.innerHTML='';
+  pdiList.forEach(function(p,i){var el=document.createElement('div');el.className='pdi-item';
+    el.innerHTML='<div class="pdi-dot"></div><div class="pdi-name">'+p.name+'</div><div class="pdi-del" data-i="'+i+'">x</div>';
+    el.querySelector('.pdi-del').addEventListener('click',function(){pdiList.splice(parseInt(this.dataset.i),1);renderPDIs();});
+    list.appendChild(el);});}
+function drawPDIs(S){pdiList.forEach(function(p){
+  var px=p.nx*S,py=p.ny*S;ctx.save();ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,180,0,0.9)';ctx.shadowColor='rgba(255,180,0,0.7)';ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
+  ctx.font='bold '+Math.max(8,S*0.013)+'px Courier New';ctx.fillStyle='rgba(255,210,80,0.85)';ctx.fillText(p.name,px+7,py-4);ctx.restore();});}
+function checkPDIs(pt){if(!AC)return;pdiList.forEach(function(p){
+  var dx=p.nx-pt.nx,dy=p.ny-pt.ny;
+  if(Math.sqrt(dx*dx+dy*dy)<0.03&&!p.triggered){p.triggered=true;
+    var dur=0.5,o=AC.createOscillator();o.type='sine';
+    o.frequency.setValueAtTime(400+pt.ele*2,AC.currentTime);o.frequency.exponentialRampToValueAtTime(100,AC.currentTime+dur);
+    var env=AC.createGain();env.gain.setValueAtTime(0.5,AC.currentTime);env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
+    o.connect(env);env.connect(masterGain);o.start();o.stop(AC.currentTime+dur);
+    setTimeout(function(){p.triggered=false;},3000);}});}
+document.getElementById('start').addEventListener('click',function(){
+  this.style.display='none';
+  buildPatchMatrix();
+  initAudio();
+  playing=true;
+  document.getElementById('btn-play').classList.add('active');
+  requestAnimationFrame(loop);
+});
+var allTracks=[];
+var polyMode=false;
+var polyStates=[];
+var POLY_COLORS=[28,185,280,60,320,150];
+
+function loadGPXData(result){
+  // actualizar constantes globales
+  window.ELE_MIN_DYN=result.eleMin;
+  window.ELE_MAX_DYN=result.eleMax===result.eleMin?result.eleMin+1:result.eleMax;
+  window.HR_MIN_DYN=result.hrMin;
+  window.HR_MAX_DYN=result.hrMax===result.hrMin?result.hrMin+1:result.hrMax;
+  window.SPD_MAX_DYN=result.spdMax<0.1?1:result.spdMax;
+  window.REAL_DUR=result.totalSecs;
+  REAL_DUR=result.totalSecs;
+  FILL=REAL_DUR;
+  DRAIN=Math.round(REAL_DUR*0.15);
+  CYCLE=FILL+DRAIN;
   trackData=result.pts;
   // reset
   cycleT=0; lastIdx=-1;
@@ -904,27 +1147,104 @@ gpxFile.addEventListener('change',function(){
 });
 
 function readGPXFile(file){
-  var info=document.getElementById('gpx-info');
-  info.textContent='Cargando...';
+  var info=document.getElementById('gpx-info');info.textContent='Cargando...';
   var reader=new FileReader();
   reader.onload=function(e){
-    var result=parseGPX(e.target.result);
-    if(!result){ info.textContent='Error: GPX no válido'; return; }
-    loadGPXData(result);
-    info.textContent=file.name+' · '+result.count+' pts';
+    var tracks=parseGPXMulti(e.target.result);
+    if(!tracks||!tracks.length){info.textContent='Error';return;}
+    allTracks=tracks;
+    var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel');
+    if(tracks.length>1){
+      wrap.style.display='block';sel.innerHTML='';
+      tracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
+      sel.onchange=function(){loadGPXData(tracks[parseInt(this.value)]);};
+    }else wrap.style.display='none';
+    loadGPXData(tracks[0]);info.textContent=file.name;
     if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
-  };
-  reader.readAsText(file);
+  };reader.readAsText(file);
 }
 
 // ══ START ═══════════════════════════════════════════════════════════════════
+var pdiList=[];
+document.getElementById('canvas-wrap').addEventListener('click',function(e){
+  if(!trackData||trackData.length<2)return;
+  var rect=cv.getBoundingClientRect();
+  var name=prompt('PDI:','')||'PDI '+(pdiList.length+1);
+  pdiList.push({nx:(e.clientX-rect.left)/rect.width,ny:(e.clientY-rect.top)/rect.height,name:name,triggered:false});
+  renderPDIs();
+});
+function renderPDIs(){var list=document.getElementById('pdi-list');if(!list)return;list.innerHTML='';
+  pdiList.forEach(function(p,i){var el=document.createElement('div');el.className='pdi-item';
+    el.innerHTML='<div class="pdi-dot"></div><div class="pdi-name">'+p.name+'</div><div class="pdi-del" data-i="'+i+'">x</div>';
+    el.querySelector('.pdi-del').addEventListener('click',function(){pdiList.splice(parseInt(this.dataset.i),1);renderPDIs();});
+    list.appendChild(el);});}
+function drawPDIs(S){pdiList.forEach(function(p){
+  var px=p.nx*S,py=p.ny*S;ctx.save();ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,180,0,0.9)';ctx.shadowColor='rgba(255,180,0,0.7)';ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
+  ctx.font='bold '+Math.max(8,S*0.013)+'px Courier New';ctx.fillStyle='rgba(255,210,80,0.85)';ctx.fillText(p.name,px+7,py-4);ctx.restore();});}
+function checkPDIs(pt){if(!AC)return;pdiList.forEach(function(p){
+  var dx=p.nx-pt.nx,dy=p.ny-pt.ny;
+  if(Math.sqrt(dx*dx+dy*dy)<0.03&&!p.triggered){p.triggered=true;
+    var dur=0.5,o=AC.createOscillator();o.type='sine';
+    o.frequency.setValueAtTime(400+pt.ele*2,AC.currentTime);o.frequency.exponentialRampToValueAtTime(100,AC.currentTime+dur);
+    var env=AC.createGain();env.gain.setValueAtTime(0.5,AC.currentTime);env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
+    o.connect(env);env.connect(masterGain);o.start();o.stop(AC.currentTime+dur);
+    setTimeout(function(){p.triggered=false;},3000);}});}
 document.getElementById('start').addEventListener('click',function(){
   this.style.display='none';
+  buildPatchMatrix();
   initAudio();
   playing=true;
   document.getElementById('btn-play').classList.add('active');
   requestAnimationFrame(loop);
 });
+
+
+var allTracks=[];
+function parseTrkpts(tpts){
+  var pts=[];
+  for(var i=0;i<tpts.length;i++){
+    var tp=tpts[i],lat=parseFloat(tp.getAttribute('lat')),lon=parseFloat(tp.getAttribute('lon'));
+    if(isNaN(lat)||isNaN(lon))continue;
+    var eEl=tp.getElementsByTagName('ele')[0],ele=eEl?parseFloat(eEl.textContent):90;
+    var tEl=tp.getElementsByTagName('time')[0],ts=tEl?tEl.textContent:'';
+    var cad=0,hr=100,ce=tp.getElementsByTagName('cadence');
+    if(!ce.length)ce=tp.getElementsByTagNameNS('*','cadence');
+    if(!ce.length)ce=tp.getElementsByTagNameNS('*','cad');
+    if(ce.length)cad=parseInt(ce[0].textContent)||0;
+    var he=tp.getElementsByTagName('hr');
+    if(!he.length)he=tp.getElementsByTagNameNS('*','hr');
+    if(he.length)hr=parseInt(he[0].textContent)||100;
+    pts.push({lat,lon,ele,time:ts,cadence:cad,hr});
+  }
+  if(pts.length<2)return null;
+  var la0=Infinity,la1=-Infinity,lo0=Infinity,lo1=-Infinity,e0=Infinity,e1=-Infinity,h0=Infinity,h1=-Infinity,sm=0;
+  for(var p of pts){la0=Math.min(la0,p.lat);la1=Math.max(la1,p.lat);lo0=Math.min(lo0,p.lon);lo1=Math.max(lo1,p.lon);e0=Math.min(e0,p.ele);e1=Math.max(e1,p.ele);h0=Math.min(h0,p.hr);h1=Math.max(h1,p.hr);}
+  var lp=(la1-la0)*0.08||0.001,lop=(lo1-lo0)*0.08||0.001;
+  la0-=lp;la1+=lp;lo0-=lop;lo1+=lop;
+  var norm=[],tt=0;
+  for(var i=0;i<pts.length;i++){
+    var p=pts[i],hd=0,sp=0,dt=10,nx=0.07+(p.lon-lo0)/(lo1-lo0)*0.86,ny=0.07+(1-(p.lat-la0)/(la1-la0))*0.86;
+    if(i>0){var p0=pts[i-1],dy=(p.lat-p0.lat)*111320,dx=(p.lon-p0.lon)*111320*Math.cos(p0.lat*Math.PI/180);
+      hd=(Math.atan2(dx,dy)*180/Math.PI+360)%360;
+      try{var d2=(new Date(p.time)-new Date(p0.time))/1000;if(d2>0&&d2<300)dt=d2;}catch(err){}
+      sp=Math.sqrt(dx*dx+dy*dy)/Math.max(1,dt);sm=Math.max(sm,sp);}
+    tt+=dt;norm.push({nx:Math.round(nx*1e5)/1e5,ny:Math.round(ny*1e5)/1e5,ele:p.ele,cadence:p.cadence,hr:p.hr,heading:Math.round(hd*10)/10,speed:Math.round(sp*100)/100,dt:Math.round(dt*10)/10});
+  }
+  return{pts:norm,eleMin:e0,eleMax:e1===e0?e0+1:e1,hrMin:h0,hrMax:h1===h0?h0+1:h1,spdMax:sm<0.1?1:sm,totalSecs:Math.round(tt),count:pts.length};
+}
+function parseGPXMulti(text){
+  var p=new DOMParser(),xml=p.parseFromString(text,'text/xml'),tracks=[];
+  var trks=xml.getElementsByTagName('trk');
+  if(!trks.length){var tp=xml.getElementsByTagName('trkpt');if(tp.length>=2){var r=parseTrkpts(tp);if(r)tracks.push({name:'Track 1',...r});}return tracks;}
+  for(var t=0;t<trks.length;t++){
+    var trk=trks[t],nEl=trk.getElementsByTagName('name')[0],tName=nEl?nEl.textContent.trim():'Track '+(t+1);
+    var segs=trk.getElementsByTagName('trkseg');
+    if(!segs.length){var r2=parseTrkpts(trk.getElementsByTagName('trkpt'));if(r2)tracks.push({name:tName,...r2});}
+    else for(var sg=0;sg<segs.length;sg++){var tp2=segs[sg].getElementsByTagName('trkpt');if(tp2.length<2)continue;var r3=parseTrkpts(tp2);if(r3)tracks.push({name:segs.length>1?tName+' '+sg:tName,...r3});}
+  }
+  return tracks;
+}
 </script>
 </body>
 </html>
