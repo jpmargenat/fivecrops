@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PedaLudic Tools — FiveCrops</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Unbounded:wght@300;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0a0a;
@@ -17,7 +17,7 @@
   --text: rgba(232,232,224,0.92);
   --muted: rgba(232,232,224,0.4);
   --mono: 'Space Mono', monospace;
-  --display: 'Unbounded', sans-serif;
+  --display: 'Space Mono', monospace;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -53,8 +53,8 @@ header {
 }
 header h1 {
   font-family: var(--display);
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  font-weight: 600;
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -113,8 +113,8 @@ header p {
 
 .tool-title {
   font-family: var(--display);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.2;
 }
@@ -216,6 +216,15 @@ footer {
     <div class="tool-title">Unir por Origen</div>
     <div class="tool-tag">GPX · Multi-track · Merge</div>
     <p class="tool-desc">Rebase multiple GPX tracks to a shared origin point. Generates a bouquet-like multi-track GPX where all rides start from the same coordinate.</p>
+    <span class="tool-arrow">↗</span>
+  </a>
+
+  <a href="BikeSnds.html" class="tool t1">
+    <div class="tool-num">05</div>
+    <div class="tool-icon">♪</div>
+    <div class="tool-title">BikeSnds</div>
+    <div class="tool-tag">GPX · Audio · Patch Matrix</div>
+    <p class="tool-desc">Audiovisual composer for recorded rides. Elevation, heart rate, cadence and wind modulate oscillators, filters and delay through a patch matrix. MONO or POLY mode.</p>
     <span class="tool-arrow">↗</span>
   </a>
 
