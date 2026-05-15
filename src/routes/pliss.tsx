@@ -49,6 +49,20 @@ function PlissPage() {
         </div>
 
         <div className="section-links" style={{ marginTop: "40px" }}>
+          <a
+            href="/plissT.html"
+            className="gallery-link"
+            style={{ display: "block", fontWeight: 500 }}
+          >
+            → PLISS Tríptico — live tripartite display
+          </a>
+          <a
+            href="/plissE.html"
+            className="gallery-link"
+            style={{ display: "block", fontWeight: 500 }}
+          >
+            → PLISS Esfera — interpretive sphere
+          </a>
           <a href="/system" className="gallery-link" style={{ display: "block" }}>
             → System — how the interpretive platform works
           </a>
