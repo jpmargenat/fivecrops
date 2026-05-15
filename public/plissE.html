@@ -403,7 +403,25 @@ function initSphere(){
   vid.muted=true;
   vid.playsInline=true;
   vid.crossOrigin='anonymous';
-  vid.play().catch(function(){});
+  vid.preload='auto';
+
+  // intentar play — si falla mostrar overlay
+  vid.play().then(function(){
+    var overlay=document.getElementById('video-overlay');
+    if(overlay) overlay.style.display='none';
+  }).catch(function(){
+    var overlay=document.getElementById('video-overlay');
+    if(overlay) overlay.style.display='flex';
+  });
+
+  // play en cualquier click/touch
+  function startVideo(){
+    vid.play();
+    var overlay=document.getElementById('video-overlay');
+    if(overlay) overlay.style.display='none';
+  }
+  document.addEventListener('click', startVideo, {once:true});
+  document.addEventListener('touchstart', startVideo, {once:true});
 
   var videoTex=new THREE.VideoTexture(vid);
   videoTex.minFilter=THREE.LinearFilter;
