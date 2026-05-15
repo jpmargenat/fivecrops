@@ -367,6 +367,9 @@ function bgLoop(ts){
 var scene,camera,renderer,contentGroup;
 var sphereObjCount=0;
 var isDragging=false;
+var autoRot=true, autoRotY=0;
+var targetTheta=0, targetPhi=0, targetDist=0.1;
+var lastMouseX=0, lastMouseY=0;
 
 function initSphere(){
   var container=document.getElementById('sphere-container');
