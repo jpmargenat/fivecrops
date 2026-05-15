@@ -186,7 +186,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   gap: 2.5vh;
   align-items: center;
 }
-#footer-status span { color:rgba(255,255,255,0.45); }
+#footer-status span { color:rgba(255,255,255,0.85); font-size:1.5vh; }
+#footer-status { font-size:1.5vh; }
 </style>
 </head>
 <body>
@@ -292,8 +293,14 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
   <!-- ── FOOTER ── -->
   <div id="footer">
     <div id="footer-left">
-      <div id="pliss-title">P.L.I.S.S</div>
-      <div id="pliss-sub">PedaLudic Interpretive Situationist Spheres &nbsp;·&nbsp; remap-cheLA</div>
+      <div id="pliss-title" style="font-size:3vh;letter-spacing:0.5vh;color:#fff;">P.L.I.S.S</div>
+      <div style="font-size:1.3vh;letter-spacing:0.12vh;color:rgba(255,255,255,0.6);margin-top:0.3vh;">
+        <span style="color:rgba(255,255,255,0.85);">P</span>edaLudic &nbsp;
+        <span style="color:rgba(255,255,255,0.85);">I</span>nterpretive &nbsp;
+        <span style="color:rgba(255,255,255,0.85);">S</span>ituationist &nbsp;
+        <span style="color:rgba(255,255,255,0.85);">S</span>pheres
+      </div>
+      <div id="pliss-sub" style="font-size:1.3vh;color:rgba(255,255,255,0.5);margin-top:0.2vh;">remap-cheLA</div>
     </div>
     <div id="footer-status">
       SISMO <span id="sb-seis">—</span>
@@ -303,7 +310,8 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
     </div>
     <div id="footer-right">
       Con el apoyo de Williams / Metabolic Studio<br>
-      Westwood · UCLA · Los Angeles
+      Westwood · UCLA · Los Angeles<br>
+      <span style="cursor:pointer;font-size:1.3vh;letter-spacing:0.2vh;color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.1);padding:0.4vh 1.2vh;margin-top:0.4vh;display:inline-block;" onclick="window.open('https://github.com/jpmargenat/fivecrops','_blank')">&lt;/&gt; código fuente</span>
     </div>
   </div>
 
