@@ -232,6 +232,8 @@ function ToolsPage() {
     <div style={S.page}>
       <nav style={S.nav}>
         <a href="/" style={S.navA}>← FIVECROPS</a>
+        <span style={S.navSpan}>·</span>
+        <a href="/BikeSnds.html" style={S.navA}>BikeSnds</a>
         <span style={S.navSpan}>GPX Crop Tool</span>
       </nav>
 
