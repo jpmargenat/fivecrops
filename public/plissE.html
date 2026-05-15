@@ -406,10 +406,22 @@ function initSphere(){
   vid.preload='auto';
 
   // intentar play — si falla mostrar overlay
+  vid.addEventListener('canplay', function(){
+    console.log('VIDEO: canplay, readyState='+vid.readyState);
+  });
+  vid.addEventListener('playing', function(){
+    console.log('VIDEO: playing!');
+  });
+  vid.addEventListener('error', function(e){
+    console.log('VIDEO ERROR:', e);
+  });
+
   vid.play().then(function(){
+    console.log('VIDEO: play() resolved');
     var overlay=document.getElementById('video-overlay');
     if(overlay) overlay.style.display='none';
-  }).catch(function(){
+  }).catch(function(e){
+    console.log('VIDEO: play() failed:', e);
     var overlay=document.getElementById('video-overlay');
     if(overlay) overlay.style.display='flex';
   });
@@ -511,6 +523,7 @@ function initSphere(){
 
     // el contenido rota lentamente independiente
     contentGroup.rotation.y=autoRotY*0.6;
+    if(videoTex) videoTex.needsUpdate=true;
     renderer.render(scene,camera);
   }
   sphereLoop();
