@@ -480,6 +480,25 @@ function initSphere(){
   hint.textContent='drag · scroll/pinch';
   container.appendChild(hint);
 
+  // ── RENDER LOOP ──────────────────────────────────────────────────────
+  function sphereLoop(){
+    requestAnimationFrame(sphereLoop);
+    if(autoRot) autoRotY+=autoRotSpeed;
+    camTheta+=(targetTheta-camTheta)*0.06;
+    camPhi  +=(targetPhi  -camPhi  )*0.06;
+    camDist +=(targetDist -camDist )*0.08;
+    var totalTheta=camTheta+autoRotY;
+    camera.position.set(
+      camDist*Math.sin(totalTheta)*Math.cos(camPhi),
+      camDist*Math.sin(camPhi),
+      camDist*Math.cos(totalTheta)*Math.cos(camPhi)
+    );
+    camera.lookAt(0,0,0);
+    contentGroup.rotation.y=autoRotY*0.6;
+    renderer.render(scene,camera);
+  }
+  sphereLoop();
+
   // poblar esfera con datos iniciales
   setTimeout(function(){populateSphereWithEnv();},1500);
 }
@@ -538,24 +557,16 @@ function addTextToSphere(text,color){
   c.textAlign='center';
   c.textBaseline='middle';
   var t=text.length>60?text.substring(0,59)+'…':text;
-  var cx=c2.width/2, cy=c2.height/2;
   if(t.length>28){
     var mid=t.lastIndexOf(' ',28);
     if(mid<0)mid=28;
-    c.font='bold '+(urgent?120:72)+'px Courier New';
-    c.fillText(t.substring(0,mid),cx,cy*0.55);
-    c.font='bold '+(urgent?104:64)+'px Courier New';
-    c.fillText(t.substring(mid+1).substring(0,35),cx,cy*1.4);
+    c.font='bold '+(urgent?104:52)+'px Courier New';
+    c.fillText(t.substring(0,mid),512,88);
+    c.font='bold '+(urgent?92:46)+'px Courier New';
+    c.fillText(t.substring(mid+1).substring(0,35),512,170);
   } else {
-    c.font='bold '+(urgent?130:76)+'px Courier New';
-    c.fillText(t,cx,cy);
-  }
-  // glow para urgent
-  if(urgent){
-    c.shadowColor='rgba(255,220,0,0.8)';
-    c.shadowBlur=40;
-    c.fillText(t,cx,cy);
-    c.shadowBlur=0;
+    c.font='bold '+(urgent?112:56)+'px Courier New';
+    c.fillText(t,512,128);
   }
   var mesh=new THREE.Mesh(
     new THREE.PlaneGeometry(urgent?110:55,urgent?28:14),
