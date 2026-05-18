@@ -758,7 +758,7 @@ function applyPatches(pt){
   var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
   // OSC
   if(hasPatch(0))oscNode.frequency.setTargetAtTime(40+getPatchedVal(0,0.5)*260,AC.currentTime,0.2);
-  else oscNode.frequency.setTargetAtTime(pt.ele,AC.currentTime,0.2);
+  else if(isFinite(pt.ele)&&pt.ele>0)oscNode.frequency.setTargetAtTime(pt.ele,AC.currentTime,0.2);
   // LFO depth
   if(hasPatch(1)&&T.lfo)lfoGain.gain.setTargetAtTime((2+windSpd*0.8)*getPatchedVal(1,0.5)*2,AC.currentTime,0.3);
   // VCF cutoff
@@ -933,20 +933,20 @@ function updateWindParticles(ts){
   if(Math.random()<0.6)spawnWP();if(Math.random()<0.3)spawnWP();
 }
 function drawWindParticles(S){
+  var W=cv.width,H=cv.height;
   var spd=0.003+windSpd*0.0008;
   for(var i=0;i<wParts.length;i++){
     var p=wParts[i];
-    var px=p.x*S,py=p.y*S;
-    if(px<-5||px>S+5||py<-5||py>S+5)continue;
-    var dx=p.ax*spd*p.len*S*2,dy=p.ay*spd*p.len*S*2;
+    var px=p.x*W,py=p.y*H;
+    if(px<-10||px>W+10||py<-10||py>H+10)continue;
+    var len=Math.max(W,H)*spd*p.len*4;
+    var dx=p.ax*len,dy=p.ay*len;
     ctx.save();
-    // glow pass
-    ctx.globalAlpha=p.life*p.alpha*0.35;
-    ctx.strokeStyle='rgba(140,200,255,1)';ctx.lineWidth=3.5;ctx.lineCap='round';
+    ctx.globalAlpha=p.life*p.alpha*0.4;
+    ctx.strokeStyle='rgba(140,200,255,1)';ctx.lineWidth=4;ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(px-dx,py-dy);ctx.lineTo(px,py);ctx.stroke();
-    // core pass
-    ctx.globalAlpha=p.life*p.alpha*0.9;
-    ctx.strokeStyle='rgba(200,230,255,1)';ctx.lineWidth=1.5;ctx.lineCap='round';
+    ctx.globalAlpha=p.life*p.alpha*0.95;
+    ctx.strokeStyle='rgba(220,240,255,1)';ctx.lineWidth=1.8;ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(px-dx,py-dy);ctx.lineTo(px,py);ctx.stroke();
     ctx.restore();
   }
@@ -1032,7 +1032,7 @@ function parseRoutesCropJSON(text){
         var dlon=(lon-prev[0])*111000*Math.cos(lat*Math.PI/180);
         spd=Math.sqrt(dlat*dlat+dlon*dlon);
       }
-      pts.push({lat:lat,lon:lon,ele:ele,spd:spd,hr:0,time:k});
+      pts.push({lat:lat,lon:lon,ele:ele,speed:spd,spd:spd,hr:0,cadence:0,time:k});
       eles.push(ele);spds.push(spd);
     });
     if(pts.length<2)return;
@@ -1072,7 +1072,7 @@ function parseGeoJSONTracks(text){
           var dlat=(c[1]-prev[1])*111000,dlon=(c[0]-prev[0])*111000*Math.cos(c[1]*Math.PI/180);
           spd=Math.sqrt(dlat*dlat+dlon*dlon);
         }
-        pts.push({lat:c[1],lon:c[0],ele:ele,spd:spd,hr:0,time:k});
+        pts.push({lat:c[1],lon:c[0],ele:ele,speed:spd,spd:spd,hr:0,cadence:0,time:k});
         eles.push(ele);spds.push(spd);
       });
       tracks.push({
@@ -1459,7 +1459,7 @@ function loop(ts){
       document.getElementById('d-ele').textContent=Math.round(pt.ele)+'m';
       document.getElementById('d-hr').textContent=pt.hr+' bpm';
       document.getElementById('d-cad').textContent=pt.cadence+' rpm';
-      document.getElementById('d-spd').textContent=pt.speed.toFixed(1)+' m/s';
+      document.getElementById('d-spd').textContent=((pt.speed||pt.spd||0).toFixed(1))+' m/s';
     }
   }
   if(!playing||!filling)lastIdx=-1;
