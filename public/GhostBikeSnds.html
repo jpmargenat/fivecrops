@@ -271,8 +271,8 @@ body { font-family:'Courier New', monospace; }
 
     <!-- GPX -->
     <div class="gpx-drop" id="gpx-drop">
-      <input type="file" id="gpx-file" accept=".gpx,.geojson">
-      <div class="gpx-drop-label">⬆ Load GPX / GeoJSON</div>
+      <input type="file" id="gpx-file" accept=".gpx,.geojson,.json">
+      <div class="gpx-drop-label">⬆ Load GPX / GeoJSON / JSON</div>
       <div class="gpx-info" id="gpx-info"></div>
     </div>
 
@@ -908,7 +908,7 @@ function triggerKick(cad){
 
 // ══ VIENTO PARTÍCULAS ═════════════════════════════════════════════════════
 var wParts=[];
-var WP_MAX=120;
+var WP_MAX=200;
 function spawnWP(){
   if(wParts.length>=WP_MAX)return;
   var rad=((windDir+180)%360)*Math.PI/180;
@@ -921,7 +921,6 @@ function spawnWP(){
   wParts.push({x,y,ax:vx0,ay:vy0,life:1,decay:0.006+Math.random()*0.006,len:0.04+windSpd*0.008,alpha:0.5+Math.random()*0.4,no:Math.random()*200});
 }
 function updateWindParticles(ts){
-  if(!T.lfo)return;
   wParts=wParts.filter(function(p){return p.life>0;});
   var tc=ts*0.00004,spd=0.003+windSpd*0.0008;
   for(var i=0;i<wParts.length;i++){
@@ -931,18 +930,23 @@ function updateWindParticles(ts){
     p.x+=p.ax*spd+nx2;p.y+=p.ay*spd+ny2;p.life-=p.decay;
     if(p.x<-0.05||p.x>1.05||p.y<-0.05||p.y>1.05)p.life=0;
   }
-  if(Math.random()<0.3)spawnWP();
+  if(Math.random()<0.6)spawnWP();if(Math.random()<0.3)spawnWP();
 }
 function drawWindParticles(S){
-  if(!T.lfo)return;
   var spd=0.003+windSpd*0.0008;
   for(var i=0;i<wParts.length;i++){
     var p=wParts[i];
     var px=p.x*S,py=p.y*S;
     if(px<-5||px>S+5||py<-5||py>S+5)continue;
-    var dx=p.ax*spd*p.len*S,dy=p.ay*spd*p.len*S;
-    ctx.save();ctx.globalAlpha=p.life*p.alpha;
-    ctx.strokeStyle='rgba(160,210,255,1)';ctx.lineWidth=0.7;ctx.lineCap='round';
+    var dx=p.ax*spd*p.len*S*2,dy=p.ay*spd*p.len*S*2;
+    ctx.save();
+    // glow pass
+    ctx.globalAlpha=p.life*p.alpha*0.35;
+    ctx.strokeStyle='rgba(140,200,255,1)';ctx.lineWidth=3.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(px-dx,py-dy);ctx.lineTo(px,py);ctx.stroke();
+    // core pass
+    ctx.globalAlpha=p.life*p.alpha*0.9;
+    ctx.strokeStyle='rgba(200,230,255,1)';ctx.lineWidth=1.5;ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(px-dx,py-dy);ctx.lineTo(px,py);ctx.stroke();
     ctx.restore();
   }
@@ -1051,7 +1055,7 @@ function readGPXFile(file){
   var info=document.getElementById('gpx-info');info.textContent='Loading...';
   var reader=new FileReader();
   reader.onload=function(e){
-    var isGeoJSON=file.name.match(/\.geojson$/i)||e.target.result.trim().startsWith('{');
+    var isGeoJSON=file.name.match(/\.(geojson|json)$/i)||e.target.result.trim().startsWith('{');
     var tracks=isGeoJSON?parseGeoJSONTracks(e.target.result):parseGPXMulti(e.target.result);
     if(!tracks||!tracks.length){info.textContent='Error: invalid file';return;}
     allTracks=tracks;
