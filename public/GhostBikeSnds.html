@@ -1016,6 +1016,40 @@ function loadGPXData(track){
   document.getElementById('spd-v').textContent='60x 32s';
 }
 
+function parseRoutesCropJSON(text){
+  var data=JSON.parse(text);
+  if(!Array.isArray(data)||!data[0]||!data[0].pts)return null;
+  var tracks=[];
+  data.forEach(function(route,i){
+    var pts=[],eles=[],spds=[];
+    var coords=route.pts;
+    coords.forEach(function(c,k){
+      var lon=c[0],lat=c[1],ele=c[2]||0;
+      var spd=0;
+      if(k>0){
+        var prev=coords[k-1];
+        var dlat=(lat-prev[1])*111000;
+        var dlon=(lon-prev[0])*111000*Math.cos(lat*Math.PI/180);
+        spd=Math.sqrt(dlat*dlat+dlon*dlon);
+      }
+      pts.push({lat:lat,lon:lon,ele:ele,spd:spd,hr:0,time:k});
+      eles.push(ele);spds.push(spd);
+    });
+    if(pts.length<2)return;
+    var validEles=eles.filter(function(e){return e>0;});
+    tracks.push({
+      name:route.name||'Route '+(i+1),
+      pts:pts,count:pts.length,
+      eleMin:validEles.length?Math.min.apply(null,validEles):0,
+      eleMax:validEles.length?Math.max.apply(null,validEles):0,
+      hrMin:0,hrMax:0,
+      spdMax:Math.max.apply(null,spds.concat([0])),
+      totalSecs:pts.length
+    });
+  });
+  return tracks.length?tracks:null;
+}
+
 function parseGeoJSONTracks(text){
   var data=JSON.parse(text),tracks=[],features=data.type==='FeatureCollection'?data.features:[data];
   features.forEach(function(f,i){
@@ -1055,8 +1089,16 @@ function readGPXFile(file){
   var info=document.getElementById('gpx-info');info.textContent='Loading...';
   var reader=new FileReader();
   reader.onload=function(e){
-    var isGeoJSON=file.name.match(/\.(geojson|json)$/i)||e.target.result.trim().startsWith('{');
-    var tracks=isGeoJSON?parseGeoJSONTracks(e.target.result):parseGPXMulti(e.target.result);
+    var isJSON=file.name.match(/\.(geojson|json)$/i)||e.target.result.trim().startsWith('{');
+    var tracks=null;
+    if(isJSON){
+      // Try routes_crop format first [{name,pts:[lon,lat,ele]}]
+      try{tracks=parseRoutesCropJSON(e.target.result);}catch(ex){}
+      // Fall back to GeoJSON FeatureCollection
+      if(!tracks||!tracks.length){try{tracks=parseGeoJSONTracks(e.target.result);}catch(ex){}}
+    }else{
+      tracks=parseGPXMulti(e.target.result);
+    }
     if(!tracks||!tracks.length){info.textContent='Error: invalid file';return;}
     allTracks=tracks;
     var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel');
