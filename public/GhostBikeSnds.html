@@ -765,7 +765,7 @@ function applyPatches(pt){
   if(T.filter){
     filterNode.frequency.setTargetAtTime(hasPatch(2)?150+getPatchedVal(2,0.5)*3850:200+nm(pt.hr,HM,HX)*3300,AC.currentTime,0.3);
     // VCF res
-    filterNode.Q.setTargetAtTime(hasPatch(3)?0.5+getPatchedVal(3,0.5)*9.5:0.5+nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX)*7.5,AC.currentTime,0.2);
+    var qVal=hasPatch(3)?0.5+getPatchedVal(3,0.5)*9.5:0.5+nm(pt.speed||0,0,window.SPD_MAX_DYN||SPD_MAX)*7.5;if(isFinite(qVal))filterNode.Q.setTargetAtTime(qVal,AC.currentTime,0.2);
   }
   // Delay
   if(T.delay){
@@ -893,9 +893,9 @@ function triggerClick(){
   src.connect(g);g.connect(filterNode);src.start();
 }
 
+var triggerDiv=1;
 function triggerKick(cad){
   if(!AC||!T.kick)return;
-  // aplicar divisor
   if(Math.floor(frameCount/1)%triggerDiv!==0)return;
   var dur=0.28,o=AC.createOscillator();o.type='sine';
   o.frequency.setValueAtTime(110,AC.currentTime);
@@ -1037,13 +1037,17 @@ function parseRoutesCropJSON(text){
     });
     if(pts.length<2)return;
     var validEles=eles.filter(function(e){return e>0;});
+    // cap speed at 20m/s (~72km/h) to avoid non-finite audio params
+    var cappedSpds=spds.map(function(s){return isFinite(s)?Math.min(s,20):0;});
+    pts.forEach(function(p,i){p.spd=cappedSpds[i]||0;});
+    var spdMax=Math.max.apply(null,cappedSpds.concat([1]));
     tracks.push({
       name:route.name||'Route '+(i+1),
       pts:pts,count:pts.length,
       eleMin:validEles.length?Math.min.apply(null,validEles):0,
-      eleMax:validEles.length?Math.max.apply(null,validEles):0,
-      hrMin:0,hrMax:0,
-      spdMax:Math.max.apply(null,spds.concat([0])),
+      eleMax:validEles.length?Math.max.apply(null,validEles):100,
+      hrMin:0,hrMax:1,
+      spdMax:isFinite(spdMax)&&spdMax>0?spdMax:1,
       totalSecs:pts.length
     });
   });
