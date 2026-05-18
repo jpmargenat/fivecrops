@@ -271,8 +271,8 @@ body { font-family:'Courier New', monospace; }
 
     <!-- GPX -->
     <div class="gpx-drop" id="gpx-drop">
-      <input type="file" id="gpx-file" accept=".gpx">
-      <div class="gpx-drop-label">⬆ Load GPX</div>
+      <input type="file" id="gpx-file" accept=".gpx,.geojson">
+      <div class="gpx-drop-label">⬆ Load GPX / GeoJSON</div>
       <div class="gpx-info" id="gpx-info"></div>
     </div>
 
@@ -1012,12 +1012,48 @@ function loadGPXData(track){
   document.getElementById('spd-v').textContent='60x 32s';
 }
 
+function parseGeoJSONTracks(text){
+  var data=JSON.parse(text),tracks=[],features=data.type==='FeatureCollection'?data.features:[data];
+  features.forEach(function(f,i){
+    if(!f.geometry)return;
+    var name=(f.properties&&f.properties.name)||'Track '+(i+1);
+    var lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:
+               f.geometry.type==='MultiLineString'?f.geometry.coordinates:[];
+    lines.forEach(function(coords,j){
+      if(coords.length<2)return;
+      var pts=[],eles=[],spds=[];
+      coords.forEach(function(c,k){
+        var ele=c[2]||0;
+        var spd=0;
+        if(k>0){
+          var prev=coords[k-1];
+          var dlat=(c[1]-prev[1])*111000,dlon=(c[0]-prev[0])*111000*Math.cos(c[1]*Math.PI/180);
+          spd=Math.sqrt(dlat*dlat+dlon*dlon);
+        }
+        pts.push({lat:c[1],lon:c[0],ele:ele,spd:spd,hr:0,time:k});
+        eles.push(ele);spds.push(spd);
+      });
+      tracks.push({
+        name:lines.length>1?name+'_'+j:name,
+        pts:pts,count:pts.length,
+        eleMin:Math.min.apply(null,eles.filter(function(e){return e>0;})||[0]),
+        eleMax:Math.max.apply(null,eles||[0]),
+        hrMin:0,hrMax:0,
+        spdMax:Math.max.apply(null,spds||[0]),
+        totalSecs:pts.length
+      });
+    });
+  });
+  return tracks;
+}
+
 function readGPXFile(file){
   var info=document.getElementById('gpx-info');info.textContent='Loading...';
   var reader=new FileReader();
   reader.onload=function(e){
-    var tracks=parseGPXMulti(e.target.result);
-    if(!tracks||!tracks.length){info.textContent='Error: invalid GPX';return;}
+    var isGeoJSON=file.name.match(/\.geojson$/i)||e.target.result.trim().startsWith('{');
+    var tracks=isGeoJSON?parseGeoJSONTracks(e.target.result):parseGPXMulti(e.target.result);
+    if(!tracks||!tracks.length){info.textContent='Error: invalid file';return;}
     allTracks=tracks;
     var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel');
     if(tracks.length>1){
@@ -1038,7 +1074,7 @@ var gpxDrop=document.getElementById('gpx-drop');
 var gpxFile=document.getElementById('gpx-file');
 gpxDrop.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
 gpxDrop.addEventListener('dragleave',function(){this.classList.remove('drag');});
-gpxDrop.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('drag');if(e.dataTransfer.files[0])readGPXFile(e.dataTransfer.files[0]);});
+gpxDrop.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('drag');var f=e.dataTransfer.files[0];if(f&&f.name.match(/\.(gpx|geojson)$/i))readGPXFile(f);});
 gpxFile.addEventListener('change',function(){if(this.files[0])readGPXFile(this.files[0]);});
 
 // ══ PDIs ══════════════════════════════════════════════════════════════════
