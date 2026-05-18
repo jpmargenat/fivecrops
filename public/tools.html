@@ -222,8 +222,8 @@ footer {
       <div class="drop-zone" id="dropZone">
         <div class="icon">⊕</div>
         <p>Drop .gpx or .geojson files here<br>or click to select<br>Multiple files supported</p>
-        <input type="file" id="fileInput" accept=".gpx,.geojson" multiple>
       </div>
+      <input type="file" id="fileInput" accept=".gpx,.geojson,.fit" multiple style="position:absolute;left:-9999px;opacity:0;">
       <div class="file-list" id="fileList" style="margin-top:8px;"></div>
     </div>
 
@@ -366,7 +366,11 @@ Lat ${minLat.toFixed(4)} → ${maxLat.toFixed(4)}`;
 ['centerLat','centerLon','deltaLat','deltaLon'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{if(allRoutes.length)drawPreview();}));
 
 const dropZone=document.getElementById('dropZone'), fileInput=document.getElementById('fileInput');
-dropZone.addEventListener('click',()=>fileInput.click());
+dropZone.addEventListener('click', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  fileInput.click();
+});
 dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');loadFiles([...e.dataTransfer.files]);});
@@ -456,8 +460,7 @@ document.getElementById('btnProcess').addEventListener('click',()=>{
   document.getElementById('stats').style.display='grid';
   const json=JSON.stringify(processedRoutes);
   const out=document.getElementById('output');
-  out.value=json.length>2000?json.slice(0,2000)+'
-// ...':json;
+  out.value=json.length>2000?json.slice(0,2000)+'\n// ...':json;
   out.dataset.full=json;
   out.style.display='block';
   document.getElementById('msg').style.display='block';
