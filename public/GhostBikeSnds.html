@@ -271,8 +271,8 @@ body { font-family:'Courier New', monospace; }
 
     <!-- GPX -->
     <div class="gpx-drop" id="gpx-drop">
-      <input type="file" id="gpx-file" accept=".gpx,.geojson,.json">
-      <div class="gpx-drop-label">⬆ Load GPX / GeoJSON / JSON</div>
+      <input type="file" id="gpx-file" accept=".gpx,.geojson,.json" multiple style="position:absolute;left:-9999px;opacity:0;">
+      <div class="gpx-drop-label" id="drop-label">⬆ Load GPX / GeoJSON / JSON<br><span style="font-size:0.7vh;opacity:0.5">multiple files supported</span></div>
       <div class="gpx-info" id="gpx-info"></div>
     </div>
 
@@ -284,6 +284,7 @@ body { font-family:'Courier New', monospace; }
         <button id="btn-poly" class="btn" style="flex:none;padding:0.8% 3%;font-size:0.85vh;">POLY</button>
       </div>
       <select id="track-sel" style="width:100%;background:#0a0a12;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);font-family:'Courier New',monospace;font-size:0.9vh;padding:1.5%;cursor:pointer;outline:none;"></select>
+      <div id="interval-wrap" style="display:none;margin-top:4px;"></div>
     </div>
 
     <!-- TRANSPORT -->
@@ -490,8 +491,9 @@ const ELE_MIN=125.9,ELE_MAX=142.0,HR_MIN=65,HR_MAX=98,SPD_MAX=5.21;
 // ══ CANVAS ════════════════════════════════════════════════════════════════
 const cv=document.getElementById('c');
 const ctx=cv.getContext('2d');
-function resizeCanvas(){var w=document.getElementById('canvas-wrap');cv.width=w.offsetWidth;cv.height=w.offsetHeight;}
+function resizeCanvas(){var w=document.getElementById('canvas-wrap');var ww=w.offsetWidth||600,hh=w.offsetHeight||600;cv.width=ww;cv.height=hh;}
 resizeCanvas();
+setTimeout(resizeCanvas,100);
 window.addEventListener('resize',resizeCanvas);
 function nm(v,a,b){if(b===a)return 0.5;return Math.max(0,Math.min(1,(v-a)/(b-a)));}
 
@@ -505,6 +507,9 @@ var linePreset='technic';
 var polyMode=false,polyStates=[],allTracks=[];
 var trackData=TRACK.slice();
 var POLY_COLORS=[28,185,280,60,320,150];
+// Interval ratios: 0=unison, 3=minor third, 5=fifth, 8=octave
+var INTERVAL_RATIOS={0:1, 3:1.2, 5:1.5, 8:2.0};
+var polyIntervals=[]; // per-track interval: 0,3,5,8
 
 var P={speed:60,width:3,fade:0.1,hrMix:1,glowAmt:0.4,
        master:0.8,oscVol:0.25,clickVol:0.35,kickVol:0.5,delayMix:0.3,randomVol:0.2};
@@ -758,7 +763,12 @@ function applyPatches(pt){
   var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
   // OSC
   if(hasPatch(0))oscNode.frequency.setTargetAtTime(40+getPatchedVal(0,0.5)*260,AC.currentTime,0.2);
-  else oscNode.frequency.setTargetAtTime(pt.ele,AC.currentTime,0.2);
+  else{
+    var baseFreq=pt.ele>0?pt.ele:80;
+    var ivIdx=(polyMode&&window.polyCurrentTrack>=0)?polyIntervals[window.polyCurrentTrack]||0:0;
+    var ivRatio=INTERVAL_RATIOS[ivIdx]||1;
+    if(isFinite(baseFreq*ivRatio))oscNode.frequency.setTargetAtTime(baseFreq*ivRatio,AC.currentTime,0.2);
+  }
   // LFO depth
   if(hasPatch(1)&&T.lfo)lfoGain.gain.setTargetAtTime((2+windSpd*0.8)*getPatchedVal(1,0.5)*2,AC.currentTime,0.3);
   // VCF cutoff
@@ -1089,7 +1099,70 @@ function parseGeoJSONTracks(text){
   return tracks;
 }
 
+function parseSingleFile(text,filename,cb){
+  var isJSON=filename.match(/\.(geojson|json)$/i)||text.trim().startsWith('{');
+  var tracks=null;
+  if(isJSON){try{tracks=parseRoutesCropJSON(text);}catch(ex){}
+    if(!tracks||!tracks.length){try{tracks=parseGeoJSONTracks(text);}catch(ex){}}}
+  else{tracks=parseGPXMulti(text);}
+  cb(tracks);
+}
+function renderTrackList(){
+  var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel'),iWrap=document.getElementById('interval-wrap');
+  if(!allTracks.length){wrap.style.display='none';return;}
+  wrap.style.display='block';sel.innerHTML='';
+  allTracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
+  sel.onchange=function(){if(!polyMode)loadGPXData(allTracks[parseInt(this.value)]);};
+  polyIntervals=allTracks.map(function(_,i){return polyIntervals[i]||0;});
+  iWrap.innerHTML='';
+  allTracks.forEach(function(t,i){
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:5px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
+    var nm2=document.createElement('span');
+    nm2.style.cssText='font-size:0.8vh;color:rgba(255,255,255,0.5);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    nm2.textContent=t.name;row.appendChild(nm2);
+    [0,3,5,8].forEach(function(iv){
+      var btn=document.createElement('button');
+      btn.textContent=iv===0?'0':iv===3?'3ª':iv===5?'5ª':'8ª';btn.dataset.iv=iv;
+      var act=polyIntervals[i]===iv;
+      btn.style.cssText='font-size:0.72vh;padding:1px 5px;border:1px solid rgba(255,255,255,'+(act?'0.55':'0.12')+');background:'+(act?'rgba(255,255,255,0.13)':'transparent')+';color:rgba(255,255,255,'+(act?'1':'0.38')+');cursor:pointer;font-family:inherit;';
+      btn.addEventListener('click',(function(idx,ivv,r){return function(){
+        polyIntervals[idx]=ivv;
+        r.querySelectorAll('button[data-iv]').forEach(function(b){
+          var a=parseInt(b.dataset.iv)===ivv;
+          b.style.borderColor='rgba(255,255,255,'+(a?'0.55':'0.12')+ ')';
+          b.style.background=a?'rgba(255,255,255,0.13)':'transparent';
+          b.style.color='rgba(255,255,255,'+(a?'1':'0.38')+ ')';
+        });};})(i,iv,row));
+      row.appendChild(btn);
+    });
+    var del=document.createElement('button');del.textContent='✕';
+    del.style.cssText='font-size:0.8vh;padding:1px 4px;border:none;background:transparent;color:rgba(255,80,60,0.5);cursor:pointer;';
+    del.addEventListener('click',(function(idx){return function(){
+      allTracks.splice(idx,1);polyIntervals.splice(idx,1);polyStates=[];
+      renderTrackList();if(allTracks.length)loadGPXData(allTracks[0]);
+    };})(i));
+    row.appendChild(del);iWrap.appendChild(row);
+  });
+  var clr=document.createElement('button');clr.textContent='LIMPIAR TODO';
+  clr.style.cssText='margin-top:4px;width:100%;font-size:0.75vh;padding:2px 0;border:1px solid rgba(255,60,40,0.2);background:transparent;color:rgba(255,80,60,0.5);cursor:pointer;font-family:inherit;letter-spacing:0.1em;';
+  clr.addEventListener('click',function(){allTracks=[];polyIntervals=[];polyStates=[];wrap.style.display='none';iWrap.innerHTML='';document.getElementById('gpx-info').textContent='';});
+  iWrap.appendChild(clr);iWrap.style.display='block';
+}
 function readGPXFile(file){
+  var info=document.getElementById('gpx-info');info.textContent='Loading '+file.name+'...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    parseSingleFile(e.target.result,file.name,function(tracks){
+      if(!tracks||!tracks.length){info.textContent='Error: '+file.name;return;}
+      allTracks=allTracks.concat(tracks);renderTrackList();loadGPXData(allTracks[0]);
+      info.textContent=allTracks.length+' track'+(allTracks.length>1?'s':'')+' loaded';
+      if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
+      if(tracks[0].pts&&tracks[0].pts.length>0)fetchHitosForTrack(tracks[0].pts);
+    });
+  };
+  reader.readAsText(file);
+}
   var info=document.getElementById('gpx-info');info.textContent='Loading...';
   var reader=new FileReader();
   reader.onload=function(e){
@@ -1110,6 +1183,40 @@ function readGPXFile(file){
       wrap.style.display='block';sel.innerHTML='';
       tracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
       sel.onchange=function(){if(!polyMode)loadGPXData(tracks[parseInt(this.value)]);};
+      // build interval selectors per track
+      polyIntervals=tracks.map(function(){return 0;});
+      var iWrap=document.getElementById('interval-wrap');
+      if(iWrap){
+        iWrap.innerHTML='';
+        tracks.forEach(function(t,i){
+          var row=document.createElement('div');
+          row.style.cssText='display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
+          var name=document.createElement('span');
+          name.style.cssText='font-size:0.8vh;color:rgba(255,255,255,0.5);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.08em;';
+          name.textContent=t.name;
+          row.appendChild(name);
+          [0,3,5,8].forEach(function(iv){
+            var btn=document.createElement('button');
+            btn.textContent=iv===0?'0':iv===3?'3ª':iv===5?'5ª':'8ª';
+            btn.dataset.track=i;btn.dataset.iv=iv;
+            btn.style.cssText='font-size:0.75vh;padding:1px 5px;border:1px solid rgba(255,255,255,'+(polyIntervals[i]===iv?'0.6':'0.15')+');background:'+(polyIntervals[i]===iv?'rgba(255,255,255,0.15)':'transparent')+';color:rgba(255,255,255,'+(polyIntervals[i]===iv?'1':'0.4')+');cursor:pointer;letter-spacing:0.05em;font-family:inherit;';
+            btn.addEventListener('click',function(){
+              var ti=parseInt(this.dataset.track),iv2=parseInt(this.dataset.iv);
+              polyIntervals[ti]=iv2;
+              // update button styles in this row
+              row.querySelectorAll('button').forEach(function(b){
+                var active=parseInt(b.dataset.iv)===iv2;
+                b.style.borderColor='rgba(255,255,255,'+(active?'0.6':'0.15')+')';
+                b.style.background=active?'rgba(255,255,255,0.15)':'transparent';
+                b.style.color='rgba(255,255,255,'+(active?'1':'0.4')+')';
+              });
+            });
+            row.appendChild(btn);
+          });
+          iWrap.appendChild(row);
+        });
+        iWrap.style.display='block';
+      }
     }else wrap.style.display='none';
     loadGPXData(tracks[0]);
     info.textContent=file.name+(tracks.length>1?' · '+tracks.length+' tracks':'');
@@ -1124,8 +1231,17 @@ var gpxDrop=document.getElementById('gpx-drop');
 var gpxFile=document.getElementById('gpx-file');
 gpxDrop.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
 gpxDrop.addEventListener('dragleave',function(){this.classList.remove('drag');});
-gpxDrop.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('drag');var f=e.dataTransfer.files[0];if(f&&f.name.match(/\.(gpx|geojson)$/i))readGPXFile(f);});
-gpxFile.addEventListener('change',function(){if(this.files[0])readGPXFile(this.files[0]);});
+gpxDrop.addEventListener('drop',function(e){
+  e.preventDefault();this.classList.remove('drag');
+  Array.from(e.dataTransfer.files).forEach(function(f){
+    if(f.name.match(/\.(gpx|geojson|json)$/i))readGPXFile(f);
+  });
+});
+gpxDrop.addEventListener('click',function(){gpxFile.click();});
+gpxFile.addEventListener('change',function(){
+  Array.from(this.files).forEach(function(f){readGPXFile(f);});
+  this.value='';
+});
 
 // ══ PDIs ══════════════════════════════════════════════════════════════════
 var pdiList=[];
@@ -1414,6 +1530,7 @@ function loop(ts){
     ctx.fillStyle='rgba(0,0,0,'+aF+')';ctx.fillRect(0,0,S,S);
     if(seisIntensity>0.01){ctx.fillStyle='rgba(200,20,0,'+(seisIntensity*0.18)+')';ctx.fillRect(0,0,S,S);}
     updateWindParticles(ts);drawWindParticles(S);
+    window.polyCurrentTrack=-1;
     for(var ti_=0;ti_<allTracks.length;ti_++){
       var ps=polyStates[ti_],trk=allTracks[ti_];
       if(playing)ps.cycleT=(ps.cycleT+dt)%CYCLE;
@@ -1426,7 +1543,7 @@ function loop(ts){
         var pt2=TD2[hi2];
         gpsCount++;if(gpsCount%divGPS===0)triggerClick();
         cadCount++;if(pt2.cadence>15&&cadCount%divCad===0)triggerKick(pt2.cadence);
-        applyPatches(pt2);checkRandomTrigger(pt2);checkPDIs(pt2);ps.lastIdx=hi2;
+        window.polyCurrentTrack=ti_;applyPatches(pt2);checkRandomTrigger(pt2);checkPDIs(pt2);ps.lastIdx=hi2;
         if(frameCount%2===0){
           document.getElementById('d-ele').textContent=Math.round(pt2.ele)+'m';
           document.getElementById('d-hr').textContent=pt2.hr+' bpm';
