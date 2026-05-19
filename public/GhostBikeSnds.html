@@ -677,8 +677,6 @@ function onToggleChange(key){
     delayDry.gain.setTargetAtTime(T.delay?1-P.delayMix:1,AC.currentTime,0.1);
   }
 }
-
-// ══ PATCH MATRIX ══════════════════════════════════════════════════════════
 const SOURCES=['GPS Time','Orientation','Elevation','Wind','Air Quality','Heart Pulse','Cadence','Speed','Random'];
 const DESTS=['OSC','LFO','VCF cut','VCF res','DLY time','DLY feed','RANDOM','LINE width','LINE color','LINE fade'];
 const SRC_COLORS=['#888','#adf','#4af','#8df','#fa8','#f64','#fa0','#8f8','#f0f'];
@@ -1102,9 +1100,10 @@ function parseGeoJSONTracks(text){
 function parseSingleFile(text,filename,cb){
   var isJSON=filename.match(/\.(geojson|json)$/i)||text.trim().startsWith('{');
   var tracks=null;
-  if(isJSON){try{tracks=parseRoutesCropJSON(text);}catch(ex){}
-    if(!tracks||!tracks.length){try{tracks=parseGeoJSONTracks(text);}catch(ex){}}}
-  else{tracks=parseGPXMulti(text);}
+  if(isJSON){
+    try{tracks=parseRoutesCropJSON(text);}catch(ex){}
+    if(!tracks||!tracks.length){try{tracks=parseGeoJSONTracks(text);}catch(ex){}}
+  }else{tracks=parseGPXMulti(text);}
   cb(tracks);
 }
 function renderTrackList(){
@@ -1163,69 +1162,7 @@ function readGPXFile(file){
   };
   reader.readAsText(file);
 }
-  var info=document.getElementById('gpx-info');info.textContent='Loading...';
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var isJSON=file.name.match(/\.(geojson|json)$/i)||e.target.result.trim().startsWith('{');
-    var tracks=null;
-    if(isJSON){
-      // Try routes_crop format first [{name,pts:[lon,lat,ele]}]
-      try{tracks=parseRoutesCropJSON(e.target.result);}catch(ex){}
-      // Fall back to GeoJSON FeatureCollection
-      if(!tracks||!tracks.length){try{tracks=parseGeoJSONTracks(e.target.result);}catch(ex){}}
-    }else{
-      tracks=parseGPXMulti(e.target.result);
-    }
-    if(!tracks||!tracks.length){info.textContent='Error: invalid file';return;}
-    allTracks=tracks;
-    var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel');
-    if(tracks.length>1){
-      wrap.style.display='block';sel.innerHTML='';
-      tracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
-      sel.onchange=function(){if(!polyMode)loadGPXData(tracks[parseInt(this.value)]);};
-      // build interval selectors per track
-      polyIntervals=tracks.map(function(){return 0;});
-      var iWrap=document.getElementById('interval-wrap');
-      if(iWrap){
-        iWrap.innerHTML='';
-        tracks.forEach(function(t,i){
-          var row=document.createElement('div');
-          row.style.cssText='display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
-          var name=document.createElement('span');
-          name.style.cssText='font-size:0.8vh;color:rgba(255,255,255,0.5);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.08em;';
-          name.textContent=t.name;
-          row.appendChild(name);
-          [0,3,5,8].forEach(function(iv){
-            var btn=document.createElement('button');
-            btn.textContent=iv===0?'0':iv===3?'3ª':iv===5?'5ª':'8ª';
-            btn.dataset.track=i;btn.dataset.iv=iv;
-            btn.style.cssText='font-size:0.75vh;padding:1px 5px;border:1px solid rgba(255,255,255,'+(polyIntervals[i]===iv?'0.6':'0.15')+');background:'+(polyIntervals[i]===iv?'rgba(255,255,255,0.15)':'transparent')+';color:rgba(255,255,255,'+(polyIntervals[i]===iv?'1':'0.4')+');cursor:pointer;letter-spacing:0.05em;font-family:inherit;';
-            btn.addEventListener('click',function(){
-              var ti=parseInt(this.dataset.track),iv2=parseInt(this.dataset.iv);
-              polyIntervals[ti]=iv2;
-              // update button styles in this row
-              row.querySelectorAll('button').forEach(function(b){
-                var active=parseInt(b.dataset.iv)===iv2;
-                b.style.borderColor='rgba(255,255,255,'+(active?'0.6':'0.15')+')';
-                b.style.background=active?'rgba(255,255,255,0.15)':'transparent';
-                b.style.color='rgba(255,255,255,'+(active?'1':'0.4')+')';
-              });
-            });
-            row.appendChild(btn);
-          });
-          iWrap.appendChild(row);
-        });
-        iWrap.style.display='block';
-      }
-    }else wrap.style.display='none';
-    loadGPXData(tracks[0]);
-    info.textContent=file.name+(tracks.length>1?' · '+tracks.length+' tracks':'');
-    if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
-    // cargar hitos en background
-    if(tracks[0].pts&&tracks[0].pts.length>0) fetchHitosForTrack(tracks[0].pts);
-  };
-  reader.readAsText(file);
-}
+
 
 var gpxDrop=document.getElementById('gpx-drop');
 var gpxFile=document.getElementById('gpx-file');
