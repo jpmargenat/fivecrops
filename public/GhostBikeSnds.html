@@ -2,320 +2,297 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>BikeSnds — Flowing Cartographies</title>
+<title>GhostBikeSnds — Flowing Cartographies</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-html, body { width:100%; height:100%; background:#000; overflow:hidden; font-family:'Courier New', monospace; }
+html, body { width:100%; height:100%; background:#000; overflow:hidden; }
+body { font-family:'Courier New', monospace; }
 
-/* ── LAYOUT 4032 × 2592 — canvas 2592 | panel 1440 ── */
+/* ── LAYOUT 4032×2592 ── */
 #app {
-  position: absolute;
-  /* altura = 100vh, ancho = 100vh * (4032/2592) */
-  height: 100vh;
-  width: calc(100vh * 4032 / 2592);
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 100vw;
-  display: flex;
+  position:absolute;
+  height:100vh;
+  width:calc(100vh * 4032 / 2592);
+  left:50%; transform:translateX(-50%);
+  max-width:100vw;
+  display:flex;
+  flex-direction:row-reverse;
 }
 @media (max-aspect-ratio: 4032/2592) {
-  #app {
-    width: 100vw;
-    height: calc(100vw * 2592 / 4032);
-    top: 50%; left: 0;
-    transform: translateY(-50%);
-  }
+  #app { width:100vw; height:calc(100vw * 2592 / 4032); top:50%; left:0; transform:translateY(-50%); flex-direction:row-reverse; }
 }
 
-/* ── CANVAS CUADRADO ── */
+/* ── CANVAS ── */
 #canvas-wrap {
-  flex-shrink: 0;
-  /* 2592/4032 = 64.28% del total */
-  width: calc(100% * 2592 / 4032);
-  height: 100%;
-  position: relative;
-  background: #000;
+  flex-shrink:0;
+  width:calc(100% * 2592 / 4032);
+  height:100%;
+  background:#000;
+  position:relative;
 }
 #c { display:block; width:100%; height:100%; }
 
-/* ── PANEL DERECHO ── */
+/* ── PANEL ── */
 #panel {
-  flex: 1;
-  height: 100%;
-  background: #060608;
-  border-left: 1px solid rgba(255,255,255,0.06);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  position: relative;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.1) transparent;
+  flex:1; height:100%;
+  background:#050508;
+  border-right:1px solid rgba(255,255,255,0.05);
+  display:flex; flex-direction:column;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,0.06) transparent;
 }
 
-/* header del panel */
+/* ── HEADER ── */
 .panel-header {
-  padding: 3% 6% 2%;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  flex-shrink: 0;
+  padding:3% 6% 2%;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  flex-shrink:0;
 }
 .panel-title {
-  font-size: 2.6vh; letter-spacing: 0.5vh;
-  color: #fff; text-transform: uppercase;
-  font-weight: 400;
+  font-size:2vh; letter-spacing:0.6vh;
+  color:#fff; text-transform:uppercase; font-weight:400;
 }
 .panel-sub {
-  font-size: 0.85vh; letter-spacing: 0.2vh;
-  color: rgba(255,255,255,0.4); margin-top: 0.5vh;
+  font-size:0.9vh; letter-spacing:0.15vh;
+  color:rgba(255,255,255,0.75); margin-top:0.5vh;
 }
 
-/* transport */
+/* ── TRANSPORT ── */
 .transport {
-  padding: 3% 6% 2%;
-  display: flex; gap: 3%;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  flex-shrink: 0;
+  padding:2.5% 6% 2%;
+  display:flex; gap:2%;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  flex-shrink:0;
 }
 .btn {
-  flex: 1; padding: 2% 0;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.5);
-  font-family: 'Courier New', monospace;
-  font-size: 1.1vh; letter-spacing: 0.25vh;
-  text-transform: uppercase; cursor: pointer;
-  transition: all 0.15s;
+  flex:1; padding:1.8% 0;
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.8);
+  font-family:'Courier New', monospace;
+  font-size:1vh; letter-spacing:0.25vh;
+  text-transform:uppercase; cursor:pointer;
+  transition:all 0.15s;
 }
-.btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
-.btn.active { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.4); }
-.btn.danger { border-color: rgba(255,60,40,0.3); color: rgba(255,80,60,0.6); }
-.btn.danger:hover { background: rgba(255,60,40,0.1); color: rgba(255,100,80,0.9); }
+.btn:hover { border-color:rgba(255,255,255,0.65); color:rgba(255,255,255,0.8); }
+.btn.active { border-color:rgba(255,255,255,0.7); color:#fff; }
+.btn.danger { border-color:rgba(255,50,30,0.2); color:rgba(255,80,60,0.5); }
+.btn.danger:hover { border-color:rgba(255,50,30,0.5); color:rgba(255,100,80,0.9); }
 
-/* secciones */
-.section {
-  padding: 2.5% 6% 1.5%;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  flex-shrink: 0;
-}
-.section-title {
-  font-size: 1.2vh; letter-spacing: 0.3vh;
-  color: rgba(255,255,255,0.9); text-transform: uppercase;
-  margin-bottom: 2%;
-}
-
-/* sliders */
-.row {
-  display: flex; align-items: center;
-  gap: 3%; margin-bottom: 1.8%;
-}
-.row label {
-  font-size: 1.2vh; letter-spacing: 0.15vh;
-  color: rgba(255,255,255,0.9); text-transform: uppercase;
-  width: 32%; flex-shrink: 0;
-}
-.row input[type=range] {
-  flex: 1; accent-color: rgba(255,255,255,0.5);
-  height: 2px; cursor: pointer;
-}
-.row .val {
-  font-size: 1.3vh; color: #fff;
-  width: 24%; text-align: right; flex-shrink: 0;
-}
-
-/* toggle switches */
-.toggle-row {
-  display: flex; align-items: center; gap: 3%; margin-bottom: 1.8%;
-}
-.toggle-row label {
-  font-size: 1.2vh; letter-spacing: 0.15vh;
-  color: rgba(255,255,255,0.9); text-transform: uppercase;
-  flex: 1;
-}
-.toggle {
-  width: 5vh; height: 2.5vh;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 99px; cursor: pointer;
-  position: relative; transition: background 0.2s;
-  flex-shrink: 0;
-}
-.toggle.on { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.35); }
-.toggle::after {
-  content: '';
-  position: absolute; top: 15%; left: 8%;
-  width: 70%; height: 70%;
-  background: rgba(255,255,255,0.4);
-  border-radius: 99px; transition: transform 0.2s;
-}
-.toggle.on::after { transform: translateX(60%); background: #fff; }
-
-/* live data readout */
-.readout {
-  flex-shrink: 0;
-  padding: 2.5% 6%;
-  display: flex; flex-direction: column; gap: 1.5%;
-}
-.readout-title {
-  font-size: 1.2vh; letter-spacing: 0.3vh;
-  color: rgba(255,255,255,0.9); text-transform: uppercase;
-  margin-bottom: 1%; flex-shrink: 0;
-}
-.data-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 2.5%;
-}
-.data-cell {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 5% 6%;
-}
-.data-label {
-  font-size: 1.05vh; letter-spacing: 0.2vh;
-  color: rgba(255,255,255,0.85); text-transform: uppercase;
-  margin-bottom: 1%;
-}
-.data-val {
-  font-size: 3.2vh; font-weight: bold;
-  color: #fff;
-}
-
-/* progress bar */
-.progress-wrap {
-  padding: 0 6% 2%;
-  flex-shrink: 0;
-}
-.progress-bar {
-  width: 100%; height: 2px;
-  background: rgba(255,255,255,0.06);
-  position: relative; cursor: pointer;
-}
-.progress-fill {
-  height: 100%; background: rgba(255,255,255,0.35);
-  transition: width 0.1s linear;
-  width: 0%;
-}
-.progress-labels {
-  display: flex; justify-content: space-between;
-  font-size: 1.1vh; color: rgba(255,255,255,0.85);
-  margin-top: 1%;
-}
-
-/* wind display */
-.wind-row {
-  display: flex; align-items: center; gap: 3%; padding: 3% 6%;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  flex-shrink: 0;
-  background: rgba(255,255,255,0.02);
-}
-.wind-compass-mini {
-  width: 3vh; height: 3vh; border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
-  position: relative; flex-shrink: 0;
-}
-.wind-needle {
-  position: absolute; top: 50%; left: 50%;
-  width: 1px; height: 40%;
-  background: rgba(100,180,255,0.7);
-  transform-origin: bottom center;
-  transform: translate(-50%,-100%) rotate(0deg);
-  transition: transform 1s ease;
-}
-.wind-info {
-  font-size: 1.2vh; color: rgba(255,255,255,0.9);
-  letter-spacing: 0.1vh;
-}
-.wind-info span { color: rgba(100,180,255,0.6); }
-
-/* upload GPX */
+/* ── GPX DROP ── */
 .gpx-drop {
-  margin: 0 6% 0;
-  border: 1px dashed rgba(255,255,255,0.15);
-  padding: 1.2% 4%;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  flex-shrink: 0;
+  margin:2% 6%;
+  border:1px dashed rgba(255,255,255,0.12);
+  padding:1.2% 4%;
+  cursor:pointer; transition:all 0.2s;
+  position:relative; flex-shrink:0;
   display:flex; align-items:center; justify-content:space-between;
 }
-.gpx-drop:hover, .gpx-drop.drag { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.03); }
+.gpx-drop:hover { border-color:rgba(255,255,255,0.7); }
 .gpx-drop input { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
-.gpx-drop-label {
-  font-size: 1.05vh; letter-spacing: 0.2vh;
-  color: rgba(255,255,255,0.75); text-transform: uppercase;
-  pointer-events: none;
+.gpx-drop-label { font-size:0.9vh; letter-spacing:0.2vh; color:rgba(255,255,255,0.82); text-transform:uppercase; pointer-events:none; }
+.gpx-info { font-size:0.85vh; color:rgba(100,255,150,0.8); letter-spacing:0.1vh; }
+
+/* mode wrap */
+#mode-wrap { display:none; padding:1% 6% 0.5%; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.04); }
+#mode-wrap select { width:100%;background:#0a0a12;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);font-family:'Courier New',monospace;font-size:0.9vh;padding:1.5% 2%;cursor:pointer;outline:none; }
+
+/* ── PROGRESS ── */
+.progress-wrap { padding:0 6% 2%; flex-shrink:0; }
+.progress-bar { width:100%; height:1px; background:rgba(255,255,255,0.06); cursor:pointer; position:relative; }
+.progress-fill { height:100%; background:rgba(255,255,255,0.7); width:0%; transition:width 0.1s linear; }
+.progress-labels { display:flex; justify-content:space-between; font-size:0.85vh; color:rgba(255,255,255,0.75); margin-top:1%; }
+
+/* ── SECTIONS ── */
+.section { padding:2% 6% 1.5%; border-bottom:1px solid rgba(255,255,255,0.04); flex-shrink:0; }
+.section-title { font-size:0.85vh; letter-spacing:0.35vh; color:rgba(255,255,255,0.75); text-transform:uppercase; margin-bottom:2%; }
+
+/* ── ROWS / SLIDERS ── */
+.row { display:flex; align-items:center; gap:2%; margin-bottom:1.8%; }
+.row label { font-size:1vh; letter-spacing:0.1vh; color:rgba(255,255,255,0.88); text-transform:uppercase; width:28%; flex-shrink:0; }
+.toggle-inline { width:3.5vh; height:1.8vh; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:99px; cursor:pointer; position:relative; transition:background 0.2s; flex-shrink:0; }
+.toggle-inline.on { background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.65); }
+.toggle-inline::after { content:''; position:absolute; top:12%; left:8%; width:66%; height:76%; background:rgba(255,255,255,0.65); border-radius:99px; transition:transform 0.2s; }
+.toggle-inline.on::after { transform:translateX(48%); background:#fff; }
+.row input[type=range] {
+  flex:1;
+  -webkit-appearance:none;
+  height:1px;
+  background:rgba(255,255,255,0.12);
+  outline:none; cursor:pointer;
+  border-radius:0;
 }
-.gpx-info {
-  font-size: 0.9vh; color: rgba(100,255,150,0.85);
-  margin-top: 1.5%; letter-spacing: 0.1vh;
-  min-height: 1.2vh;
+.row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none;
+  width:8px; height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.7);
+  cursor:pointer;
+}
+.row input[type=range]::-moz-range-thumb {
+  width:8px; height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.7);
+  border:none; cursor:pointer;
+}
+.row .val { font-size:1vh; color:rgba(255,255,255,0.8); width:22%; text-align:right; flex-shrink:0; }
+
+/* ── DIVISOR ── */
+.divisor-row { display:flex; align-items:center; gap:2%; margin-bottom:1.8%; }
+.divisor-row label { font-size:1vh; color:rgba(255,255,255,0.88); text-transform:uppercase; letter-spacing:0.1vh; width:32%; flex-shrink:0; }
+.divisor-btns { display:flex; gap:2%; flex:1; }
+.div-btn {
+  flex:1; padding:1.5% 0; text-align:center;
+  border:1px solid rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.75);
+  font-family:'Courier New',monospace;
+  font-size:0.85vh; cursor:pointer; transition:all 0.15s;
+}
+.div-btn:hover { border-color:rgba(255,255,255,0.65); color:rgba(255,255,255,0.7); }
+.div-btn.active { border-color:rgba(255,255,255,0.75); color:#fff; background:rgba(255,255,255,0.05); }
+
+/* ── LINE PRESETS ── */
+.preset-row { display:flex; gap:2%; margin-bottom:1.8%; }
+.preset-btn {
+  flex:1; padding:2% 0; text-align:center;
+  border:1px solid rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.75);
+  font-family:'Courier New',monospace;
+  font-size:0.85vh; letter-spacing:0.2vh;
+  cursor:pointer; transition:all 0.15s;
+  text-transform:uppercase;
+}
+.preset-btn:hover { border-color:rgba(255,255,255,0.65); color:rgba(255,255,255,0.7); }
+.preset-btn.active { border-color:rgba(255,255,255,0.8); color:#fff; background:rgba(255,255,255,0.04); }
+
+/* ── TOGGLES ── */
+.toggle-row { display:flex; align-items:center; gap:3%; margin-bottom:1.5%; }
+.toggle-row label { font-size:1vh; letter-spacing:0.1vh; color:rgba(255,255,255,0.88); text-transform:uppercase; flex:1; }
+.toggle { width:4.5vh; height:2.2vh; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:99px; cursor:pointer; position:relative; transition:background 0.2s; flex-shrink:0; }
+.toggle.on { background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.65); }
+.toggle::after { content:''; position:absolute; top:15%; left:8%; width:66%; height:70%; background:rgba(255,255,255,0.7); border-radius:99px; transition:transform 0.2s; }
+.toggle.on::after { transform:translateX(52%); background:#fff; }
+
+/* ── PATCH MATRIX ── */
+.patch-section { padding:2% 6% 1.5%; border-bottom:1px solid rgba(255,255,255,0.04); flex-shrink:0; }
+.patch-title { font-size:0.85vh; letter-spacing:0.35vh; color:rgba(255,255,255,0.75); text-transform:uppercase; margin-bottom:2%; }
+.patch-col-labels { display:flex; margin-left:9vh; margin-bottom:0.3%; gap:0; }
+.patch-col-label { font-size:0.55vh; color:rgba(255,255,255,0.8); text-transform:uppercase; writing-mode:vertical-rl; transform:rotate(180deg); height:5vh; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.patch-row { display:flex; align-items:center; margin-bottom:0.4%; gap:0; }
+.patch-row-label { font-size:0.7vh; text-transform:uppercase; width:9vh; flex-shrink:0; text-align:right; padding-right:1vh; letter-spacing:0.05vh; }
+.patch-dot-wrap { display:flex; align-items:center; justify-content:center; flex-shrink:0; padding:0.15vh; }
+.patch-dot { width:1.2vh; height:1.2vh; border-radius:50%; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.02); cursor:pointer; transition:all 0.15s; position:relative; }
+.patch-dot:hover { border-color:rgba(255,255,255,0.8); }
+.patch-dot.active { border-color:transparent; box-shadow:0 0 0.4vh currentColor; }
+.patch-dot.active::after { content:''; position:absolute; inset:25%; border-radius:50%; background:currentColor; }
+
+/* ── LIVE DATA ── */
+.readout { padding:2% 6% 1.5%; flex-shrink:0; }
+.readout-title { font-size:0.85vh; letter-spacing:0.35vh; color:rgba(255,255,255,0.75); text-transform:uppercase; margin-bottom:1.5%; }
+.data-grid { display:grid; grid-template-columns:1fr 1fr; gap:2%; }
+.data-cell { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); padding:4% 5%; }
+.data-label { font-size:0.7vh; letter-spacing:0.2vh; color:rgba(255,255,255,0.75); text-transform:uppercase; margin-bottom:0.5%; }
+.data-val { font-size:2.2vh; font-weight:400; color:#fff; letter-spacing:0.05vh; }
+
+/* ── WIND ── */
+.wind-row { display:flex; align-items:center; gap:3%; padding:2% 6%; flex-shrink:0; background:rgba(255,255,255,0.01); }
+.wind-compass-mini { width:2.8vh; height:2.8vh; border-radius:50%; border:1px solid rgba(255,255,255,0.08); position:relative; flex-shrink:0; }
+.wind-needle { position:absolute; top:50%; left:50%; width:1px; height:38%; background:rgba(100,180,255,0.6); transform-origin:bottom center; transform:translate(-50%,-100%) rotate(0deg); transition:transform 1s ease; }
+.wind-info { font-size:0.9vh; color:rgba(255,255,255,0.8); letter-spacing:0.1vh; }
+.wind-info span { color:rgba(100,180,255,0.7); }
+
+/* ── PDI ── */
+/* tooltips */
+.has-tip { position:relative; }
+.tip-icon {
+  font-size:0.7vh; color:rgba(255,255,255,0.5);
+  border:1px solid rgba(255,255,255,0.25); border-radius:50%;
+  width:1.5vh; height:1.5vh; display:inline-flex;
+  align-items:center; justify-content:center;
+  margin-left:0.8vh; cursor:help; flex-shrink:0;
+  transition:all 0.15s;
+}
+.tip-icon:hover { color:#fff; border-color:rgba(255,255,255,0.7); }
+/* tooltip posicionado via JS */
+.tip-box {
+  display:none; position:fixed;
+  width:22vh; background:rgba(4,4,14,0.98);
+  border:1px solid rgba(255,255,255,0.3);
+  padding:1.5vh 2vh; font-size:0.85vh;
+  color:rgba(255,255,255,0.9); line-height:1.7;
+  z-index:9999; pointer-events:none;
+  letter-spacing:0.03vh;
+  box-shadow:0 4px 20px rgba(0,0,0,0.8);
 }
 
-.patch-section{padding:2% 6% 1%;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;}
-.patch-title{font-size:1.3vh;letter-spacing:0.3vh;color:#fff;text-transform:uppercase;margin-bottom:2%;}
-.patch-col-labels{display:flex;margin-left:8vh;gap:0;}
-.patch-col-label{font-size:0.7vh;color:rgba(255,255,255,0.6);text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);height:5.5vh;width:2vh;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.patch-row{display:flex;align-items:center;margin-bottom:0.5%;gap:0;}
-.patch-row-label{font-size:0.9vh;text-transform:uppercase;width:8vh;flex-shrink:0;text-align:right;padding-right:1.2vh;}
-.patch-dot-wrap{display:flex;align-items:center;justify-content:center;width:2vh;flex-shrink:0;padding:0.2vh 0;}
-.patch-dot{width:1.4vh;height:1.4vh;border-radius:50%;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.03);cursor:pointer;transition:all 0.15s;position:relative;}
-.patch-dot:hover{border-color:rgba(255,255,255,0.5);}
-.patch-dot.active{border-color:transparent;box-shadow:0 0 0.5vh currentColor;}
-.patch-dot.active::after{content:'';position:absolute;inset:25%;border-radius:50%;background:currentColor;}
-.pdi-item{display:flex;align-items:center;gap:3%;font-size:0.85vh;color:rgba(255,255,255,0.6);padding:0.8% 0;border-bottom:1px solid rgba(255,255,255,0.04)}.pdi-dot{width:0.8vh;height:0.8vh;border-radius:50%;background:#fa0;flex-shrink:0}.pdi-name{flex:1}.pdi-del{cursor:pointer;color:rgba(255,80,60,0.6);padding:0 0.5vh}
-/* start overlay */
+.pdi-item{display:flex;align-items:center;gap:2%;font-size:0.85vh;color:rgba(255,255,255,0.8);padding:1% 0;border-bottom:1px solid rgba(255,255,255,0.04);flex-wrap:wrap;}
+.pdi-cross{width:1.2vh;height:1.2vh;position:relative;flex-shrink:0;}
+.pdi-cross::before,.pdi-cross::after{content:'';position:absolute;background:rgba(255,255,255,0.7);border-radius:1px;}
+.pdi-cross::before{width:100%;height:1px;top:50%;transform:translateY(-50%);}
+.pdi-cross::after{width:1px;height:100%;left:50%;transform:translateX(-50%);}
+.pdi-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pdi-sample-btn{font-size:0.75vh;color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.1);padding:0.3vh 0.8vh;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.pdi-sample-btn.loaded{color:rgba(100,255,150,0.8);border-color:rgba(100,255,150,0.3);}
+.pdi-del{cursor:pointer;color:rgba(255,60,40,0.4);padding:0 0.5vh;flex-shrink:0;}
+.pdi-del:hover{color:rgba(255,80,60,0.9);}
+
+/* ── START ── */
 #start {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  background: #000; z-index: 100;
-  cursor: pointer; gap: 2vh;
+  position:fixed; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  background:#000; z-index:100; cursor:pointer; gap:2.5vh;
 }
-#start h1 {
-  font-size: 2vh; letter-spacing: 0.8vh;
-  color: rgba(255,255,255,0.9); text-transform: uppercase; font-weight: 400;
-}
-#start p { font-size: 1.2vh; letter-spacing: 0.3vh; color: rgba(255,255,255,0.6); }
+#start h1 { font-size:3vh; letter-spacing:0.8vh; color:rgba(255,255,255,0.85); text-transform:uppercase; font-weight:400; }
+#start p { font-size:1.1vh; letter-spacing:0.3vh; color:rgba(255,255,255,0.75); }
 </style>
 </head>
 <body>
 
 <div id="start">
-  <h1>BikeSnds</h1>
+  <h1>GhostBikeSnds</h1>
   <p>Flowing Cartographies · click to start</p>
 </div>
 
 <div id="app">
 
-  <!-- ── PANEL DE CONTROL ── -->
+  <!-- ── CANVAS ── -->
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+  </div>
+
+  <!-- ── PANEL ── -->
   <div id="panel">
 
     <div class="panel-header">
-      <div class="panel-title">BikeSnds</div>
-      <div class="panel-sub">RanchoUCLA · 32 min · 195 pts GPS</div>
+      <div class="panel-title">GhostBikeSnds</div>
+      <div class="panel-sub" id="panel-sub">AsUCLA · 58 pts · 9min 54s</div>
+    </div>
+
+    <!-- GPX -->
+    <div class="gpx-drop" id="gpx-drop">
+      <input type="file" id="gpx-file" accept=".gpx,.geojson,.json" multiple style="position:absolute;left:-9999px;opacity:0;">
+      <div class="gpx-drop-label" id="drop-label">⬆ Load GPX / GeoJSON / JSON<br><span style="font-size:0.7vh;opacity:0.5">multiple files supported</span></div>
+      <div class="gpx-info" id="gpx-info"></div>
+    </div>
+
+    <!-- MODE -->
+    <div id="mode-wrap" style="display:none;padding:0 6% 1.5%;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="display:flex;align-items:center;gap:3%;margin-bottom:1.5%;">
+        <div style="font-size:0.85vh;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.2vh;flex:1;">Mode</div>
+        <button id="btn-mono" class="btn active" style="flex:none;padding:0.8% 3%;font-size:0.85vh;">MONO</button>
+        <button id="btn-poly" class="btn" style="flex:none;padding:0.8% 3%;font-size:0.85vh;">POLY</button>
+      </div>
+      <select id="track-sel" style="width:100%;background:#0a0a12;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);font-family:'Courier New',monospace;font-size:0.9vh;padding:1.5%;cursor:pointer;outline:none;"></select>
+      <div id="interval-wrap" style="display:none;margin-top:4px;"></div>
     </div>
 
     <!-- TRANSPORT -->
     <div class="transport">
-      <button class="btn" id="btn-play">▶ Play</button>
+      <button class="btn active" id="btn-play">▶ Play</button>
       <button class="btn" id="btn-pause">⏸ Pause</button>
       <button class="btn" id="btn-mute">⊘ Mute</button>
       <button class="btn danger" id="btn-reset">↺ Reset</button>
-    </div>
-
-    <!-- UPLOAD GPX -->
-    <div class="gpx-drop" id="gpx-drop">
-      <input type="file" id="gpx-file" accept=".gpx,.json,.geojson">
-      <div class="gpx-drop-label">⬆ Cargar GPX</div>
-      <div class="gpx-info" id="gpx-info"></div>
-    </div>
-    <div id="mode-wrap" style="display:none;padding:1.5% 6%;border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:3%;margin-bottom:1.5%;">
-        <div style="font-size:0.9vh;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.2vh;flex:1;">Modo</div>
-        <button id="btn-mono" class="btn active">MONO</button>
-        <button id="btn-poly" class="btn">POLY</button>
-      </div>
-      <select id="track-sel" style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);font-family:Courier New;font-size:0.9vh;padding:1.5%;cursor:pointer;outline:none;"></select>
-      <div id="interval-wrap" style="display:none;margin-top:3px;"></div>
     </div>
 
     <!-- PROGRESS -->
@@ -325,12 +302,12 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
       </div>
       <div class="progress-labels">
         <span id="prog-time">0:00</span>
-        <span id="prog-pt">pt 0 / 195</span>
-        <span>32:00</span>
+        <span id="prog-pt">— / —</span>
+        <span id="prog-total">9:54</span>
       </div>
     </div>
 
-    <!-- PATCHERA -->
+    <!-- PATCH MATRIX -->
     <div class="patch-section">
       <div class="patch-title">Patch Matrix</div>
       <div class="patch-col-labels" id="patch-col-labels"></div>
@@ -339,19 +316,64 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 
     <!-- VELOCIDAD -->
     <div class="section">
-      <div class="section-title">Velocidad</div>
+      <div class="section-title has-tip">Tempo <span class="tip-icon">?</span><div class="tip-box">Speed: velocidad de reproducción 1x (tiempo real) → 120x. Posición central = 60x. Los tres Divisores controlan la frecuencia de disparo de GPS, Cadence y Random de forma independiente.</div></div>
       <div class="row">
-        <label>Tempo</label>
-        <input type="range" id="spd" min="0" max="1" step="0.001" value="0">
-        <span class="val" id="spd-v">1.0x · 32:00</span>
+        <label>Speed</label>
+        <input type="range" id="spd" min="0" max="1" step="0.001" value="0.5">
+        <span class="val" id="spd-v">60x</span>
+      </div>
+      <div class="divisor-row">
+        <label>GPS ÷</label>
+        <div class="divisor-btns">
+          <div class="div-btn active" data-div-gps="1">1</div>
+          <div class="div-btn" data-div-gps="2">2</div>
+          <div class="div-btn" data-div-gps="4">4</div>
+          <div class="div-btn" data-div-gps="8">8</div>
+          <div class="div-btn" data-div-gps="16">16</div>
+        </div>
+      </div>
+      <div class="divisor-row">
+        <label>Cadence ÷</label>
+        <div class="divisor-btns">
+          <div class="div-btn active" data-div-cad="1">1</div>
+          <div class="div-btn" data-div-cad="2">2</div>
+          <div class="div-btn" data-div-cad="4">4</div>
+          <div class="div-btn" data-div-cad="8">8</div>
+          <div class="div-btn" data-div-cad="16">16</div>
+        </div>
+      </div>
+      <div class="divisor-row">
+        <label>Random ÷</label>
+        <div class="divisor-btns">
+          <div class="div-btn active" data-div-rnd="1">1</div>
+          <div class="div-btn" data-div-rnd="2">2</div>
+          <div class="div-btn" data-div-rnd="4">4</div>
+          <div class="div-btn" data-div-rnd="8">8</div>
+          <div class="div-btn" data-div-rnd="16">16</div>
+        </div>
       </div>
     </div>
 
-    <!-- VISUAL -->
+    <!-- RANDOM TRIGGER -->
+    <div class="section" style="padding-top:1%;">
+      <div class="section-title">Random Trigger</div>
+      <div class="divisor-btns" style="margin-bottom:1%;">
+        <div class="div-btn active" data-rtrig="gps">GPS</div>
+        <div class="div-btn" data-rtrig="cadence">Cadence</div>
+        <div class="div-btn" data-rtrig="hr">Heart</div>
+      </div>
+    </div>
+
+    <!-- LINE PRESETS -->
     <div class="section">
-      <div class="section-title">Visual</div>
+      <div class="section-title has-tip">Line <span class="tip-icon">?</span><div class="tip-box">Presets: TECHNIC (fina, precisa), FLOW (orgánica), MARKER (con puntos en cada nodo). Width, Fade, HR Color y Glow se pueden ajustar libremente sobre el preset.</div></div>
+      <div class="preset-row">
+        <div class="preset-btn active" data-preset="technic">Technic</div>
+        <div class="preset-btn" data-preset="flow">Flow</div>
+        <div class="preset-btn" data-preset="marker">Marker</div>
+      </div>
       <div class="row">
-        <label>Espesor</label>
+        <label>Width</label>
         <input type="range" id="wid" min="0.5" max="14" step="0.5" value="3">
         <span class="val" id="wid-v">3.0</span>
       </div>
@@ -361,7 +383,7 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
         <span class="val" id="fad-v">0.10</span>
       </div>
       <div class="row">
-        <label>HR color</label>
+        <label>HR Color</label>
         <input type="range" id="hrm" min="0" max="1" step="0.05" value="1">
         <span class="val" id="hrm-v">1.00</span>
       </div>
@@ -374,145 +396,148 @@ html, body { width:100%; height:100%; background:#000; overflow:hidden; font-fam
 
     <!-- AUDIO -->
     <div class="section">
-      <div class="section-title">Audio</div>
+      <div class="section-title has-tip">Audio <span class="tip-icon">?</span><div class="tip-box">Niveles de cada módulo sonoro. El toggle a la izquierda activa/desactiva. Master controla el volumen general. Filter y Delay funcionan en cadena después del oscilador.</div></div>
       <div class="row">
         <label>Master</label>
         <input type="range" id="master" min="0" max="1" step="0.05" value="0.8">
         <span class="val" id="master-v">0.80</span>
       </div>
       <div class="row">
-        <label>Osc vol</label>
+        <label>Oscillator</label>
         <input type="range" id="ovol" min="0" max="1" step="0.05" value="0.25">
         <span class="val" id="ovol-v">0.25</span>
       </div>
       <div class="row">
-        <label>Click vol</label>
+        <label>Click GPS</label>
         <input type="range" id="clvol" min="0" max="1" step="0.05" value="0.35">
         <span class="val" id="clvol-v">0.35</span>
       </div>
       <div class="row">
-        <label>Kick vol</label>
+        <label>Kick</label>
         <input type="range" id="kvol" min="0" max="1" step="0.05" value="0.5">
         <span class="val" id="kvol-v">0.50</span>
       </div>
       <div class="row">
-        <label>Delay mix</label>
+        <label>Delay Mix</label>
         <input type="range" id="dmix" min="0" max="1" step="0.05" value="0.3">
         <span class="val" id="dmix-v">0.30</span>
+      </div>
+      <div class="row">
+        <label>Random</label>
+        <input type="range" id="rvol" min="0" max="1" step="0.05" value="0.2">
+        <span class="val" id="rvol-v">0.20</span>
       </div>
     </div>
 
     <!-- TOGGLES -->
     <div class="section">
       <div class="section-title">On / Off</div>
-      <div class="toggle-row">
-        <label>Oscilador</label>
-        <div class="toggle on" id="tog-osc"></div>
-      </div>
-      <div class="toggle-row">
-        <label>Click GPS</label>
-        <div class="toggle on" id="tog-click"></div>
-      </div>
-      <div class="toggle-row">
-        <label>Kick cadencia</label>
-        <div class="toggle on" id="tog-kick"></div>
-      </div>
-      <div class="toggle-row">
-        <label>Filtro HR</label>
-        <div class="toggle on" id="tog-filter"></div>
-      </div>
-      <div class="toggle-row">
-        <label>Delay heading</label>
-        <div class="toggle on" id="tog-delay"></div>
-      </div>
-      <div class="toggle-row">
-        <label>LFO viento</label>
-        <div class="toggle on" id="tog-lfo"></div>
-      </div>
+      <div class="toggle-row"><label>Oscillator</label><div class="toggle on" id="tog-osc"></div></div>
+      <div class="toggle-row"><label>Click GPS</label><div class="toggle on" id="tog-click"></div></div>
+      <div class="toggle-row"><label>Kick Cadence</label><div class="toggle on" id="tog-kick"></div></div>
+      <div class="toggle-row"><label>Filter</label><div class="toggle on" id="tog-filter"></div></div>
+      <div class="toggle-row"><label>Delay</label><div class="toggle on" id="tog-delay"></div></div>
+      <div class="toggle-row"><label>LFO Wind</label><div class="toggle on" id="tog-lfo"></div></div>
+      <div class="toggle-row"><label>Random</label><div class="toggle" id="tog-random"></div></div>
     </div>
 
     <!-- LIVE DATA -->
     <div class="readout">
-      <div class="readout-title">Live data</div>
+      <div class="readout-title">Live Data</div>
       <div class="data-grid">
-        <div class="data-cell"><div class="data-label">Elevación</div><div class="data-val" id="d-ele">—</div></div>
-        <div class="data-cell"><div class="data-label">FC</div><div class="data-val" id="d-hr">—</div></div>
-        <div class="data-cell"><div class="data-label">Cadencia</div><div class="data-val" id="d-cad">—</div></div>
-        <div class="data-cell"><div class="data-label">Velocidad</div><div class="data-val" id="d-spd">—</div></div>
+        <div class="data-cell"><div class="data-label">Elevation</div><div class="data-val" id="d-ele">—</div></div>
+        <div class="data-cell"><div class="data-label">Heart Pulse</div><div class="data-val" id="d-hr">—</div></div>
+        <div class="data-cell"><div class="data-label">Cadence</div><div class="data-val" id="d-cad">—</div></div>
+        <div class="data-cell"><div class="data-label">Speed</div><div class="data-val" id="d-spd">—</div></div>
       </div>
       <div style="display:none"><span id="d-head"></span><span id="d-filt"></span></div>
     </div>
 
     <!-- PDIs -->
-    <div class="section"><div class="section-title">PDIs</div><div id="pdi-list" style="max-height:5vh;overflow-y:auto;"></div></div>
-    <!-- WIND -->
-    <div class="wind-row">
-      <div class="wind-compass-mini">
-        <div class="wind-needle" id="wind-needle"></div>
+    <div class="section">
+      <div class="section-title">PDIs <span style="font-size:0.7vh;color:rgba(255,255,255,0.25);letter-spacing:0;">· click canvas to mark</span></div>
+      <div style="display:flex;align-items:center;gap:3%;margin-bottom:1.5%;">
+        <label style="font-size:0.85vh;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1vh;">Sample global</label>
+        <input type="file" id="pdi-sample-file" accept="audio/*" style="display:none;">
+        <div onclick="document.getElementById('pdi-sample-file').click()" style="font-size:0.8vh;color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.08);padding:0.5vh 1.5vh;cursor:pointer;text-transform:uppercase;letter-spacing:0.1vh;">⬆ Load</div>
+        <div id="pdi-sample-name" style="font-size:0.8vh;color:rgba(100,255,150,0.7);">—</div>
       </div>
-      <div class="wind-info">
-        WIND <span id="wv">—</span> m/s &nbsp; <span id="wd">—</span>°
-        &nbsp;·&nbsp; LFO <span id="lfo-rate">—</span> Hz
+      <div id="pdi-list" style="max-height:6vh;overflow-y:auto;"></div>
+    </div>
+
+    <!-- EXPORT PRESET -->
+    <div style="padding:2% 6%;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.04);">
+      <div style="display:flex;gap:3%;">
+        <input type="file" id="import-preset-file" accept=".json" style="display:none;">
+        <div onclick="document.getElementById('import-preset-file').click()" style="flex:1;font-size:0.85vh;letter-spacing:0.2vh;color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.12);padding:1.2% 0;text-align:center;cursor:pointer;text-transform:uppercase;">↑ Import</div>
+        <div onclick="exportPreset()" style="flex:1;font-size:0.85vh;letter-spacing:0.2vh;color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.12);padding:1.2% 0;text-align:center;cursor:pointer;text-transform:uppercase;">↓ Export</div>
       </div>
     </div>
 
-  </div><!-- /panel -->
+    <!-- WIND -->
+    <div class="wind-row">
+      <div class="wind-compass-mini"><div class="wind-needle" id="wind-needle"></div></div>
+      <div class="wind-info">WIND <span id="wv">—</span> m/s &nbsp;<span id="wd">—</span>° &nbsp;·&nbsp; LFO <span id="lfo-rate">—</span> Hz</div>
+    </div>
 
-  <!-- ── CANVAS CUADRADO ── -->
-  <div id="canvas-wrap">
-    <canvas id="c"></canvas>
   </div>
-
-</div><!-- /app -->
+</div>
 
 <script>
-// ══ TRACK ════════════════════════════════════════════════════════════════
-const TRACK = [{"nx":0.84766,"ny":0.85068,"ele":47.8,"cadence":0,"hr":85,"heading":0,"speed":0,"dt":1},{"nx":0.83271,"ny":0.85193,"ele":47.7,"cadence":0,"hr":88,"heading":258.5,"speed":3.92,"dt":10.0},{"nx":0.81978,"ny":0.85275,"ele":47.6,"cadence":51,"hr":89,"heading":261.3,"speed":3.37,"dt":10.0},{"nx":0.81437,"ny":0.85394,"ele":47.6,"cadence":0,"hr":88,"heading":241.8,"speed":1.58,"dt":10.0},{"nx":0.81867,"ny":0.84949,"ele":47.6,"cadence":44,"hr":87,"heading":21.7,"speed":3.0,"dt":10.0},{"nx":0.81082,"ny":0.8443,"ele":48.0,"cadence":51,"hr":89,"heading":328.1,"speed":3.83,"dt":10.0},{"nx":0.80243,"ny":0.83897,"ele":48.3,"cadence":56,"hr":93,"heading":327.1,"speed":3.98,"dt":10.0},{"nx":0.79358,"ny":0.83388,"ele":48.7,"cadence":56,"hr":97,"heading":324.4,"speed":3.92,"dt":10.0},{"nx":0.78556,"ny":0.82814,"ele":49.2,"cadence":58,"hr":101,"heading":330.1,"speed":4.15,"dt":10.0},{"nx":0.77617,"ny":0.8222,"ele":49.5,"cadence":60,"hr":107,"heading":327.0,"speed":4.43,"dt":10.0},{"nx":0.7675,"ny":0.81589,"ele":49.8,"cadence":64,"hr":108,"heading":330.5,"speed":4.54,"dt":10.0},{"nx":0.75807,"ny":0.81124,"ele":50.5,"cadence":61,"hr":109,"heading":320.2,"speed":3.79,"dt":10.0},{"nx":0.7394,"ny":0.81525,"ele":50.5,"cadence":69,"hr":109,"heading":242.4,"speed":5.42,"dt":10.0},{"nx":0.72163,"ny":0.81964,"ele":50.6,"cadence":62,"hr":111,"heading":239.0,"speed":5.34,"dt":10.0},{"nx":0.7031,"ny":0.8242,"ele":50.3,"cadence":59,"hr":109,"heading":239.1,"speed":5.56,"dt":10.0},{"nx":0.69103,"ny":0.82117,"ele":50.6,"cadence":48,"hr":107,"heading":301.3,"speed":3.64,"dt":10.0},{"nx":0.67978,"ny":0.81675,"ele":51.4,"cadence":44,"hr":105,"heading":313.7,"speed":4.01,"dt":10.0},{"nx":0.67286,"ny":0.81564,"ele":52.5,"cadence":44,"hr":103,"heading":291.2,"speed":1.91,"dt":10.0},{"nx":0.66569,"ny":0.81724,"ele":52.4,"cadence":41,"hr":99,"heading":241.5,"speed":2.1,"dt":10.0},{"nx":0.66559,"ny":0.81724,"ele":52.3,"cadence":0,"hr":97,"heading":270.0,"speed":0.03,"dt":10.0},{"nx":0.66469,"ny":0.81733,"ele":52.3,"cadence":0,"hr":90,"heading":256.4,"speed":0.24,"dt":10.0},{"nx":0.66028,"ny":0.81374,"ele":52.6,"cadence":33,"hr":85,"heading":333.2,"speed":2.52,"dt":10.0},{"nx":0.65286,"ny":0.80724,"ele":52.7,"cadence":58,"hr":88,"heading":334.9,"speed":4.5,"dt":10.0},{"nx":0.64276,"ny":0.8013,"ele":53.6,"cadence":63,"hr":98,"heading":325.0,"speed":4.54,"dt":10.0},{"nx":0.63265,"ny":0.79554,"ele":53.8,"cadence":58,"hr":104,"heading":324.2,"speed":4.45,"dt":10.0},{"nx":0.62226,"ny":0.79003,"ele":54.4,"cadence":57,"hr":105,"heading":322.2,"speed":4.37,"dt":10.0},{"nx":0.61323,"ny":0.78491,"ele":55.1,"cadence":58,"hr":110,"heading":324.1,"speed":3.96,"dt":10.0},{"nx":0.60367,"ny":0.77886,"ele":55.9,"cadence":58,"hr":110,"heading":326.9,"speed":4.52,"dt":10.0},{"nx":0.5941,"ny":0.7733,"ele":56.5,"cadence":62,"hr":111,"heading":324.7,"speed":4.27,"dt":10.0},{"nx":0.58381,"ny":0.7674,"ele":57.0,"cadence":70,"hr":110,"heading":324.4,"speed":4.55,"dt":10.0},{"nx":0.57417,"ny":0.76188,"ele":57.6,"cadence":70,"hr":110,"heading":324.3,"speed":4.25,"dt":10.0},{"nx":0.56665,"ny":0.7579,"ele":58.2,"cadence":36,"hr":108,"heading":322.2,"speed":3.16,"dt":10.0},{"nx":0.55837,"ny":0.75227,"ele":58.7,"cadence":60,"hr":105,"heading":328.9,"speed":4.12,"dt":10.0},{"nx":0.54773,"ny":0.74638,"ele":59.4,"cadence":74,"hr":110,"heading":323.4,"speed":4.59,"dt":10.0},{"nx":0.53677,"ny":0.74073,"ele":59.9,"cadence":69,"hr":112,"heading":321.4,"speed":4.53,"dt":10.0},{"nx":0.52695,"ny":0.735,"ele":60.6,"cadence":73,"hr":112,"heading":324.8,"speed":4.39,"dt":10.0},{"nx":0.51827,"ny":0.73031,"ele":61.1,"cadence":67,"hr":113,"heading":322.8,"speed":3.69,"dt":10.0},{"nx":0.50935,"ny":0.72482,"ele":61.5,"cadence":44,"hr":109,"heading":326.3,"speed":4.14,"dt":10.0},{"nx":0.49889,"ny":0.71904,"ele":62.0,"cadence":69,"hr":110,"heading":323.3,"speed":4.51,"dt":10.0},{"nx":0.49033,"ny":0.71415,"ele":62.5,"cadence":68,"hr":111,"heading":324.2,"speed":3.77,"dt":10.0},{"nx":0.48058,"ny":0.70866,"ele":63.2,"cadence":68,"hr":110,"heading":323.9,"speed":4.26,"dt":10.0},{"nx":0.47266,"ny":0.70258,"ele":63.5,"cadence":68,"hr":109,"heading":331.8,"speed":4.32,"dt":10.0},{"nx":0.48681,"ny":0.69765,"ele":63.3,"cadence":76,"hr":108,"heading":49.8,"speed":4.77,"dt":10.0},{"nx":0.50233,"ny":0.69323,"ele":63.3,"cadence":76,"hr":109,"heading":55.2,"speed":4.86,"dt":10.0},{"nx":0.51727,"ny":0.68871,"ele":63.7,"cadence":84,"hr":107,"heading":53.7,"speed":4.77,"dt":10.0},{"nx":0.53186,"ny":0.68308,"ele":63.5,"cadence":82,"hr":107,"heading":46.8,"speed":5.15,"dt":10.0},{"nx":0.52214,"ny":0.67751,"ele":64.0,"cadence":71,"hr":106,"heading":324.3,"speed":4.29,"dt":10.0},{"nx":0.51229,"ny":0.67152,"ele":64.7,"cadence":73,"hr":106,"heading":325.9,"speed":4.53,"dt":10.0},{"nx":0.50165,"ny":0.66553,"ele":65.3,"cadence":76,"hr":108,"heading":323.9,"speed":4.65,"dt":10.0},{"nx":0.49147,"ny":0.6594,"ele":66.0,"cadence":74,"hr":110,"heading":325.7,"speed":4.65,"dt":10.0},{"nx":0.48151,"ny":0.65323,"ele":66.6,"cadence":75,"hr":111,"heading":326.4,"speed":4.64,"dt":10.0},{"nx":0.47119,"ny":0.64756,"ele":67.3,"cadence":75,"hr":114,"heading":323.2,"speed":4.43,"dt":10.0},{"nx":0.46094,"ny":0.64181,"ele":67.8,"cadence":76,"hr":116,"heading":323.7,"speed":4.46,"dt":10.0},{"nx":0.45023,"ny":0.63559,"ele":68.1,"cadence":72,"hr":114,"heading":324.7,"speed":4.77,"dt":10.0},{"nx":0.4398,"ny":0.63006,"ele":68.3,"cadence":71,"hr":110,"heading":322.2,"speed":4.38,"dt":10.0},{"nx":0.44732,"ny":0.62604,"ele":68.3,"cadence":65,"hr":104,"heading":37.6,"speed":3.18,"dt":10.0},{"nx":0.45087,"ny":0.62256,"ele":68.4,"cadence":0,"hr":100,"heading":22.7,"speed":2.37,"dt":10.0},{"nx":0.45721,"ny":0.62144,"ele":68.1,"cadence":0,"hr":94,"heading":66.8,"speed":1.78,"dt":10.0},{"nx":0.4575,"ny":0.62137,"ele":68.2,"cadence":0,"hr":84,"heading":58.9,"speed":0.09,"dt":10.0},{"nx":0.45768,"ny":0.62123,"ele":68.3,"cadence":0,"hr":84,"heading":27.4,"speed":0.1,"dt":10.0},{"nx":0.4603,"ny":0.62071,"ele":68.2,"cadence":0,"hr":84,"heading":64.4,"speed":0.75,"dt":10.0},{"nx":0.44664,"ny":0.62011,"ele":68.3,"cadence":55,"hr":86,"heading":276.1,"speed":3.53,"dt":10.0},{"nx":0.42995,"ny":0.62155,"ele":68.8,"cadence":73,"hr":97,"heading":258.2,"speed":4.39,"dt":10.0},{"nx":0.41672,"ny":0.61762,"ele":69.5,"cadence":75,"hr":101,"heading":305.9,"speed":4.2,"dt":10.0},{"nx":0.40622,"ny":0.61188,"ele":70.3,"cadence":71,"hr":107,"heading":323.1,"speed":4.5,"dt":10.0},{"nx":0.39863,"ny":0.60752,"ele":72.0,"cadence":67,"hr":113,"heading":324.4,"speed":3.36,"dt":10.0},{"nx":0.39261,"ny":0.60411,"ele":74.0,"cadence":73,"hr":117,"heading":324.1,"speed":2.64,"dt":10.0},{"nx":0.38644,"ny":0.6006,"ele":76.2,"cadence":77,"hr":120,"heading":324.1,"speed":2.71,"dt":10.0},{"nx":0.38025,"ny":0.59705,"ele":77.7,"cadence":78,"hr":124,"heading":324.4,"speed":2.74,"dt":10.0},{"nx":0.37444,"ny":0.59381,"ele":78.8,"cadence":73,"hr":127,"heading":323.6,"speed":2.52,"dt":10.0},{"nx":0.36881,"ny":0.59028,"ele":79.6,"cadence":72,"hr":128,"heading":326.8,"speed":2.65,"dt":10.0},{"nx":0.36107,"ny":0.58622,"ele":80.3,"cadence":68,"hr":127,"heading":321.9,"speed":3.23,"dt":10.0},{"nx":0.35391,"ny":0.5818,"ele":80.9,"cadence":73,"hr":124,"heading":326.4,"speed":3.33,"dt":10.0},{"nx":0.34714,"ny":0.57803,"ele":81.5,"cadence":72,"hr":124,"heading":323.5,"speed":2.93,"dt":10.0},{"nx":0.33986,"ny":0.57383,"ele":82.2,"cadence":71,"hr":122,"heading":324.5,"speed":3.23,"dt":10.0},{"nx":0.33173,"ny":0.56948,"ele":82.8,"cadence":72,"hr":120,"heading":322.5,"speed":3.44,"dt":10.0},{"nx":0.32456,"ny":0.56494,"ele":83.4,"cadence":74,"hr":116,"heading":327.0,"speed":3.39,"dt":10.0},{"nx":0.31711,"ny":0.56062,"ele":84.4,"cadence":72,"hr":117,"heading":324.7,"speed":3.32,"dt":10.0},{"nx":0.30965,"ny":0.55648,"ele":85.1,"cadence":71,"hr":116,"heading":323.5,"speed":3.23,"dt":10.0},{"nx":0.30392,"ny":0.55207,"ele":85.7,"cadence":74,"hr":117,"heading":331.9,"speed":3.13,"dt":10.0},{"nx":0.30969,"ny":0.54926,"ele":86.2,"cadence":57,"hr":114,"heading":40.2,"speed":2.3,"dt":10.0},{"nx":0.31757,"ny":0.54672,"ele":86.2,"cadence":0,"hr":110,"heading":51.9,"speed":2.58,"dt":10.0},{"nx":0.31209,"ny":0.54261,"ele":86.6,"cadence":64,"hr":107,"heading":331.2,"speed":2.93,"dt":10.0},{"nx":0.30618,"ny":0.53954,"ele":87.1,"cadence":61,"hr":99,"heading":321.7,"speed":2.45,"dt":10.0},{"nx":0.29679,"ny":0.53401,"ele":87.4,"cadence":65,"hr":101,"heading":325.1,"speed":4.22,"dt":10.0},{"nx":0.28661,"ny":0.52825,"ele":88.1,"cadence":42,"hr":105,"heading":324.0,"speed":4.46,"dt":10.0},{"nx":0.27719,"ny":0.523,"ele":87.5,"cadence":0,"hr":108,"heading":323.5,"speed":4.08,"dt":10.0},{"nx":0.27038,"ny":0.51829,"ele":89.2,"cadence":49,"hr":110,"heading":329.3,"speed":3.43,"dt":10.0},{"nx":0.2649,"ny":0.51378,"ele":90.6,"cadence":42,"hr":120,"heading":333.5,"speed":3.16,"dt":10.0},{"nx":0.25845,"ny":0.5088,"ele":90.4,"cadence":44,"hr":123,"heading":332.0,"speed":3.53,"dt":10.0},{"nx":0.25099,"ny":0.50219,"ele":88.6,"cadence":61,"hr":121,"heading":335.1,"speed":4.56,"dt":10.0},{"nx":0.24286,"ny":0.49618,"ele":88.0,"cadence":0,"hr":117,"heading":330.9,"speed":4.31,"dt":10.0},{"nx":0.23705,"ny":0.49303,"ele":87.6,"cadence":0,"hr":109,"heading":322.8,"speed":2.47,"dt":10.0},{"nx":0.23232,"ny":0.487,"ele":88.0,"cadence":50,"hr":106,"heading":342.1,"speed":3.97,"dt":10.0},{"nx":0.22519,"ny":0.48064,"ele":88.4,"cadence":61,"hr":106,"heading":335.3,"speed":4.39,"dt":10.0},{"nx":0.23021,"ny":0.47668,"ele":89.5,"cadence":48,"hr":104,"heading":27.5,"speed":2.8,"dt":10.0},{"nx":0.2372,"ny":0.47237,"ele":91.5,"cadence":43,"hr":106,"heading":33.7,"speed":3.24,"dt":10.0},{"nx":0.2301,"ny":0.46608,"ele":91.0,"cadence":0,"hr":116,"heading":335.1,"speed":4.34,"dt":10.0},{"nx":0.22032,"ny":0.45879,"ele":90.3,"cadence":73,"hr":125,"heading":331.1,"speed":5.21,"dt":10.0},{"nx":0.2095,"ny":0.45179,"ele":90.7,"cadence":69,"hr":121,"heading":327.6,"speed":5.2,"dt":10.0},{"nx":0.2023,"ny":0.44706,"ele":91.9,"cadence":55,"hr":118,"heading":328.0,"speed":3.49,"dt":10.0},{"nx":0.1928,"ny":0.44274,"ele":92.9,"cadence":47,"hr":114,"heading":317.9,"speed":3.65,"dt":10.0},{"nx":0.18391,"ny":0.43765,"ele":93.5,"cadence":52,"hr":117,"heading":324.3,"speed":3.92,"dt":10.0},{"nx":0.1751,"ny":0.43253,"ele":94.3,"cadence":52,"hr":116,"heading":324.7,"speed":3.93,"dt":10.0},{"nx":0.16775,"ny":0.4274,"ele":95.0,"cadence":51,"hr":116,"heading":329.6,"speed":3.73,"dt":10.0},{"nx":0.16661,"ny":0.42462,"ele":95.4,"cadence":0,"hr":115,"heading":350.4,"speed":1.76,"dt":10.0},{"nx":0.16632,"ny":0.42462,"ele":95.4,"cadence":0,"hr":108,"heading":270.0,"speed":0.07,"dt":10.0},{"nx":0.16618,"ny":0.42405,"ele":95.5,"cadence":0,"hr":94,"heading":354.1,"speed":0.36,"dt":10.0},{"nx":0.16679,"ny":0.41883,"ele":96.1,"cadence":35,"hr":89,"heading":2.7,"speed":3.28,"dt":10.0},{"nx":0.16743,"ny":0.41223,"ele":96.7,"cadence":63,"hr":100,"heading":2.3,"speed":4.13,"dt":10.0},{"nx":0.16718,"ny":0.405,"ele":97.4,"cadence":73,"hr":109,"heading":359.2,"speed":4.53,"dt":10.0},{"nx":0.167,"ny":0.39918,"ele":97.8,"cadence":73,"hr":111,"heading":359.3,"speed":3.64,"dt":10.0},{"nx":0.16797,"ny":0.39292,"ele":98.3,"cadence":40,"hr":109,"heading":3.6,"speed":3.93,"dt":10.0},{"nx":0.16815,"ny":0.38626,"ele":99.0,"cadence":64,"hr":109,"heading":0.6,"speed":4.17,"dt":10.0},{"nx":0.16689,"ny":0.37998,"ele":100.0,"cadence":68,"hr":111,"heading":355.3,"speed":3.94,"dt":10.0},{"nx":0.16865,"ny":0.37682,"ele":100.2,"cadence":63,"hr":112,"heading":12.8,"speed":2.03,"dt":10.0},{"nx":0.17162,"ny":0.37236,"ele":100.7,"cadence":45,"hr":105,"heading":15.3,"speed":2.9,"dt":10.0},{"nx":0.16962,"ny":0.36535,"ele":101.2,"cadence":69,"hr":108,"heading":353.3,"speed":4.42,"dt":10.0},{"nx":0.17001,"ny":0.35886,"ele":101.9,"cadence":69,"hr":112,"heading":1.4,"speed":4.06,"dt":10.0},{"nx":0.17105,"ny":0.35339,"ele":102.5,"cadence":65,"hr":114,"heading":4.5,"speed":3.44,"dt":10.0},{"nx":0.17428,"ny":0.35086,"ele":103.0,"cadence":0,"hr":110,"heading":27.7,"speed":1.79,"dt":10.0},{"nx":0.17363,"ny":0.3458,"ele":103.4,"cadence":48,"hr":106,"heading":357.0,"speed":3.18,"dt":10.0},{"nx":0.17309,"ny":0.33959,"ele":104.4,"cadence":60,"hr":108,"heading":358.0,"speed":3.89,"dt":10.0},{"nx":0.17238,"ny":0.33392,"ele":105.3,"cadence":63,"hr":112,"heading":357.0,"speed":3.56,"dt":10.0},{"nx":0.17585,"ny":0.32821,"ele":106.1,"cadence":62,"hr":112,"heading":14.1,"speed":3.68,"dt":10.0},{"nx":0.17693,"ny":0.32197,"ele":107.1,"cadence":64,"hr":113,"heading":4.0,"speed":3.92,"dt":10.0},{"nx":0.17854,"ny":0.31705,"ele":107.6,"cadence":59,"hr":116,"heading":7.7,"speed":3.11,"dt":10.0},{"nx":0.17943,"ny":0.31557,"ele":107.8,"cadence":0,"hr":114,"heading":14.0,"speed":0.95,"dt":10.0},{"nx":0.17943,"ny":0.31316,"ele":108.0,"cadence":53,"hr":108,"heading":0.0,"speed":1.51,"dt":10.0},{"nx":0.17721,"ny":0.30754,"ele":108.6,"cadence":46,"hr":105,"heading":350.8,"speed":3.56,"dt":10.0},{"nx":0.18073,"ny":0.30112,"ele":109.4,"cadence":49,"hr":106,"heading":12.7,"speed":4.12,"dt":10.0},{"nx":0.18201,"ny":0.29401,"ele":110.3,"cadence":51,"hr":110,"heading":4.3,"speed":4.47,"dt":10.0},{"nx":0.18381,"ny":0.28736,"ele":111.1,"cadence":70,"hr":112,"heading":6.3,"speed":4.19,"dt":10.0},{"nx":0.18671,"ny":0.28174,"ele":112.1,"cadence":59,"hr":115,"heading":12.0,"speed":3.6,"dt":10.0},{"nx":0.18746,"ny":0.27648,"ele":113.0,"cadence":53,"hr":116,"heading":3.4,"speed":3.3,"dt":10.0},{"nx":0.18746,"ny":0.27099,"ele":113.6,"cadence":60,"hr":116,"heading":0.0,"speed":3.44,"dt":10.0},{"nx":0.18789,"ny":0.265,"ele":114.3,"cadence":61,"hr":116,"heading":1.7,"speed":3.75,"dt":10.0},{"nx":0.18689,"ny":0.25916,"ele":114.7,"cadence":53,"hr":115,"heading":356.0,"speed":3.66,"dt":10.0},{"nx":0.18596,"ny":0.25509,"ele":115.4,"cadence":54,"hr":111,"heading":354.6,"speed":2.56,"dt":10.0},{"nx":0.18664,"ny":0.25122,"ele":115.6,"cadence":67,"hr":108,"heading":4.1,"speed":2.43,"dt":10.0},{"nx":0.1866,"ny":0.24731,"ele":115.8,"cadence":69,"hr":104,"heading":359.8,"speed":2.45,"dt":10.0},{"nx":0.18789,"ny":0.24302,"ele":115.6,"cadence":70,"hr":100,"heading":7.1,"speed":2.7,"dt":10.0},{"nx":0.18925,"ny":0.23879,"ele":116.1,"cadence":72,"hr":94,"heading":7.5,"speed":2.67,"dt":10.0},{"nx":0.19158,"ny":0.23506,"ele":116.9,"cadence":77,"hr":93,"heading":14.4,"speed":2.41,"dt":10.0},{"nx":0.19158,"ny":0.22999,"ele":117.3,"cadence":63,"hr":100,"heading":0.0,"speed":3.17,"dt":10.0},{"nx":0.19359,"ny":0.22612,"ele":118.2,"cadence":67,"hr":104,"heading":12.0,"speed":2.48,"dt":10.0},{"nx":0.19466,"ny":0.22101,"ele":118.6,"cadence":74,"hr":106,"heading":4.9,"speed":3.21,"dt":10.0},{"nx":0.19409,"ny":0.21568,"ele":119.0,"cadence":80,"hr":105,"heading":357.5,"speed":3.34,"dt":10.0},{"nx":0.1942,"ny":0.21068,"ele":120.0,"cadence":74,"hr":104,"heading":0.5,"speed":3.13,"dt":10.0},{"nx":0.19524,"ny":0.20588,"ele":120.6,"cadence":71,"hr":108,"heading":5.1,"speed":3.02,"dt":10.0},{"nx":0.19703,"ny":0.20174,"ele":121.2,"cadence":67,"hr":109,"heading":10.1,"speed":2.63,"dt":10.0},{"nx":0.20928,"ny":0.20153,"ele":121.5,"cadence":76,"hr":108,"heading":87.6,"speed":3.16,"dt":10.0},{"nx":0.22688,"ny":0.20149,"ele":121.6,"cadence":72,"hr":109,"heading":89.7,"speed":4.53,"dt":10.0},{"nx":0.23903,"ny":0.20041,"ele":121.6,"cadence":0,"hr":104,"heading":77.7,"speed":3.2,"dt":10.0},{"nx":0.2382,"ny":0.20023,"ele":121.7,"cadence":0,"hr":101,"heading":297.7,"speed":0.24,"dt":10.0},{"nx":0.23831,"ny":0.20016,"ele":128.7,"cadence":0,"hr":104,"heading":31.9,"speed":0.09,"dt":6.0},{"nx":0.23817,"ny":0.20028,"ele":130.9,"cadence":0,"hr":107,"heading":205.3,"speed":0.06,"dt":14.0},{"nx":0.24171,"ny":0.19852,"ele":131.1,"cadence":0,"hr":103,"heading":39.6,"speed":1.43,"dt":10.0},{"nx":0.25504,"ny":0.19637,"ele":131.3,"cadence":35,"hr":106,"heading":68.6,"speed":3.69,"dt":10.0},{"nx":0.27002,"ny":0.19659,"ele":131.8,"cadence":44,"hr":105,"heading":92.0,"speed":3.86,"dt":10.0},{"nx":0.28543,"ny":0.19682,"ele":132.7,"cadence":73,"hr":105,"heading":92.1,"speed":3.97,"dt":10.0},{"nx":0.29969,"ny":0.19796,"ele":133.3,"cadence":72,"hr":114,"heading":101.0,"speed":3.74,"dt":10.0},{"nx":0.31567,"ny":0.19797,"ele":133.5,"cadence":72,"hr":113,"heading":90.2,"speed":4.11,"dt":10.0},{"nx":0.32467,"ny":0.19493,"ele":133.9,"cadence":77,"hr":113,"heading":50.6,"speed":3.0,"dt":10.0},{"nx":0.32624,"ny":0.18907,"ele":134.4,"cadence":0,"hr":110,"heading":6.3,"speed":3.7,"dt":10.0},{"nx":0.32574,"ny":0.18572,"ele":136.6,"cadence":42,"hr":110,"heading":356.5,"speed":2.1,"dt":10.0},{"nx":0.31954,"ny":0.18165,"ele":137.2,"cadence":39,"hr":116,"heading":328.0,"speed":3.01,"dt":10.0},{"nx":0.32653,"ny":0.17904,"ele":138.1,"cadence":0,"hr":119,"heading":47.7,"speed":2.43,"dt":10.0},{"nx":0.32943,"ny":0.17435,"ele":138.4,"cadence":0,"hr":120,"heading":14.3,"speed":3.03,"dt":10.0},{"nx":0.32983,"ny":0.16688,"ele":138.8,"cadence":54,"hr":118,"heading":1.2,"speed":4.68,"dt":10.0},{"nx":0.32273,"ny":0.16405,"ele":139.2,"cadence":0,"hr":114,"heading":314.1,"speed":2.54,"dt":10.0},{"nx":0.33384,"ny":0.16188,"ele":139.9,"cadence":53,"hr":112,"heading":64.6,"speed":3.16,"dt":10.0},{"nx":0.33975,"ny":0.16064,"ele":140.0,"cadence":40,"hr":114,"heading":62.9,"speed":1.71,"dt":10.0},{"nx":0.34144,"ny":0.15419,"ele":140.3,"cadence":78,"hr":108,"heading":6.1,"speed":4.06,"dt":10.0},{"nx":0.34151,"ny":0.14841,"ele":139.8,"cadence":0,"hr":105,"heading":0.3,"speed":3.62,"dt":10.0},{"nx":0.34176,"ny":0.14811,"ele":139.6,"cadence":0,"hr":99,"heading":18.8,"speed":0.2,"dt":10.0},{"nx":0.34083,"ny":0.14738,"ele":139.6,"cadence":50,"hr":105,"heading":332.3,"speed":0.52,"dt":10.0},{"nx":0.34348,"ny":0.14588,"ele":139.6,"cadence":54,"hr":99,"heading":36.1,"speed":1.45,"dt":8.0},{"nx":0.35878,"ny":0.14588,"ele":139.6,"cadence":60,"hr":100,"heading":90.0,"speed":3.94,"dt":10.0},{"nx":0.36161,"ny":0.14631,"ele":139.6,"cadence":61,"hr":100,"heading":110.1,"speed":0.71,"dt":11.0},{"nx":0.36935,"ny":0.14549,"ele":139.7,"cadence":49,"hr":100,"heading":75.6,"speed":2.06,"dt":10.0},{"nx":0.37358,"ny":0.14368,"ele":139.7,"cadence":0,"hr":100,"heading":43.8,"speed":1.43,"dt":11.0},{"nx":0.37322,"ny":0.14354,"ele":139.6,"cadence":0,"hr":106,"heading":314.0,"speed":0.13,"dt":10.0},{"nx":0.3734,"ny":0.14336,"ele":139.7,"cadence":0,"hr":105,"heading":22.5,"speed":0.12,"dt":10.0},{"nx":0.37322,"ny":0.14329,"ele":139.7,"cadence":0,"hr":104,"heading":314.0,"speed":0.06,"dt":10.0},{"nx":0.37308,"ny":0.14327,"ele":139.7,"cadence":0,"hr":98,"heading":286.8,"speed":0.04,"dt":10.0},{"nx":0.3734,"ny":0.14364,"ele":139.7,"cadence":0,"hr":93,"heading":160.5,"speed":0.25,"dt":10.0},{"nx":0.37319,"ny":0.1438,"ele":139.7,"cadence":0,"hr":96,"heading":208.9,"speed":0.11,"dt":10.0},{"nx":0.37268,"ny":0.14359,"ele":139.8,"cadence":0,"hr":94,"heading":316.0,"speed":0.19,"dt":10.0},{"nx":0.37319,"ny":0.14357,"ele":139.8,"cadence":0,"hr":98,"heading":85.1,"speed":0.13,"dt":10.0},{"nx":0.3738,"ny":0.14368,"ele":139.8,"cadence":0,"hr":95,"heading":113.1,"speed":0.17,"dt":10.0},{"nx":0.37111,"ny":0.14357,"ele":139.9,"cadence":0,"hr":98,"heading":275.5,"speed":0.69,"dt":10.0},{"nx":0.37512,"ny":0.14604,"ele":140.0,"cadence":48,"hr":96,"heading":146.3,"speed":1.86,"dt":10.0},{"nx":0.37354,"ny":0.14656,"ele":140.1,"cadence":0,"hr":92,"heading":231.5,"speed":0.52,"dt":10.0},{"nx":0.37276,"ny":0.14661,"ele":140.1,"cadence":0,"hr":93,"heading":260.7,"speed":0.21,"dt":10.0}];
-
-const ELE_MIN=47.6,ELE_MAX=140.3,HR_MIN=84,HR_MAX=128,SPD_MAX=5.56;
+// ══ TRACK (RanchoUCLA default) ════════════════════════════════════════════
+const TRACK=[{"nx": 0.87069, "ny": 0.12931, "ele": 140.9, "cadence": 0, "hr": 65, "heading": 0, "speed": 0, "dt": 10}, {"nx": 0.86993, "ny": 0.12965, "ele": 141.2, "cadence": 46, "hr": 70, "heading": 234.1, "speed": 0.05, "dt": 12.0}, {"nx": 0.8228, "ny": 0.15103, "ele": 141.9, "cadence": 69, "hr": 89, "heading": 233.7, "speed": 2.95, "dt": 12.0}, {"nx": 0.78833, "ny": 0.17911, "ele": 142.0, "cadence": 57, "hr": 94, "heading": 217.2, "speed": 3.45, "dt": 10.0}, {"nx": 0.79062, "ny": 0.21844, "ele": 141.4, "cadence": 59, "hr": 89, "heading": 177.9, "speed": 3.85, "dt": 10.0}, {"nx": 0.76088, "ny": 0.24255, "ele": 141.7, "cadence": 60, "hr": 86, "heading": 217.3, "speed": 2.97, "dt": 10.0}, {"nx": 0.69972, "ny": 0.23834, "ele": 141.6, "cadence": 74, "hr": 90, "heading": 276.4, "speed": 3.72, "dt": 10.0}, {"nx": 0.67699, "ny": 0.25596, "ele": 140.8, "cadence": 0, "hr": 87, "heading": 218.5, "speed": 2.21, "dt": 10.0}, {"nx": 0.70323, "ny": 0.28302, "ele": 140.2, "cadence": 0, "hr": 81, "heading": 149.1, "speed": 3.09, "dt": 10.0}, {"nx": 0.69835, "ny": 0.3136, "ele": 140.0, "cadence": 0, "hr": 78, "heading": 185.6, "speed": 3.01, "dt": 10.0}, {"nx": 0.69331, "ny": 0.34043, "ele": 140.2, "cadence": 0, "hr": 81, "heading": 186.6, "speed": 2.64, "dt": 10.0}, {"nx": 0.67638, "ny": 0.33441, "ele": 139.4, "cadence": 47, "hr": 79, "heading": 300.0, "speed": 1.18, "dt": 10.0}, {"nx": 0.66129, "ny": 0.36829, "ele": 139.7, "cadence": 51, "hr": 79, "heading": 195.4, "speed": 3.44, "dt": 10.0}, {"nx": 0.68432, "ny": 0.38671, "ele": 137.5, "cadence": 0, "hr": 79, "heading": 142.3, "speed": 2.28, "dt": 10.0}, {"nx": 0.66845, "ny": 0.43366, "ele": 135.3, "cadence": 0, "hr": 74, "heading": 191.8, "speed": 4.7, "dt": 10.0}, {"nx": 0.67669, "ny": 0.46549, "ele": 134.8, "cadence": 0, "hr": 71, "heading": 170.9, "speed": 3.16, "dt": 10.0}, {"nx": 0.59403, "ny": 0.46481, "ele": 135.1, "cadence": 54, "hr": 74, "heading": 270.8, "speed": 5.0, "dt": 10.0}, {"nx": 0.56856, "ny": 0.49596, "ele": 134.9, "cadence": 53, "hr": 77, "heading": 206.8, "speed": 3.42, "dt": 10.0}, {"nx": 0.56734, "ny": 0.53712, "ele": 135.4, "cadence": 61, "hr": 83, "heading": 181.0, "speed": 4.03, "dt": 10.0}, {"nx": 0.56139, "ny": 0.5652, "ele": 135.5, "cadence": 0, "hr": 86, "heading": 187.5, "speed": 2.77, "dt": 10.0}, {"nx": 0.52265, "ny": 0.57475, "ele": 135.5, "cadence": 51, "hr": 88, "heading": 248.2, "speed": 2.52, "dt": 10.0}, {"nx": 0.47308, "ny": 0.59362, "ele": 135.0, "cadence": 0, "hr": 86, "heading": 238.3, "speed": 3.52, "dt": 10.0}, {"nx": 0.42367, "ny": 0.57555, "ele": 135.0, "cadence": 40, "hr": 81, "heading": 300.6, "speed": 3.47, "dt": 10.0}, {"nx": 0.41543, "ny": 0.60931, "ele": 135.5, "cadence": 45, "hr": 77, "heading": 188.6, "speed": 3.34, "dt": 10.0}, {"nx": 0.42138, "ny": 0.63342, "ele": 135.0, "cadence": 0, "hr": 77, "heading": 171.3, "speed": 2.39, "dt": 10.0}, {"nx": 0.45478, "ny": 0.6341, "ele": 134.6, "cadence": 36, "hr": 71, "heading": 91.9, "speed": 2.02, "dt": 10.0}, {"nx": 0.5289, "ny": 0.63831, "ele": 134.8, "cadence": 58, "hr": 77, "heading": 95.3, "speed": 4.5, "dt": 10.0}, {"nx": 0.6047, "ny": 0.63683, "ele": 134.7, "cadence": 60, "hr": 79, "heading": 88.2, "speed": 4.59, "dt": 10.0}, {"nx": 0.67333, "ny": 0.63728, "ele": 134.6, "cadence": 68, "hr": 80, "heading": 90.6, "speed": 4.15, "dt": 10.0}, {"nx": 0.67852, "ny": 0.67162, "ele": 134.2, "cadence": 58, "hr": 78, "heading": 174.7, "speed": 3.38, "dt": 10.0}, {"nx": 0.67516, "ny": 0.72482, "ele": 134.0, "cadence": 74, "hr": 83, "heading": 182.2, "speed": 5.21, "dt": 10.0}, {"nx": 0.67471, "ny": 0.75097, "ele": 133.4, "cadence": 0, "hr": 84, "heading": 180.6, "speed": 2.56, "dt": 10.0}, {"nx": 0.6927, "ny": 0.7753, "ele": 133.4, "cadence": 53, "hr": 80, "heading": 155.5, "speed": 2.62, "dt": 10.0}, {"nx": 0.68355, "ny": 0.81816, "ele": 133.7, "cadence": 60, "hr": 89, "heading": 187.5, "speed": 4.23, "dt": 10.0}, {"nx": 0.66022, "ny": 0.82942, "ele": 132.8, "cadence": 0, "hr": 87, "heading": 232.0, "speed": 1.79, "dt": 10.0}, {"nx": 0.70277, "ny": 0.86228, "ele": 132.3, "cadence": 54, "hr": 80, "heading": 141.4, "speed": 4.12, "dt": 10.0}, {"nx": 0.63749, "ny": 0.8683, "ele": 132.5, "cadence": 59, "hr": 87, "heading": 261.5, "speed": 3.99, "dt": 10.0}, {"nx": 0.56596, "ny": 0.86466, "ele": 132.5, "cadence": 63, "hr": 92, "heading": 274.7, "speed": 4.34, "dt": 10.0}, {"nx": 0.50389, "ny": 0.8683, "ele": 132.7, "cadence": 60, "hr": 96, "heading": 264.6, "speed": 3.77, "dt": 10.0}, {"nx": 0.44395, "ny": 0.8683, "ele": 133.5, "cadence": 53, "hr": 96, "heading": 270.0, "speed": 3.62, "dt": 10.0}, {"nx": 0.38264, "ny": 0.87069, "ele": 132.7, "cadence": 0, "hr": 91, "heading": 266.4, "speed": 3.71, "dt": 10.0}, {"nx": 0.33917, "ny": 0.85204, "ele": 129.7, "cadence": 45, "hr": 88, "heading": 304.8, "speed": 3.2, "dt": 10.0}, {"nx": 0.32972, "ny": 0.82533, "ele": 130.8, "cadence": 47, "hr": 86, "heading": 347.7, "speed": 2.68, "dt": 10.0}, {"nx": 0.33627, "ny": 0.80327, "ele": 131.0, "cadence": 46, "hr": 98, "heading": 10.4, "speed": 2.2, "dt": 10.0}, {"nx": 0.36022, "ny": 0.78042, "ele": 130.7, "cadence": 0, "hr": 95, "heading": 32.9, "speed": 2.67, "dt": 10.0}, {"nx": 0.34207, "ny": 0.76973, "ele": 129.4, "cadence": 0, "hr": 86, "heading": 313.6, "speed": 1.52, "dt": 10.0}, {"nx": 0.3378, "ny": 0.75848, "ele": 128.6, "cadence": 0, "hr": 82, "heading": 346.8, "speed": 1.13, "dt": 10.0}, {"nx": 0.30638, "ny": 0.78212, "ele": 127.8, "cadence": 47, "hr": 83, "heading": 219.4, "speed": 2.99, "dt": 10.0}, {"nx": 0.2437, "ny": 0.7786, "ele": 127.2, "cadence": 0, "hr": 85, "heading": 275.2, "speed": 3.81, "dt": 10.0}, {"nx": 0.19993, "ny": 0.78303, "ele": 126.9, "cadence": 0, "hr": 81, "heading": 260.7, "speed": 2.68, "dt": 10.0}, {"nx": 0.15295, "ny": 0.78247, "ele": 126.9, "cadence": 0, "hr": 76, "heading": 271.1, "speed": 2.84, "dt": 10.0}, {"nx": 0.12931, "ny": 0.80225, "ele": 126.9, "cadence": 0, "hr": 76, "heading": 216.4, "speed": 2.41, "dt": 10.0}, {"nx": 0.14182, "ny": 0.811, "ele": 126.4, "cadence": 0, "hr": 78, "heading": 138.6, "speed": 1.14, "dt": 10.0}, {"nx": 0.14121, "ny": 0.81055, "ele": 125.9, "cadence": 0, "hr": 79, "heading": 320.4, "speed": 0.06, "dt": 10.0}, {"nx": 0.14304, "ny": 0.81112, "ele": 126.5, "cadence": 0, "hr": 79, "heading": 116.7, "speed": 0.06, "dt": 20.0}, {"nx": 0.14334, "ny": 0.81123, "ele": 126.6, "cadence": 0, "hr": 82, "heading": 121.1, "speed": 0.02, "dt": 10.0}, {"nx": 0.14624, "ny": 0.81691, "ele": 126.8, "cadence": 53, "hr": 86, "heading": 162.5, "speed": 0.58, "dt": 10.0}, {"nx": 0.14395, "ny": 0.82987, "ele": 127.1, "cadence": 53, "hr": 85, "heading": 186.2, "speed": 1.28, "dt": 10.0}];
+const ELE_MIN=125.9,ELE_MAX=142.0,HR_MIN=65,HR_MAX=98,SPD_MAX=5.21;
 
 // ══ CANVAS ════════════════════════════════════════════════════════════════
 const cv=document.getElementById('c');
 const ctx=cv.getContext('2d');
-
-function resizeCanvas(){
-  const wrap=document.getElementById('canvas-wrap');
-  cv.width=wrap.offsetWidth;
-  cv.height=wrap.offsetHeight;
-}
+function resizeCanvas(){var w=document.getElementById('canvas-wrap');var ww=w.offsetWidth||600,hh=w.offsetHeight||600;cv.width=ww;cv.height=hh;}
 resizeCanvas();
+setTimeout(resizeCanvas,100);
 window.addEventListener('resize',resizeCanvas);
-
 function nm(v,a,b){if(b===a)return 0.5;return Math.max(0,Math.min(1,(v-a)/(b-a)));}
 
 // ══ STATE ═════════════════════════════════════════════════════════════════
-var playing=false,cycleT=0,lastT=0,lastIdx=-1;
-var REAL_DUR=1920;
+var playing=false,cycleT=0,lastT=0,lastIdx=-1,frameCount=0;
+var REAL_DUR=594;
 var FILL=REAL_DUR,DRAIN=Math.round(REAL_DUR*0.15),CYCLE=FILL+DRAIN;
+var divGPS=1, divCad=1, divRnd=1; // divisores independientes
+var gpsCount=0, cadCount=0, rndCount=0; // contadores
+var linePreset='technic';
+var polyMode=false,polyStates=[],allTracks=[];
+var trackData=TRACK.slice();
+var POLY_COLORS=[28,185,280,60,320,150];
+// Interval ratios: 0=unison, 3=minor third, 5=fifth, 8=octave
+var INTERVAL_RATIOS={0:1, 3:1.2, 5:1.5, 8:2.0};
+var polyOscs=[],polyGains=[];
+var polyIntervals=[]; // per-track interval: 0,3,5,8
 
-var P={speed:1,width:3,fade:0.1,hrMix:1,glowAmt:0.4,
-       master:0.8,oscVol:0.25,clickVol:0.35,kickVol:0.5,delayMix:0.3};
-var T={osc:true,click:true,kick:true,filter:true,delay:true,lfo:true};
+var P={speed:60,width:3,fade:0.1,hrMix:1,glowAmt:0.4,
+       master:0.8,oscVol:0.25,clickVol:0.35,kickVol:0.5,delayMix:0.3,randomVol:0.2};
+var T={osc:true,click:true,kick:true,filter:true,delay:true,lfo:true,random:false};
+var muted=false;
 
 // ══ PARAMS BINDINGS ═══════════════════════════════════════════════════════
 function bindSlider(id,key,did,fmt){
   var el=document.getElementById(id),sp=document.getElementById(did);
-  el.addEventListener('input',function(){
-    P[key]=parseFloat(el.value);
-    sp.textContent=fmt(P[key]);
-    onParamChange(key);
-  });
+  if(!el)return;
+  el.addEventListener('input',function(){P[key]=parseFloat(el.value);sp.textContent=fmt(P[key]);onParamChange(key);});
 }
 function f2(v){return v.toFixed(2);}
 function f1(v){return v.toFixed(1);}
-// slider logarítmico 1x → 60x
+
+// Slider velocidad — lineal 1x→120x, arranca en 60x
 document.getElementById('spd').addEventListener('input',function(){
-  var t=parseFloat(this.value);
-  P.speed=Math.exp(t*Math.log(60));
+  var t=parseFloat(this.value); // 0→1
+  P.speed=1+t*119; // lineal 1→120
   var dur=REAL_DUR/P.speed;
   var mins=Math.floor(dur/60),secs=Math.round(dur%60);
-  document.getElementById('spd-v').textContent=P.speed.toFixed(1)+'x '+(dur<60?Math.round(dur)+'s':mins+':'+(secs<10?'0':'')+secs);
+  document.getElementById('spd-v').textContent=
+    P.speed.toFixed(0)+'x'+(dur<60?' '+Math.round(dur)+'s':' '+mins+':'+(secs<10?'0':'')+secs);
 });
+// init a 60x (t=0.5)
+P.speed=60; document.getElementById('spd-v').textContent='60x 32s';
+
 bindSlider('wid','width','wid-v',f1);
 bindSlider('fad','fade','fad-v',f2);
 bindSlider('hrm','hrMix','hrm-v',f2);
@@ -522,21 +547,76 @@ bindSlider('ovol','oscVol','ovol-v',f2);
 bindSlider('clvol','clickVol','clvol-v',f2);
 bindSlider('kvol','kickVol','kvol-v',f2);
 bindSlider('dmix','delayMix','dmix-v',f2);
+bindSlider('rvol','randomVol','rvol-v',f2);
 
-// toggles
-['osc','click','kick','filter','delay','lfo'].forEach(function(k){
-  var el=document.getElementById('tog-'+k);
-  el.addEventListener('click',function(){
-    T[k]=!T[k];
-    el.classList.toggle('on',T[k]);
-    onToggleChange(k);
+// Divisores independientes
+document.querySelectorAll('[data-div-gps]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('[data-div-gps]').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    divGPS=parseInt(this.getAttribute('data-div-gps'));
+  });
+});
+document.querySelectorAll('[data-div-cad]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('[data-div-cad]').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    divCad=parseInt(this.getAttribute('data-div-cad'));
+  });
+});
+document.querySelectorAll('[data-div-rnd]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('[data-div-rnd]').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    divRnd=parseInt(this.getAttribute('data-div-rnd'));
+  });
+});
+// Random trigger
+document.querySelectorAll('[data-rtrig]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('[data-rtrig]').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    randomTrigger=this.dataset.rtrig;
   });
 });
 
-// transport
+// Line presets
+var PRESETS={
+  technic:{width:1.5,fade:0.06,glow:0.1,hrMix:0.3},
+  flow:   {width:4,  fade:0.12,glow:0.5,hrMix:1.0},
+  marker: {width:6,  fade:0.3, glow:0.8,hrMix:0.7},
+};
+document.querySelectorAll('.preset-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    linePreset=this.dataset.preset;
+    var pr=PRESETS[linePreset];
+    P.width=pr.width; P.fade=pr.fade; P.glowAmt=pr.glow; P.hrMix=pr.hrMix;
+    document.getElementById('wid').value=P.width; document.getElementById('wid-v').textContent=P.width.toFixed(1);
+    document.getElementById('fad').value=P.fade; document.getElementById('fad-v').textContent=P.fade.toFixed(2);
+    document.getElementById('glow').value=P.glowAmt; document.getElementById('glow-v').textContent=P.glowAmt.toFixed(2);
+    document.getElementById('hrm').value=P.hrMix; document.getElementById('hrm-v').textContent=P.hrMix.toFixed(2);
+  });
+});
+
+// Toggles
+['osc','click','kick','filter','delay','lfo','random'].forEach(function(k){
+  var el=document.getElementById('tog-'+k);
+  if(!el)return;
+  el.addEventListener('click',function(){
+    T[k]=!T[k]; el.classList.toggle('on',T[k]); onToggleChange(k);
+  });
+});
+// dummies (line params — siempre on)
+['dummy1','dummy2','dummy3','dummy4','dummy5'].forEach(function(k){
+  var el=document.getElementById('tog-'+k);
+  if(el)el.addEventListener('click',function(){this.classList.toggle('on');});
+});
+
+// Transport
 document.getElementById('btn-play').addEventListener('click',function(){
-  if(!AC) return;
-  playing=true;
+  if(!AC)return; playing=true;
   document.getElementById('btn-play').classList.add('active');
   document.getElementById('btn-pause').classList.remove('active');
 });
@@ -546,600 +626,30 @@ document.getElementById('btn-pause').addEventListener('click',function(){
   document.getElementById('btn-pause').classList.add('active');
   document.getElementById('btn-play').classList.remove('active');
 });
-document.getElementById('btn-reset').addEventListener('click',function(){
-  cycleT=0; lastIdx=-1;
-  ctx.clearRect(0,0,cv.width,cv.height);
-});
-var muted=false;
+var muted_=false;
 document.getElementById('btn-mute').addEventListener('click',function(){
-  muted=!muted;
-  if(AC) masterGain.gain.setTargetAtTime(muted?0:P.master,AC.currentTime,0.05);
-  this.classList.toggle('active',muted);
-  this.textContent=muted?'⊘ Unmute':'⊘ Mute';
+  muted_=!muted_;
+  if(AC) masterGain.gain.setTargetAtTime(muted_?0:P.master,AC.currentTime,0.05);
+  this.classList.toggle('active',muted_);
+  this.textContent=muted_?'⊘ Unmute':'⊘ Mute';
 });
-
-// progress bar click para scrubbing
+document.getElementById('btn-reset').addEventListener('click',function(){
+  cycleT=0;lastIdx=-1;ctx.clearRect(0,0,cv.width,cv.height);
+});
 document.getElementById('progress-bar').addEventListener('click',function(e){
-  var rect=this.getBoundingClientRect();
-  var pct=(e.clientX-rect.left)/rect.width;
-  cycleT=pct*FILL; lastIdx=-1;
+  var pct=(e.clientX-this.getBoundingClientRect().left)/this.offsetWidth;
+  cycleT=pct*FILL;lastIdx=-1;
 });
 
-// ══ AUDIO ═════════════════════════════════════════════════════════════════
-var AC,masterGain,filterNode,delayNode,delayFeedback,delayWet,delayDry,oscNode,oscGain,lfoNode,lfoGain;
-var windSpd=3,windDir=210;
-
-function initAudio(){
-  AC=new(window.AudioContext||window.webkitAudioContext)();
-  masterGain=AC.createGain(); masterGain.gain.value=P.master;
-  masterGain.connect(AC.destination);
-  filterNode=AC.createBiquadFilter(); filterNode.type='lowpass';
-  filterNode.frequency.value=400; filterNode.Q.value=1;
-  filterNode.connect(masterGain);
-  delayNode=AC.createDelay(2.0);
-  delayFeedback=AC.createGain(); delayFeedback.gain.value=0.35;
-  delayWet=AC.createGain(); delayWet.gain.value=P.delayMix;
-  delayDry=AC.createGain(); delayDry.gain.value=1-P.delayMix;
-  filterNode.connect(delayDry); filterNode.connect(delayNode);
-  delayNode.connect(delayFeedback); delayNode.connect(delayWet);
-  delayFeedback.connect(delayNode);
-  delayDry.connect(masterGain); delayWet.connect(masterGain);
-  oscNode=AC.createOscillator(); oscNode.type='triangle';
-  oscNode.frequency.value=80;
-  oscGain=AC.createGain(); oscGain.gain.value=0; // silencio hasta que applyPatches lo active
-  oscNode.connect(oscGain); oscGain.connect(filterNode); oscNode.start();
-  lfoNode=AC.createOscillator(); lfoNode.type='sine'; lfoNode.frequency.value=0.15;
-  lfoGain=AC.createGain(); lfoGain.gain.value=4;
-  lfoNode.connect(lfoGain); lfoGain.connect(oscNode.frequency); lfoNode.start();
-  fetchWind(); setInterval(fetchWind,60000);
-}
-
-function onParamChange(key){
-  if(!AC)return;
-  if(key==='master') masterGain.gain.setTargetAtTime(P.master,AC.currentTime,0.05);
-  if(key==='oscVol') oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
-  if(key==='delayMix'){
-    delayWet.gain.setTargetAtTime(P.delayMix,AC.currentTime,0.1);
-    delayDry.gain.setTargetAtTime(1-P.delayMix,AC.currentTime,0.1);
-  }
-}
-function onToggleChange(key){
-  if(!AC)return;
-  if(key==='osc') oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
-  if(key==='lfo') lfoGain.gain.setTargetAtTime(T.lfo?2+windSpd*0.8:0,AC.currentTime,0.1);
-  if(key==='delay'){
-    delayWet.gain.setTargetAtTime(T.delay?P.delayMix:0,AC.currentTime,0.1);
-    delayDry.gain.setTargetAtTime(T.delay?1-P.delayMix:1,AC.currentTime,0.1);
-  }
-}
-
-async function fetchWind(){
-  try{
-    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.055&longitude=-118.437&current=wind_speed_10m,wind_direction_10m&timezone=America%2FLos_Angeles');
-    if(r.ok){var d=await r.json();if(d.current){windSpd=d.current.wind_speed_10m||windSpd;windDir=d.current.wind_direction_10m||windDir;}}
-  }catch(e){}
-  document.getElementById('wv').textContent=windSpd.toFixed(1);
-  document.getElementById('wd').textContent=Math.round(windDir);
-  document.getElementById('wind-needle').style.transform='translate(-50%,-100%) rotate('+windDir+'deg)';
-  if(lfoNode&&T.lfo){
-    var rate=0.05+windSpd*0.08;
-    lfoNode.frequency.value=rate;
-    document.getElementById('lfo-rate').textContent=rate.toFixed(2);
-  }
-  if(lfoGain&&T.lfo) lfoGain.gain.value=2+windSpd*0.8;
-}
-
-function triggerClick(){
-  if(!AC||!T.click)return;
-  var buf=AC.createBuffer(1,Math.floor(AC.sampleRate*0.015),AC.sampleRate);
-  var d=buf.getChannelData(0);
-  for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
-  var src=AC.createBufferSource(); src.buffer=buf;
-  var g=AC.createGain(); g.gain.value=P.clickVol*0.35;
-  src.connect(g); g.connect(filterNode); src.start();
-}
-
-function triggerKick(cad){
-  if(!AC||!T.kick)return;
-  var dur=0.28,o=AC.createOscillator(); o.type='sine';
-  o.frequency.setValueAtTime(110,AC.currentTime);
-  o.frequency.exponentialRampToValueAtTime(32,AC.currentTime+dur);
-  var env=AC.createGain();
-  env.gain.setValueAtTime(P.kickVol*nm(cad,20,84),AC.currentTime);
-  env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
-  o.connect(env); env.connect(masterGain); o.start(); o.stop(AC.currentTime+dur);
-}
-
-// ══ VIENTO PARTÍCULAS ═════════════════════════════════════════════════════
-var wParts=[];
-var WP_MAX=120;
-
-function spawnWP(){
-  if(wParts.length>=WP_MAX)return;
-  var rad=((windDir+180)%360)*Math.PI/180;
-  var vx0=Math.sin(rad),vy0=-Math.cos(rad);
-  var fromRad=windDir*Math.PI/180;
-  var fx=Math.sin(fromRad),fy=-Math.cos(fromRad);
-  var x,y;
-  if(Math.abs(fx)>Math.abs(fy)){x=fx>0?-0.02:1.02;y=Math.random();}
-  else{x=Math.random();y=fy>0?-0.02:1.02;}
-  wParts.push({x,y,ax:vx0,ay:vy0,life:1,
-    decay:0.006+Math.random()*0.006,
-    len:0.04+windSpd*0.008,
-    alpha:0.5+Math.random()*0.4,
-    no:Math.random()*200});
-}
-
-function updateWindParticles(ts){
-  if(!T.lfo)return;
-  wParts=wParts.filter(function(p){return p.life>0;});
-  var tc=ts*0.00004;
-  var spd=0.003+windSpd*0.0008;
-  for(var i=0;i<wParts.length;i++){
-    var p=wParts[i];
-    var nx2=Math.sin(p.x*6+p.no+tc)*0.0004;
-    var ny2=Math.cos(p.y*6+p.no+tc)*0.0004;
-    p.x+=p.ax*spd+nx2;
-    p.y+=p.ay*spd+ny2;
-    p.life-=p.decay;
-    if(p.x<-0.05||p.x>1.05||p.y<-0.05||p.y>1.05)p.life=0;
-  }
-  if(Math.random()<0.3) spawnWP();
-}
-
-function drawWindParticles(S){
-  if(!T.lfo)return;
-  var spd=0.003+windSpd*0.0008;
-  for(var i=0;i<wParts.length;i++){
-    var p=wParts[i];
-    var px=p.x*S, py=p.y*S;
-    if(px<-5||px>S+5||py<-5||py>S+5)continue;
-    var dx=p.ax*spd*p.len*S;
-    var dy=p.ay*spd*p.len*S;
-    ctx.save();
-    ctx.globalAlpha=p.life*p.alpha;
-    ctx.strokeStyle='rgba(160,210,255,1)';
-    ctx.lineWidth=1.0; ctx.lineCap='round';
-    ctx.beginPath();
-    ctx.moveTo(px-dx,py-dy);
-    ctx.lineTo(px,py);
-    ctx.stroke();
-    ctx.restore();
-  }
-}
-
-// ══ VISUAL ═════════════════════════════════════════════════════════════════
-function lineColor(hr,alpha){
-  var HM2=window.HR_MIN_DYN||HR_MIN,HX2=window.HR_MAX_DYN||HR_MAX;
-  var hrN=nm(hr,HM2,HX2);
-  var h=28*(1-P.hrMix)+(220-hrN*220)*P.hrMix;
-  return 'hsla('+h+','+(60+hrN*30)+'%,'+(50+hrN*15)+'%,'+alpha+')';
-}
-
-var frameCount=0;
-function loop(ts){
-  requestAnimationFrame(loop);
-  var dt=0;
-  if(playing){
-    dt=Math.min((ts-lastT)/1000,0.05)*P.speed;
-    cycleT=(cycleT+dt)%CYCLE;
-  }
-  lastT=ts;
-  frameCount++;
-
-  var S=cv.width; // cuadrado
-
-  if(polyMode && allTracks.length>1){
-    if(!polyStates.length) polyStates=allTracks.map(function(){return{cycleT:0,lastIdx:-1};});
-    for(var ti_=0;ti_<allTracks.length;ti_++){
-      var ps=polyStates[ti_], trk=allTracks[ti_];
-      if(playing) ps.cycleT=(ps.cycleT+dt)%CYCLE;
-      var pf=ps.cycleT<FILL;
-      var phF=pf?ps.cycleT/FILL:1, ptF=pf?0:(ps.cycleT-FILL)/DRAIN;
-      var TD2=trk.pts, n2=TD2.length;
-      var hi2=Math.floor(phF*(n2-1)), ti2=Math.floor(ptF*(n2-1));
-      var hue2=POLY_COLORS[ti_%POLY_COLORS.length];
-      var EM2=trk.eleMin, EX2=trk.eleMax;
-      if(pf && hi2!==ps.lastIdx && hi2<n2){
-        var pt2=TD2[hi2];
-        // update this track's own oscillator
-        if(AC&&polyOscs[ti_]&&T.osc){
-          var baseHz2=pt2.ele>0?pt2.ele:80;
-          var ivRatio2=INTERVAL_RATIOS[polyIntervals[ti_]||0]||1;
-          if(isFinite(baseHz2*ivRatio2))
-            polyOscs[ti_].frequency.setTargetAtTime(baseHz2*ivRatio2,AC.currentTime,0.4);
-          var vol2=(P.oscVol*0.3)/Math.sqrt(Math.max(1,allTracks.length));
-          polyGains[ti_].gain.setTargetAtTime(vol2,AC.currentTime,0.1);
-        }
-        if(ti_===0){
-          triggerClick();
-          if(pt2.cadence>15) triggerKick(pt2.cadence);
-          applyPatches(pt2); checkPDIs(pt2);
-          if(frameCount%2===0){
-            document.getElementById('d-ele').textContent=Math.round(pt2.ele)+'m';
-            document.getElementById('d-hr').textContent=pt2.hr+' bpm';
-            document.getElementById('d-cad').textContent=pt2.cadence+' rpm';
-            document.getElementById('d-spd').textContent=pt2.speed.toFixed(1)+' m/s';
-          }
-        }
-        ps.lastIdx=hi2;
-      }
-      if(!pf) ps.lastIdx=-1;
-      if(hi2>ti2){
-        ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
-        var segLen2=hi2-ti2;
-        for(var i2=ti2+1;i2<=hi2;i2++){
-          var prev2=TD2[i2-1],curr2=TD2[i2];
-          var pos2=(i2-ti2)/segLen2;
-          var eleN2=nm(curr2.ele,EM2,EX2);
-          var cadN2=curr2.cadence>0?0.4+nm(curr2.cadence,20,84)*0.6:0.22;
-          var lw2=P.width*(window.patchWidth||1)*(0.4+eleN2*0.8)*cadN2;
-          var alp2=pf?(0.5+pos2*0.45)*cadN2:pos2*0.9*cadN2;
-          ctx.lineWidth=lw2+4; ctx.strokeStyle='hsla('+hue2+',50%,60%,'+(alp2*0.1)+')';
-          ctx.beginPath();ctx.moveTo(prev2.nx*S,prev2.ny*S);ctx.lineTo(curr2.nx*S,curr2.ny*S);ctx.stroke();
-          ctx.lineWidth=lw2; ctx.strokeStyle='hsla('+hue2+',80%,62%,'+alp2+')';
-          ctx.beginPath();ctx.moveTo(prev2.nx*S,prev2.ny*S);ctx.lineTo(curr2.nx*S,curr2.ny*S);ctx.stroke();
-        }
-        if(pf&&hi2>0&&hi2<n2){
-          var hpt2=TD2[hi2],eN3=nm(hpt2.ele,EM2,EX2);
-          ctx.beginPath();ctx.arc(hpt2.nx*S,hpt2.ny*S,P.width*0.7+eN3*2+1,0,Math.PI*2);
-          ctx.fillStyle='hsla('+hue2+',90%,80%,1)';ctx.shadowColor='hsla('+hue2+',90%,70%,0.8)';
-          ctx.shadowBlur=12;ctx.fill();ctx.shadowBlur=0;
-        }
-        ctx.restore();
-      }
-    }
-    drawPDIs(S); return;
-  }
-
-  var filling=cycleT<FILL;
-  var headF=filling?cycleT/FILL:1;
-  var tailF=filling?0:(cycleT-FILL)/DRAIN;
-  var TD=trackData;
-  var n=TD.length;
-  var hi=Math.floor(headF*(n-1));
-  var ti=Math.floor(tailF*(n-1));
-  var EM=window.ELE_MIN_DYN||ELE_MIN,EX=window.ELE_MAX_DYN||ELE_MAX;
-  var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
-
-  // triggers
-  if(playing&&filling&&hi!==lastIdx&&hi<n){
-    var pt=TD[hi];
-    triggerClick();
-    if(pt.cadence>15) triggerKick(pt.cadence);
-    applyPatches(pt);
-    checkPDIs(pt);
-    lastIdx=hi;
-  }
-  if(!playing||!filling) lastIdx=-1;
-
-  // live data — actualizar siempre con el punto actual
-  if(hi>=0 && hi<n && TD[hi]){
-    var cur=TD[hi];
-    document.getElementById('d-ele').textContent=Math.round(cur.ele)+'m';
-    document.getElementById('d-hr').textContent=cur.hr+' bpm';
-    document.getElementById('d-cad').textContent=cur.cadence+' rpm';
-    document.getElementById('d-spd').textContent=cur.speed.toFixed(1)+' m/s';
-  }
-
-  // progress
-  if(frameCount%3===0){
-    var pct=filling?cycleT/FILL:1;
-    document.getElementById('progress-fill').style.width=(pct*100)+'%';
-    var secs=Math.round(cycleT/CYCLE*(window.REAL_DUR||REAL_DUR)); // duración real
-    document.getElementById('prog-time').textContent=
-      Math.floor(secs/60)+':'+(secs%60<10?'0':'')+secs%60;
-    document.getElementById('prog-pt').textContent='pt '+hi+' / '+n;
-  }
-
-  // draw
-  var aF=window.patchFade!=null?window.patchFade:P.fade;
-  ctx.fillStyle='rgba(0,0,0,'+aF+')';
-  ctx.fillRect(0,0,S,S);
-
-  // partículas de viento
-  updateWindParticles(ts);
-  drawWindParticles(S);
-  if(hi<=ti)return;
-
-  ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
-  var segLen=hi-ti;
-  for(var i=ti+1;i<=hi;i++){
-    var prev=TD[i-1],curr=TD[i];
-    var pos=(i-ti)/segLen;
-    var eleN=nm(curr.ele,EM,EX);
-    var cadN=curr.cadence>0?0.4+nm(curr.cadence,20,84)*0.6:0.22;
-    var pw=window.patchWidth||1;
-    var lw=P.width*pw*(0.4+eleN*0.8)*cadN;
-    var alpha=filling?(0.5+pos*0.45)*cadN:pos*0.9*cadN;
-    if(P.glowAmt>0.02){
-      ctx.lineWidth=lw+5; ctx.strokeStyle=lineColor(curr.hr,alpha*P.glowAmt*0.3);
-      ctx.beginPath(); ctx.moveTo(prev.nx*S,prev.ny*S); ctx.lineTo(curr.nx*S,curr.ny*S); ctx.stroke();
-    }
-    ctx.lineWidth=lw; ctx.strokeStyle=lineColor(curr.hr,alpha);
-    ctx.beginPath(); ctx.moveTo(prev.nx*S,prev.ny*S); ctx.lineTo(curr.nx*S,curr.ny*S); ctx.stroke();
-  }
-  if(filling&&hi>0&&hi<n){
-    var hpt=TD[hi];
-    var hrN2=nm(hpt.hr,HM,HX),eN2=nm(hpt.ele,EM,EX);
-    ctx.beginPath(); ctx.arc(hpt.nx*S,hpt.ny*S,P.width*0.7+eN2*2+hrN2*1.5,0,Math.PI*2);
-    ctx.fillStyle=lineColor(hpt.hr,1);
-    ctx.shadowColor=lineColor(hpt.hr,0.8); ctx.shadowBlur=8+hrN2*10;
-    ctx.fill(); ctx.shadowBlur=0;
-  }
-  ctx.restore();
-  drawPDIs(S);
-}
-
-// ══ GPX UPLOAD ═══════════════════════════════════════════════════════════════
-var trackData = TRACK.slice(); // copia del track actual
-
-function parseGPX(text){
-  var parser=new DOMParser();
-  var xml=parser.parseFromString(text,'text/xml');
-  var ns='http://www.topografix.com/GPX/1/1';
-  var trkpts=xml.getElementsByTagNameNS(ns,'trkpt');
-  if(trkpts.length===0) trkpts=xml.getElementsByTagName('trkpt');
-  var pts=[];
-  var fmt='%Y-%m-%dT%H:%M:%SZ';
-
-  for(var i=0;i<trkpts.length;i++){
-    var tp=trkpts[i];
-    var lat=parseFloat(tp.getAttribute('lat'));
-    var lon=parseFloat(tp.getAttribute('lon'));
-    var eleEl=tp.getElementsByTagName('ele')[0]||tp.getElementsByTagNameNS('*','ele')[0];
-    var ele=eleEl?parseFloat(eleEl.textContent):90;
-    var timeEl=tp.getElementsByTagName('time')[0]||tp.getElementsByTagNameNS('*','time')[0];
-    var timeStr=timeEl?timeEl.textContent:'';
-    // cadencia
-    var cad=0;
-    var cadEls=tp.getElementsByTagName('cadence');
-    if(cadEls.length===0) cadEls=tp.getElementsByTagNameNS('*','cadence');
-    if(cadEls.length===0) cadEls=tp.getElementsByTagNameNS('*','cad');
-    if(cadEls.length>0) cad=parseInt(cadEls[0].textContent)||0;
-    // HR
-    var hr=100;
-    var hrEls=tp.getElementsByTagName('hr');
-    if(hrEls.length===0) hrEls=tp.getElementsByTagNameNS('*','hr');
-    if(hrEls.length>0) hr=parseInt(hrEls[0].textContent)||100;
-    pts.push({lat,lon,ele,time:timeStr,cadence:cad,hr});
-  }
-  if(pts.length<2) return null;
-
-  // calcular bounds
-  var latMin=Infinity,latMax=-Infinity,lonMin=Infinity,lonMax=-Infinity;
-  var eleMin=Infinity,eleMax=-Infinity,hrMin=Infinity,hrMax=-Infinity,spdMax=0;
-  for(var p of pts){
-    latMin=Math.min(latMin,p.lat); latMax=Math.max(latMax,p.lat);
-    lonMin=Math.min(lonMin,p.lon); lonMax=Math.max(lonMax,p.lon);
-    eleMin=Math.min(eleMin,p.ele); eleMax=Math.max(eleMax,p.ele);
-    hrMin=Math.min(hrMin,p.hr);   hrMax=Math.max(hrMax,p.hr);
-  }
-  var latPad=(latMax-latMin)*0.08, lonPad=(lonMax-lonMin)*0.08;
-  latMin-=latPad; latMax+=latPad; lonMin-=lonPad; lonMax+=lonPad;
-
-  // calcular heading, speed, dt
-  var normalized=[];
-  var totalTime=0;
-  for(var i=0;i<pts.length;i++){
-    var p=pts[i];
-    var nx=0.07+(p.lon-lonMin)/(lonMax-lonMin)*0.86;
-    var ny=0.07+(1-(p.lat-latMin)/(latMax-latMin))*0.86;
-    var heading=0,speed=0,dt=10;
-    if(i>0){
-      var p0=pts[i-1];
-      var dlat=(p.lat-p0.lat)*111320;
-      var dlon=(p.lon-p0.lon)*111320*Math.cos(p0.lat*Math.PI/180);
-      var dist=Math.sqrt(dlat*dlat+dlon*dlon);
-      heading=(Math.atan2(dlon,dlat)*180/Math.PI+360)%360;
-      try{
-        var t0=new Date(p0.time),t1=new Date(p.time);
-        dt=Math.max(1,(t1-t0)/1000);
-      }catch(e){ dt=10; }
-      speed=dist/dt;
-      spdMax=Math.max(spdMax,speed);
-    }
-    totalTime+=dt;
-    normalized.push({nx:Math.round(nx*100000)/100000,ny:Math.round(ny*100000)/100000,
-      ele:p.ele,cadence:p.cadence,hr:p.hr,
-      heading:Math.round(heading*10)/10,
-      speed:Math.round(speed*100)/100,dt:Math.round(dt*10)/10});
-  }
-
-  return {pts:normalized,eleMin,eleMax,hrMin,hrMax,spdMax,
-          totalSecs:Math.round(totalTime),count:pts.length};
-}
-
-function loadGPXData(result){
-  // actualizar constantes globales
-  window.ELE_MIN_DYN=result.eleMin;
-  window.ELE_MAX_DYN=result.eleMax===result.eleMin?result.eleMin+1:result.eleMax;
-  window.HR_MIN_DYN=result.hrMin;
-  window.HR_MAX_DYN=result.hrMax===result.hrMin?result.hrMin+1:result.hrMax;
-  window.SPD_MAX_DYN=result.spdMax<0.1?1:result.spdMax;
-  window.REAL_DUR=result.totalSecs;
-  REAL_DUR=result.totalSecs;
-  FILL=REAL_DUR;
-  DRAIN=Math.round(REAL_DUR*0.15);
-  CYCLE=FILL+DRAIN;
-  trackData=result.pts;
-  // reset
-  cycleT=0; lastIdx=-1;
-  ctx.clearRect(0,0,cv.width,cv.height);
-  // actualizar UI
-  var mins=Math.floor(result.totalSecs/60),secs=result.totalSecs%60;
-  document.querySelector('.panel-sub').textContent=
-    result.count+' pts · '+mins+'min '+secs+'s · ele '+Math.round(result.eleMin)+'→'+Math.round(result.eleMax)+'m';
-  document.getElementById('spd').value=0;
-  document.getElementById('spd-v').textContent='1.0x · '+mins+':'+(secs<10?'0':'')+secs;
-  P.speed=1;
-}
-
-// drag & drop + file input
-var gpxDrop=document.getElementById('gpx-drop');
-var gpxFile=document.getElementById('gpx-file');
-
-gpxDrop.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
-gpxDrop.addEventListener('dragleave',function(){this.classList.remove('drag');});
-gpxDrop.addEventListener('drop',function(e){
-  e.preventDefault(); this.classList.remove('drag');
-  var f=e.dataTransfer.files[0];
-  if(f) readGPXFile(f);
-});
-gpxFile.addEventListener('change',function(){
-  if(this.files[0]) readGPXFile(this.files[0]);
-});
-
-
-
-function parseRoutesCropJSON(text){
-  var data=JSON.parse(text);
-  if(!Array.isArray(data)||!data[0]||!data[0].pts)return null;
-  var tracks=[];
-  data.forEach(function(route,ri){
-    var raw=route.pts;if(raw.length<2)return;
-    var la0=Infinity,la1=-Infinity,lo0=Infinity,lo1=-Infinity,e0=Infinity,e1=-Infinity;
-    raw.forEach(function(c){la0=Math.min(la0,c[1]);la1=Math.max(la1,c[1]);lo0=Math.min(lo0,c[0]);lo1=Math.max(lo1,c[0]);if(c[2]){e0=Math.min(e0,c[2]);e1=Math.max(e1,c[2]);}});
-    if(e0===Infinity)e0=50;if(e1===-Infinity||e1===e0)e1=e0+50;
-    var lp=(la1-la0)*0.08||0.001,lop=(lo1-lo0)*0.08||0.001;
-    la0-=lp;la1+=lp;lo0-=lop;lo1+=lop;
-    var norm=[],sm=0,tt=0;
-    raw.forEach(function(c,k){
-      var lon=c[0],lat=c[1],ele=c[2]||80;
-      var nx=0.07+(lon-lo0)/(lo1-lo0)*0.86,ny=0.07+(1-(lat-la0)/(la1-la0))*0.86;
-      var sp=0,hd=0,dt=10;
-      if(k>0){var p0=raw[k-1],dy=(lat-p0[1])*111320,dx=(lon-p0[0])*111320*Math.cos(p0[1]*Math.PI/180);
-        hd=(Math.atan2(dx,dy)*180/Math.PI+360)%360;sp=Math.min(Math.sqrt(dx*dx+dy*dy)/dt,20);sm=Math.max(sm,sp);}
-      tt+=dt;
-      norm.push({nx:Math.round(nx*1e5)/1e5,ny:Math.round(ny*1e5)/1e5,ele:ele,cadence:0,hr:100,heading:Math.round(hd*10)/10,speed:Math.round(sp*100)/100,dt:dt});
-    });
-    tracks.push({name:route.name||'Route '+(ri+1),pts:norm,count:norm.length,eleMin:e0,eleMax:e1,hrMin:100,hrMax:100,spdMax:sm<0.1?1:sm,totalSecs:Math.round(tt)});
-  });
-  return tracks.length?tracks:null;
-}
-
-function readGPXFile(file){
-  var info=document.getElementById('gpx-info');info.textContent='Cargando...';
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var isJSON=file.name.match(/\.(json|geojson)$/i)||e.target.result.trim().startsWith('{');
-    var tracks=null;
-    if(isJSON){try{tracks=parseRoutesCropJSON(e.target.result);}catch(ex){}}
-    if(!tracks||!tracks.length)tracks=parseGPXMulti(e.target.result);
-    if(!tracks||!tracks.length){info.textContent='Error';return;}
-    allTracks=tracks;
-    var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel');
-    if(tracks.length>1){
-      wrap.style.display='block';sel.innerHTML='';
-      tracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
-      sel.onchange=function(){if(!polyMode)loadGPXData(tracks[parseInt(this.value)]);};
-      // interval selectors
-      polyIntervals=tracks.map(function(_,i){return polyIntervals[i]||0;});
-      var iWrap=document.getElementById('interval-wrap');
-      if(iWrap){
-        iWrap.innerHTML='';
-        tracks.forEach(function(t,i){
-          var row=document.createElement('div');
-          row.style.cssText='display:flex;align-items:center;gap:4px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
-          var nm2=document.createElement('span');
-          nm2.style.cssText='font-size:0.8vh;color:rgba(255,255,255,0.45);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-          nm2.textContent=t.name;row.appendChild(nm2);
-          [0,3,5,8].forEach(function(iv){
-            var btn=document.createElement('button');
-            btn.textContent=iv===0?'0':iv===3?'3ª':iv===5?'5ª':'8ª';
-            btn.dataset.iv=iv;
-            var act=polyIntervals[i]===iv;
-            btn.style.cssText='font-size:0.72vh;padding:1px 5px;border:1px solid rgba(255,255,255,'+(act?'0.6':'0.12')+');background:'+(act?'rgba(255,255,255,0.15)':'transparent')+';color:rgba(255,255,255,'+(act?'1':'0.4')+');cursor:pointer;font-family:inherit;';
-            btn.addEventListener('click',(function(idx,ivv,r){return function(){
-              polyIntervals[idx]=ivv;
-              r.querySelectorAll('button[data-iv]').forEach(function(b){
-                var a=parseInt(b.dataset.iv)===ivv;
-                b.style.borderColor='rgba(255,255,255,'+(a?'0.6':'0.12')+')';
-                b.style.background=a?'rgba(255,255,255,0.15)':'transparent';
-                b.style.color='rgba(255,255,255,'+(a?'1':'0.4')+')';
-              });
-              // update running osc if in poly mode
-              if(AC&&polyOscs[idx]){
-                var trk2=allTracks[idx];
-                var baseHz3=trk2&&trk2.eleMin>0?trk2.eleMin:80;
-                var r2=INTERVAL_RATIOS[ivv]||1;
-                if(isFinite(baseHz3*r2))polyOscs[idx].frequency.setTargetAtTime(baseHz3*r2,AC.currentTime,0.3);
-              }
-            };})(i,iv,row));
-            row.appendChild(btn);
-          });
-          iWrap.appendChild(row);
-        });
-        iWrap.style.display='block';
-      }
-      if(AC&&polyMode)rebuildPolyOscs();
-    }else wrap.style.display='none';
-    loadGPXData(tracks[0]);info.textContent=file.name;
-    if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
-  };reader.readAsText(file);
-}
-
-// ══ PATCH MATRIX ══════════════════════════════════════════════════════════════
-const SOURCES=['ELE','HR','CAD','SPD','WIND','LFO'];
-const DESTS=['OSC·F','FILT·C','FILT·R','DLY·T','DLY·F','WIDTH','COLOR','FADE'];
-const SRC_COLORS=['#4af','#f64','#fa0','#8f8','#adf','#d8f'];
-var patches=[[1,0,0,0,0,1,0,0],[0,1,0,0,0,0,1,0],[0,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,1,1,0,0,0],[0,0,0,0,0,0,0,0]];
-var srcVals=[0,0,0,0,0,0];
-function buildPatchMatrix(){
-  var cl=document.getElementById('patch-col-labels'),gr=document.getElementById('patch-grid');
-  if(!cl||!gr)return;cl.innerHTML='';gr.innerHTML='';
-  DESTS.forEach(function(d){var el=document.createElement('div');el.className='patch-col-label';el.textContent=d;cl.appendChild(el);});
-  SOURCES.forEach(function(src,si){
-    var row=document.createElement('div');row.className='patch-row';
-    var lbl=document.createElement('div');lbl.className='patch-row-label';lbl.textContent=src;lbl.style.color=SRC_COLORS[si];row.appendChild(lbl);
-    DESTS.forEach(function(dst,di){
-      var wrap=document.createElement('div');wrap.className='patch-dot-wrap';
-      var dot=document.createElement('div');dot.className='patch-dot';dot.style.color=SRC_COLORS[si];
-      dot.dataset.src=si;dot.dataset.dst=di;dot.title=src+' to '+dst;
-      if(patches[si][di]>0)dot.classList.add('active');
-      dot.addEventListener('click',function(){var s=parseInt(this.dataset.src),d=parseInt(this.dataset.dst);patches[s][d]=patches[s][d]>0?0:1;this.classList.toggle('active',patches[s][d]>0);});
-      wrap.appendChild(dot);row.appendChild(wrap);
-    });gr.appendChild(row);
-  });
-}
-function hasPatch(dst){for(var s=0;s<patches.length;s++)if(patches[s][dst]>0)return true;return false;}
-function updateSrcVals(pt){
-  var EM=window.ELE_MIN_DYN||ELE_MIN,EX=window.ELE_MAX_DYN||ELE_MAX,HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
-  srcVals[0]=nm(pt.ele,EM,EX);srcVals[1]=nm(pt.hr,HM,HX);srcVals[2]=pt.cadence>0?nm(pt.cadence,20,90):0;
-  srcVals[3]=nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX);srcVals[4]=nm(windSpd,0,15);
-  srcVals[5]=(Math.sin(Date.now()*0.001*(0.05+windSpd*0.08))+1)*0.5;
-}
-function getPatchedVal(dst,bv){var t=0,c=0;for(var s=0;s<patches.length;s++){if(patches[s][dst]>0){t+=srcVals[s];c++;}}if(!c)return bv;return Math.max(0,Math.min(1,t/c));}
-function applyPatches(pt){
-  if(!AC)return;updateSrcVals(pt);
-  var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
-  if(hasPatch(0))oscNode.frequency.setTargetAtTime(40+getPatchedVal(0,0.5)*260,AC.currentTime,0.2);
-  else oscNode.frequency.setTargetAtTime(pt.ele,AC.currentTime,0.2);
-  // activar gain del osc solo si toggle está on
-  oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
-  if(T.filter){
-    filterNode.frequency.setTargetAtTime(hasPatch(1)?150+getPatchedVal(1,0.5)*3850:200+nm(pt.hr,HM,HX)*3300,AC.currentTime,0.3);
-    filterNode.Q.setTargetAtTime(hasPatch(2)?0.5+getPatchedVal(2,0.5)*9.5:0.5+nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX)*7.5,AC.currentTime,0.2);
-  }
-  if(T.delay){
-    var hn=pt.heading/360;
-    delayNode.delayTime.setTargetAtTime(hasPatch(3)?0.05+getPatchedVal(3,0.5)*0.45:0.05+hn*0.45,AC.currentTime,0.4);
-    delayFeedback.gain.setTargetAtTime(hasPatch(4)?0.1+getPatchedVal(4,0.5)*0.5:0.1+hn*0.5,AC.currentTime,0.4);
-  }
-  window.patchWidth=hasPatch(5)?0.3+getPatchedVal(5,0.5)*1.4:1.0;
-  window.patchHue=hasPatch(6)?getPatchedVal(6,0.5):null;
-  window.patchFade=hasPatch(7)?P.fade*(0.3+getPatchedVal(7,0.5)*1.4):null;
-}
-
-// ══ MONO / POLY ═══════════════════════════════════════════════════════════════
+// Mono/Poly
 document.getElementById('btn-mono').addEventListener('click',function(){
   polyMode=false;
   document.getElementById('btn-mono').classList.add('active');
   document.getElementById('btn-poly').classList.remove('active');
   document.getElementById('track-sel').style.display='block';
   var idx=parseInt(document.getElementById('track-sel').value)||0;
-  if(allTracks.length>0) loadGPXData(allTracks[idx]);
-  cycleT=0; lastIdx=-1; ctx.clearRect(0,0,cv.width,cv.height);
+  if(allTracks.length>0)loadGPXData(allTracks[idx]);
+  cycleT=0;lastIdx=-1;ctx.clearRect(0,0,cv.width,cv.height);
 });
 function rebuildPolyOscs(){
   polyOscs.forEach(function(o){try{o.stop();}catch(e){}});
@@ -1165,218 +675,312 @@ document.getElementById('btn-poly').addEventListener('click',function(){
   document.getElementById('btn-mono').classList.remove('active');
   document.getElementById('track-sel').style.display='none';
   polyStates=allTracks.map(function(){return{cycleT:0,lastIdx:-1};});
-  polyIntervals=allTracks.map(function(_,i){return polyIntervals[i]||0;});
-  cycleT=0; ctx.clearRect(0,0,cv.width,cv.height);
+  cycleT=0;ctx.clearRect(0,0,cv.width,cv.height);
   if(AC)rebuildPolyOscs();
 });
 
-// ══ START ═══════════════════════════════════════════════════════════════════
-var pdiList=[];
-document.getElementById('canvas-wrap').addEventListener('click',function(e){
-  if(!trackData||trackData.length<2)return;
-  var rect=cv.getBoundingClientRect();
-  var name=prompt('PDI:','')||'PDI '+(pdiList.length+1);
-  pdiList.push({nx:(e.clientX-rect.left)/rect.width,ny:(e.clientY-rect.top)/rect.height,name:name,triggered:false});
-  renderPDIs();
-});
-function renderPDIs(){var list=document.getElementById('pdi-list');if(!list)return;list.innerHTML='';
-  pdiList.forEach(function(p,i){var el=document.createElement('div');el.className='pdi-item';
-    el.innerHTML='<div class="pdi-dot"></div><div class="pdi-name">'+p.name+'</div><div class="pdi-del" data-i="'+i+'">x</div>';
-    el.querySelector('.pdi-del').addEventListener('click',function(){pdiList.splice(parseInt(this.dataset.i),1);renderPDIs();});
-    list.appendChild(el);});}
-function drawPDIs(S){pdiList.forEach(function(p){
-  var px=p.nx*S,py=p.ny*S;ctx.save();ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
-  ctx.fillStyle='rgba(255,180,0,0.9)';ctx.shadowColor='rgba(255,180,0,0.7)';ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
-  ctx.font='bold '+Math.max(8,S*0.013)+'px Courier New';ctx.fillStyle='rgba(255,210,80,0.85)';ctx.fillText(p.name,px+7,py-4);ctx.restore();});}
-function checkPDIs(pt){if(!AC)return;pdiList.forEach(function(p){
-  var dx=p.nx-pt.nx,dy=p.ny-pt.ny;
-  if(Math.sqrt(dx*dx+dy*dy)<0.03&&!p.triggered){p.triggered=true;
-    var dur=0.5,o=AC.createOscillator();o.type='sine';
-    o.frequency.setValueAtTime(400+pt.ele*2,AC.currentTime);o.frequency.exponentialRampToValueAtTime(100,AC.currentTime+dur);
-    var env=AC.createGain();env.gain.setValueAtTime(0.5,AC.currentTime);env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
-    o.connect(env);env.connect(masterGain);o.start();o.stop(AC.currentTime+dur);
-    setTimeout(function(){p.triggered=false;},3000);}});}
-document.getElementById('start').addEventListener('click',function(){
-  this.style.display='none';
-  buildPatchMatrix();
-  initAudio();
-  if(AC&&AC.state==='suspended')AC.resume();
-  if(polyMode&&allTracks.length)rebuildPolyOscs();
-  playing=true;
-  document.getElementById('btn-play').classList.add('active');
-  requestAnimationFrame(loop);
-});
-var allTracks=[];
-var polyMode=false;
-var polyStates=[];
-var POLY_COLORS=[28,185,280,60,320,150];
-
-function loadGPXData(result){
-  // actualizar constantes globales
-  window.ELE_MIN_DYN=result.eleMin;
-  window.ELE_MAX_DYN=result.eleMax===result.eleMin?result.eleMin+1:result.eleMax;
-  window.HR_MIN_DYN=result.hrMin;
-  window.HR_MAX_DYN=result.hrMax===result.hrMin?result.hrMin+1:result.hrMax;
-  window.SPD_MAX_DYN=result.spdMax<0.1?1:result.spdMax;
-  window.REAL_DUR=result.totalSecs;
-  REAL_DUR=result.totalSecs;
-  FILL=REAL_DUR;
-  DRAIN=Math.round(REAL_DUR*0.15);
-  CYCLE=FILL+DRAIN;
-  trackData=result.pts;
-  // reset
-  cycleT=0; lastIdx=-1;
-  ctx.clearRect(0,0,cv.width,cv.height);
-  // actualizar UI
-  var mins=Math.floor(result.totalSecs/60),secs=result.totalSecs%60;
-  document.querySelector('.panel-sub').textContent=
-    result.count+' pts · '+mins+'min '+secs+'s · ele '+Math.round(result.eleMin)+'→'+Math.round(result.eleMax)+'m';
-  document.getElementById('spd').value=0;
-  document.getElementById('spd-v').textContent='1.0x · '+mins+':'+(secs<10?'0':'')+secs;
-  P.speed=1;
+function onParamChange(key){
+  if(!AC)return;
+  if(key==='master')masterGain.gain.setTargetAtTime(muted_?0:P.master,AC.currentTime,0.05);
+  if(key==='oscVol')oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
+  if(key==='delayMix'){
+    delayWet.gain.setTargetAtTime(T.delay?P.delayMix:0,AC.currentTime,0.1);
+    delayDry.gain.setTargetAtTime(T.delay?1-P.delayMix:1,AC.currentTime,0.1);
+  }
 }
+function onToggleChange(key){
+  if(!AC)return;
+  if(key==='osc')oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
+  if(key==='lfo')lfoGain.gain.setTargetAtTime(T.lfo?2+windSpd*0.8:0,AC.currentTime,0.1);
+  if(key==='delay'){
+    delayWet.gain.setTargetAtTime(T.delay?P.delayMix:0,AC.currentTime,0.1);
+    delayDry.gain.setTargetAtTime(T.delay?1-P.delayMix:1,AC.currentTime,0.1);
+  }
+}
+const SOURCES=['GPS Time','Orientation','Elevation','Wind','Air Quality','Heart Pulse','Cadence','Speed','Random'];
+const DESTS=['OSC','LFO','VCF cut','VCF res','DLY time','DLY feed','RANDOM','LINE width','LINE color','LINE fade'];
+const SRC_COLORS=['#888','#adf','#4af','#8df','#fa8','#f64','#fa0','#8f8','#f0f'];
 
-// drag & drop + file input
-var gpxDrop=document.getElementById('gpx-drop');
-var gpxFile=document.getElementById('gpx-file');
+var patches=[
+  [1,0,0,0,0,0,0,0,0,0], // GPS Time → OSC
+  [0,0,0,0,1,1,0,0,0,0], // Orientation → DLY
+  [0,0,0,0,0,0,0,1,0,0], // Elevation → LINE width
+  [0,0,0,0,0,0,0,0,0,0], // Wind
+  [0,0,0,0,0,0,0,0,0,0], // Air Quality
+  [0,1,1,0,0,0,0,0,1,0], // Heart Pulse → LFO, VCF cut, LINE color
+  [0,0,0,0,0,0,0,0,0,0], // Cadence
+  [0,0,0,1,0,0,0,0,0,0], // Speed → VCF res
+  [0,0,0,0,0,0,0,0,0,0], // Random ↯ (fuente, se conecta a destinos)
+];
+var srcVals=[0,0,0,0,0,0,0,0,0];
 
-gpxDrop.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
-gpxDrop.addEventListener('dragleave',function(){this.classList.remove('drag');});
-gpxDrop.addEventListener('drop',function(e){
-  e.preventDefault(); this.classList.remove('drag');
-  var f=e.dataTransfer.files[0];
-  if(f) readGPXFile(f);
-});
-gpxFile.addEventListener('change',function(){
-  if(this.files[0]) readGPXFile(this.files[0]);
-});
+// Random — trigger y valor
+var randomTrigger='gps'; // 'gps' | 'cadence' | 'hr'
+var randomVal=0; // valor actual 0-1 (se actualiza en cada disparo)
 
-function parseRoutesCropJSON(text){
-  var data=JSON.parse(text);
-  if(!Array.isArray(data)||!data[0]||!data[0].pts)return null;
-  var tracks=[];
-  data.forEach(function(route,ri){
-    var raw=route.pts;if(raw.length<2)return;
-    var la0=Infinity,la1=-Infinity,lo0=Infinity,lo1=-Infinity,e0=Infinity,e1=-Infinity;
-    raw.forEach(function(c){la0=Math.min(la0,c[1]);la1=Math.max(la1,c[1]);lo0=Math.min(lo0,c[0]);lo1=Math.max(lo1,c[0]);if(c[2]){e0=Math.min(e0,c[2]);e1=Math.max(e1,c[2]);}});
-    if(e0===Infinity)e0=50;if(e1===-Infinity||e1===e0)e1=e0+50;
-    var lp=(la1-la0)*0.08||0.001,lop=(lo1-lo0)*0.08||0.001;
-    la0-=lp;la1+=lp;lo0-=lop;lo1+=lop;
-    var norm=[],sm=0,tt=0;
-    raw.forEach(function(c,k){
-      var lon=c[0],lat=c[1],ele=c[2]||80;
-      var nx=0.07+(lon-lo0)/(lo1-lo0)*0.86,ny=0.07+(1-(lat-la0)/(la1-la0))*0.86;
-      var sp=0,hd=0,dt=10;
-      if(k>0){var p0=raw[k-1],dy=(lat-p0[1])*111320,dx=(lon-p0[0])*111320*Math.cos(p0[1]*Math.PI/180);
-        hd=(Math.atan2(dx,dy)*180/Math.PI+360)%360;sp=Math.min(Math.sqrt(dx*dx+dy*dy)/dt,20);sm=Math.max(sm,sp);}
-      tt+=dt;
-      norm.push({nx:Math.round(nx*1e5)/1e5,ny:Math.round(ny*1e5)/1e5,ele:ele,cadence:0,hr:100,heading:Math.round(hd*10)/10,speed:Math.round(sp*100)/100,dt:dt});
-    });
-    tracks.push({name:route.name||'Route '+(ri+1),pts:norm,count:norm.length,eleMin:e0,eleMax:e1,hrMin:100,hrMax:100,spdMax:sm<0.1?1:sm,totalSecs:Math.round(tt)});
+function buildPatchMatrix(){
+  var cl=document.getElementById('patch-col-labels'),gr=document.getElementById('patch-grid');
+  if(!cl||!gr)return;
+  cl.innerHTML='';gr.innerHTML='';
+  // ancho de cada columna
+  var colW=(100/DESTS.length).toFixed(1)+'%';
+  DESTS.forEach(function(d){
+    var el=document.createElement('div');
+    el.className='patch-col-label';
+    el.style.width=colW;
+    el.textContent=d;
+    cl.appendChild(el);
   });
-  return tracks.length?tracks:null;
+  SOURCES.forEach(function(src,si){
+    var row=document.createElement('div');row.className='patch-row';
+    var lbl=document.createElement('div');lbl.className='patch-row-label';
+    lbl.textContent=src;lbl.style.color=SRC_COLORS[si];row.appendChild(lbl);
+    DESTS.forEach(function(dst,di){
+      var wrap=document.createElement('div');wrap.className='patch-dot-wrap';
+      wrap.style.width=colW;
+      var dot=document.createElement('div');dot.className='patch-dot';
+      dot.style.color=SRC_COLORS[si];dot.dataset.src=si;dot.dataset.dst=di;
+      dot.title=src+' → '+dst;
+      if(patches[si][di]>0)dot.classList.add('active');
+      dot.addEventListener('click',function(){
+        var s=parseInt(this.dataset.src),d=parseInt(this.dataset.dst);
+        patches[s][d]=patches[s][d]>0?0:1;
+        this.classList.toggle('active',patches[s][d]>0);
+      });
+      wrap.appendChild(dot);row.appendChild(wrap);
+    });
+    gr.appendChild(row);
+  });
 }
 
-function readGPXFile(file){
-  var info=document.getElementById('gpx-info');info.textContent='Cargando...';
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var isJSON=file.name.match(/\.(json|geojson)$/i)||e.target.result.trim().startsWith('{');
-    var tracks=null;
-    if(isJSON){try{tracks=parseRoutesCropJSON(e.target.result);}catch(ex){}}
-    if(!tracks||!tracks.length)tracks=parseGPXMulti(e.target.result);
-    if(!tracks||!tracks.length){info.textContent='Error';return;}
-    allTracks=tracks;
-    var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel');
-    if(tracks.length>1){
-      wrap.style.display='block';sel.innerHTML='';
-      tracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
-      sel.onchange=function(){if(!polyMode)loadGPXData(tracks[parseInt(this.value)]);};
-      // interval selectors
-      polyIntervals=tracks.map(function(_,i){return polyIntervals[i]||0;});
-      var iWrap=document.getElementById('interval-wrap');
-      if(iWrap){
-        iWrap.innerHTML='';
-        tracks.forEach(function(t,i){
-          var row=document.createElement('div');
-          row.style.cssText='display:flex;align-items:center;gap:4px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
-          var nm2=document.createElement('span');
-          nm2.style.cssText='font-size:0.8vh;color:rgba(255,255,255,0.45);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-          nm2.textContent=t.name;row.appendChild(nm2);
-          [0,3,5,8].forEach(function(iv){
-            var btn=document.createElement('button');
-            btn.textContent=iv===0?'0':iv===3?'3ª':iv===5?'5ª':'8ª';
-            btn.dataset.iv=iv;
-            var act=polyIntervals[i]===iv;
-            btn.style.cssText='font-size:0.72vh;padding:1px 5px;border:1px solid rgba(255,255,255,'+(act?'0.6':'0.12')+');background:'+(act?'rgba(255,255,255,0.15)':'transparent')+';color:rgba(255,255,255,'+(act?'1':'0.4')+');cursor:pointer;font-family:inherit;';
-            btn.addEventListener('click',(function(idx,ivv,r){return function(){
-              polyIntervals[idx]=ivv;
-              r.querySelectorAll('button[data-iv]').forEach(function(b){
-                var a=parseInt(b.dataset.iv)===ivv;
-                b.style.borderColor='rgba(255,255,255,'+(a?'0.6':'0.12')+')';
-                b.style.background=a?'rgba(255,255,255,0.15)':'transparent';
-                b.style.color='rgba(255,255,255,'+(a?'1':'0.4')+')';
-              });
-              // update running osc if in poly mode
-              if(AC&&polyOscs[idx]){
-                var trk2=allTracks[idx];
-                var baseHz3=trk2&&trk2.eleMin>0?trk2.eleMin:80;
-                var r2=INTERVAL_RATIOS[ivv]||1;
-                if(isFinite(baseHz3*r2))polyOscs[idx].frequency.setTargetAtTime(baseHz3*r2,AC.currentTime,0.3);
-              }
-            };})(i,iv,row));
-            row.appendChild(btn);
-          });
-          iWrap.appendChild(row);
-        });
-        iWrap.style.display='block';
+function hasPatch(dst){for(var s=0;s<patches.length;s++)if(patches[s][dst]>0)return true;return false;}
+
+function updateSrcVals(pt){
+  var EM=window.ELE_MIN_DYN||ELE_MIN,EX=window.ELE_MAX_DYN||ELE_MAX;
+  var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
+  srcVals[0]=0.5; // GPS Time
+  srcVals[1]=pt.heading/360; // Orientation
+  srcVals[2]=nm(pt.ele,EM,EX); // Elevation
+  srcVals[3]=nm(windSpd,0,15); // Wind
+  srcVals[4]=nm(windSpd,0,15)*0.6; // Air Quality
+  srcVals[5]=nm(pt.hr,HM,HX); // Heart Pulse
+  srcVals[6]=pt.cadence>0?nm(pt.cadence,20,90):0; // Cadence
+  srcVals[7]=nm(pt.speed,0,window.SPD_MAX_DYN||SPD_MAX); // Speed
+  srcVals[8]=randomVal; // Random ↯ — valor del último disparo
+}
+
+function getPatchedVal(dst,bv){
+  var t=0,c=0;
+  for(var s=0;s<patches.length;s++){if(patches[s][dst]>0){t+=srcVals[s];c++;}}
+  if(!c)return bv;return Math.max(0,Math.min(1,t/c));
+}
+
+function applyPatches(pt){
+  if(!AC)return;
+  updateSrcVals(pt);
+  var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
+  // OSC
+  if(hasPatch(0))oscNode.frequency.setTargetAtTime(40+getPatchedVal(0,0.5)*260,AC.currentTime,0.2);
+  else{
+    var baseFreq=pt.ele>0?pt.ele:80;
+    var ivIdx=(polyMode&&window.polyCurrentTrack>=0)?polyIntervals[window.polyCurrentTrack]||0:0;
+    var ivRatio=INTERVAL_RATIOS[ivIdx]||1;
+    if(isFinite(baseFreq*ivRatio))oscNode.frequency.setTargetAtTime(baseFreq*ivRatio,AC.currentTime,0.2);
+  }
+  // LFO depth
+  if(hasPatch(1)&&T.lfo)lfoGain.gain.setTargetAtTime((2+windSpd*0.8)*getPatchedVal(1,0.5)*2,AC.currentTime,0.3);
+  // VCF cutoff
+  if(T.filter){
+    filterNode.frequency.setTargetAtTime(hasPatch(2)?150+getPatchedVal(2,0.5)*3850:200+nm(pt.hr,HM,HX)*3300,AC.currentTime,0.3);
+    // VCF res
+    var qVal=hasPatch(3)?0.5+getPatchedVal(3,0.5)*9.5:0.5+nm(pt.speed||0,0,window.SPD_MAX_DYN||SPD_MAX)*7.5;if(isFinite(qVal))filterNode.Q.setTargetAtTime(qVal,AC.currentTime,0.2);
+  }
+  // Delay
+  if(T.delay){
+    var hn=pt.heading/360;
+    delayNode.delayTime.setTargetAtTime(hasPatch(4)?0.05+getPatchedVal(4,0.5)*0.45:0.05+hn*0.45,AC.currentTime,0.4);
+    delayFeedback.gain.setTargetAtTime(hasPatch(5)?0.1+getPatchedVal(5,0.5)*0.5:0.1+hn*0.5,AC.currentTime,0.4);
+  }
+  // Random — se dispara desde checkRandomTrigger en el loop
+  // Visual patches
+  window.patchWidth=hasPatch(7)?0.3+getPatchedVal(7,0.5)*1.4:1.0;
+  window.patchHue=hasPatch(8)?getPatchedVal(8,0.5):null;
+  window.patchFade=hasPatch(9)?P.fade*(0.3+getPatchedVal(9,0.5)*1.4):null;
+  oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
+  if(polyMode)polyGains.forEach(function(g){if(g)g.gain.setTargetAtTime(T.osc?P.oscVol*0.3/Math.sqrt(Math.max(1,allTracks.length)):0,AC.currentTime,0.05);});
+}
+
+// ══ AUDIO ═════════════════════════════════════════════════════════════════
+var AC,masterGain,filterNode,delayNode,delayFeedback,delayWet,delayDry;
+var oscNode,oscGain,lfoNode,lfoGain;
+var windSpd=3,windDir=210;
+var seisIntensity=0; // 0-1 según magnitud del último sismo
+
+// Escala musical para Random (ratios relativos a tónica)
+var SCALES={
+  chromatic:[1,1.059,1.122,1.189,1.260,1.335,1.414,1.498,1.587,1.682,1.782,1.888,2],
+  pentatonic:[1,1.122,1.260,1.498,1.682,2],
+  major:[1,1.122,1.260,1.335,1.498,1.682,1.888,2],
+};
+var currentScale=SCALES.pentatonic;
+var tonicFreq=110; // A2
+
+function triggerRandom(pt){
+  if(!AC||!T.random)return;
+  // nuevo valor random 0-1
+  randomVal=Math.random();
+  var ratio=currentScale[Math.floor(randomVal*currentScale.length)];
+  if(Math.random()<0.25) ratio*=0.5;
+  else if(Math.random()<0.25) ratio*=2;
+  var freq=tonicFreq*ratio;
+  var dur=0.12+Math.random()*0.35;
+  var o=AC.createOscillator();
+  o.type=['sine','triangle','sawtooth'][Math.floor(Math.random()*3)];
+  o.frequency.setValueAtTime(freq,AC.currentTime);
+  o.frequency.exponentialRampToValueAtTime(freq*(0.75+Math.random()*0.5),AC.currentTime+dur);
+  var env=AC.createGain();
+  env.gain.setValueAtTime(P.randomVol*0.4,AC.currentTime);
+  env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
+  o.connect(env);env.connect(filterNode);o.start();o.stop(AC.currentTime+dur);
+
+  // propagar a los destinos patcheados desde Random (fila 8)
+  if(hasPatch(0)&&patches[8][0])oscNode.frequency.setTargetAtTime(40+randomVal*260,AC.currentTime,0.1);
+  if(hasPatch(2)&&patches[8][2]&&T.filter)filterNode.frequency.setTargetAtTime(150+randomVal*3850,AC.currentTime,0.15);
+  if(hasPatch(3)&&patches[8][3]&&T.filter)filterNode.Q.setTargetAtTime(0.5+randomVal*9.5,AC.currentTime,0.1);
+  if(hasPatch(4)&&patches[8][4]&&T.delay)delayNode.delayTime.setTargetAtTime(0.05+randomVal*0.45,AC.currentTime,0.2);
+  if(hasPatch(5)&&patches[8][5]&&T.delay)delayFeedback.gain.setTargetAtTime(0.05+randomVal*0.6,AC.currentTime,0.2);
+  if(hasPatch(7)&&patches[8][7])window.patchWidth=0.3+randomVal*1.4;
+  if(hasPatch(8)&&patches[8][8])window.patchHue=randomVal;
+  if(hasPatch(9)&&patches[8][9])window.patchFade=P.fade*(0.3+randomVal*1.4);
+}
+
+// disparar Random según el trigger seleccionado
+function checkRandomTrigger(pt){
+  if(!T.random)return;
+  rndCount++;
+  if(rndCount%divRnd!==0)return;
+  if(randomTrigger==='gps') triggerRandom(pt);
+  else if(randomTrigger==='cadence'&&pt.cadence>15) triggerRandom(pt);
+  else if(randomTrigger==='hr'&&pt.hr>HR_MIN+(HR_MAX-HR_MIN)*0.6) triggerRandom(pt);
+}
+
+function initAudio(){
+  AC=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=AC.createGain();masterGain.gain.value=P.master;masterGain.connect(AC.destination);
+  filterNode=AC.createBiquadFilter();filterNode.type='lowpass';filterNode.frequency.value=2000;filterNode.Q.value=1;filterNode.connect(masterGain);
+  delayNode=AC.createDelay(2.0);delayFeedback=AC.createGain();delayFeedback.gain.value=0.35;
+  delayWet=AC.createGain();delayWet.gain.value=P.delayMix;
+  delayDry=AC.createGain();delayDry.gain.value=1-P.delayMix;
+  filterNode.connect(delayDry);filterNode.connect(delayNode);
+  delayNode.connect(delayFeedback);delayNode.connect(delayWet);
+  delayFeedback.connect(delayNode);delayDry.connect(masterGain);delayWet.connect(masterGain);
+  oscNode=AC.createOscillator();oscNode.type='triangle';oscNode.frequency.value=80;
+  oscGain=AC.createGain();oscGain.gain.value=0;
+  oscNode.connect(oscGain);oscGain.connect(filterNode);oscNode.start();
+  lfoNode=AC.createOscillator();lfoNode.type='sine';lfoNode.frequency.value=0.15;
+  lfoGain=AC.createGain();lfoGain.gain.value=0;
+  lfoNode.connect(lfoGain);lfoGain.connect(oscNode.frequency);lfoNode.start();
+  fetchWind();setInterval(fetchWind,60000);
+  fetchSeismic();setInterval(fetchSeismic,30000);
+}
+
+async function fetchWind(){
+  try{
+    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.055&longitude=-118.437&current=wind_speed_10m,wind_direction_10m&timezone=America%2FLos_Angeles');
+    if(r.ok){var d=await r.json();if(d.current){windSpd=d.current.wind_speed_10m||windSpd;windDir=d.current.wind_direction_10m||windDir;}}
+  }catch(e){}
+  document.getElementById('wv').textContent=windSpd.toFixed(1);
+  document.getElementById('wd').textContent=Math.round(windDir);
+  document.getElementById('wind-needle').style.transform='translate(-50%,-100%) rotate('+windDir+'deg)';
+  var rate=0.05+windSpd*0.08;
+  document.getElementById('lfo-rate').textContent=rate.toFixed(2);
+  if(lfoNode&&T.lfo){lfoNode.frequency.value=rate;lfoGain.gain.value=2+windSpd*0.8;}
+}
+
+async function fetchSeismic(){
+  try{
+    var r=await fetch('https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&limit=5&minmagnitude=1.5&latitude=34.07&longitude=-118.44&maxradius=2&orderby=time');
+    if(r.ok){
+      var d=await r.json();
+      if(d.features&&d.features.length>0){
+        var mag=d.features[0].properties.mag||0;
+        seisIntensity=Math.min(1,Math.max(0,(mag-1.5)/4));
+      } else {
+        seisIntensity=Math.max(0,seisIntensity-0.05); // fade out gradual
       }
-      if(AC&&polyMode)rebuildPolyOscs();
-    }else wrap.style.display='none';
-    loadGPXData(tracks[0]);info.textContent=file.name;
-    if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
-  };reader.readAsText(file);
+    }
+  }catch(e){seisIntensity=Math.max(0,seisIntensity-0.02);}
 }
 
-// ══ START ═══════════════════════════════════════════════════════════════════
-var pdiList=[];
-document.getElementById('canvas-wrap').addEventListener('click',function(e){
-  if(!trackData||trackData.length<2)return;
-  var rect=cv.getBoundingClientRect();
-  var name=prompt('PDI:','')||'PDI '+(pdiList.length+1);
-  pdiList.push({nx:(e.clientX-rect.left)/rect.width,ny:(e.clientY-rect.top)/rect.height,name:name,triggered:false});
-  renderPDIs();
-});
-function renderPDIs(){var list=document.getElementById('pdi-list');if(!list)return;list.innerHTML='';
-  pdiList.forEach(function(p,i){var el=document.createElement('div');el.className='pdi-item';
-    el.innerHTML='<div class="pdi-dot"></div><div class="pdi-name">'+p.name+'</div><div class="pdi-del" data-i="'+i+'">x</div>';
-    el.querySelector('.pdi-del').addEventListener('click',function(){pdiList.splice(parseInt(this.dataset.i),1);renderPDIs();});
-    list.appendChild(el);});}
-function drawPDIs(S){pdiList.forEach(function(p){
-  var px=p.nx*S,py=p.ny*S;ctx.save();ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
-  ctx.fillStyle='rgba(255,180,0,0.9)';ctx.shadowColor='rgba(255,180,0,0.7)';ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
-  ctx.font='bold '+Math.max(8,S*0.013)+'px Courier New';ctx.fillStyle='rgba(255,210,80,0.85)';ctx.fillText(p.name,px+7,py-4);ctx.restore();});}
-function checkPDIs(pt){if(!AC)return;pdiList.forEach(function(p){
-  var dx=p.nx-pt.nx,dy=p.ny-pt.ny;
-  if(Math.sqrt(dx*dx+dy*dy)<0.03&&!p.triggered){p.triggered=true;
-    var dur=0.5,o=AC.createOscillator();o.type='sine';
-    o.frequency.setValueAtTime(400+pt.ele*2,AC.currentTime);o.frequency.exponentialRampToValueAtTime(100,AC.currentTime+dur);
-    var env=AC.createGain();env.gain.setValueAtTime(0.5,AC.currentTime);env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
-    o.connect(env);env.connect(masterGain);o.start();o.stop(AC.currentTime+dur);
-    setTimeout(function(){p.triggered=false;},3000);}});}
-document.getElementById('start').addEventListener('click',function(){
-  this.style.display='none';
-  buildPatchMatrix();
-  initAudio();
-  if(AC&&AC.state==='suspended')AC.resume();
-  if(polyMode&&allTracks.length)rebuildPolyOscs();
-  playing=true;
-  document.getElementById('btn-play').classList.add('active');
-  requestAnimationFrame(loop);
-});
+function triggerClick(){
+  if(!AC||!T.click)return;
+  var buf=AC.createBuffer(1,Math.floor(AC.sampleRate*0.015),AC.sampleRate);
+  var d=buf.getChannelData(0);
+  for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+  var src=AC.createBufferSource();src.buffer=buf;
+  var g=AC.createGain();g.gain.value=P.clickVol*0.35;
+  src.connect(g);g.connect(filterNode);src.start();
+}
 
+var triggerDiv=1;
+function triggerKick(cad){
+  if(!AC||!T.kick)return;
+  if(Math.floor(frameCount/1)%triggerDiv!==0)return;
+  var dur=0.28,o=AC.createOscillator();o.type='sine';
+  o.frequency.setValueAtTime(110,AC.currentTime);
+  o.frequency.exponentialRampToValueAtTime(32,AC.currentTime+dur);
+  var env=AC.createGain();
+  env.gain.setValueAtTime(P.kickVol*nm(cad,20,84),AC.currentTime);
+  env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
+  o.connect(env);env.connect(masterGain);o.start();o.stop(AC.currentTime+dur);
+}
 
-var allTracks=[];
+// ══ VIENTO PARTÍCULAS ═════════════════════════════════════════════════════
+var wParts=[];
+var WP_MAX=200;
+function spawnWP(){
+  if(wParts.length>=WP_MAX)return;
+  var rad=((windDir+180)%360)*Math.PI/180;
+  var vx0=Math.sin(rad),vy0=-Math.cos(rad);
+  var fromRad=windDir*Math.PI/180;
+  var fx=Math.sin(fromRad),fy=-Math.cos(fromRad);
+  var x,y;
+  if(Math.abs(fx)>Math.abs(fy)){x=fx>0?-0.02:1.02;y=Math.random();}
+  else{x=Math.random();y=fy>0?-0.02:1.02;}
+  wParts.push({x,y,ax:vx0,ay:vy0,life:1,decay:0.006+Math.random()*0.006,len:0.04+windSpd*0.008,alpha:0.5+Math.random()*0.4,no:Math.random()*200});
+}
+function updateWindParticles(ts){
+  wParts=wParts.filter(function(p){return p.life>0;});
+  var tc=ts*0.00004,spd=0.004+windSpd*0.001;
+  for(var i=0;i<wParts.length;i++){
+    var p=wParts[i];
+    var nx2=Math.sin(p.x*6+p.no+tc)*0.0003;
+    var ny2=Math.cos(p.y*6+p.no+tc)*0.0003;
+    p.x+=p.ax*spd+nx2;p.y+=p.ay*spd+ny2;p.life-=p.decay;
+    if(p.x<-0.05||p.x>1.05||p.y<-0.05||p.y>1.05)p.life=0;
+  }
+  if(Math.random()<0.6)spawnWP();if(Math.random()<0.3)spawnWP();
+}
+function drawWindParticles(S){
+  var W=cv.width, H=cv.height;
+  var baseLen=Math.min(W,H)*0.06*(1+windSpd*0.15);
+  for(var i=0;i<wParts.length;i++){
+    var p=wParts[i];
+    var px=p.x*W, py=p.y*H;
+    if(px<-10||px>W+10||py<-10||py>H+10)continue;
+    var dx=p.ax*baseLen, dy=p.ay*baseLen;
+    ctx.save();
+    ctx.globalAlpha=p.life*p.alpha*0.45;
+    ctx.strokeStyle='rgba(120,190,255,1)';ctx.lineWidth=4;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(px-dx,py-dy);ctx.lineTo(px,py);ctx.stroke();
+    ctx.globalAlpha=p.life*p.alpha;
+    ctx.strokeStyle='rgba(220,240,255,1)';ctx.lineWidth=1.8;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(px-dx,py-dy);ctx.lineTo(px,py);ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ══ GPX MULTI-TRACK ═══════════════════════════════════════════════════════
 function parseTrkpts(tpts){
   var pts=[];
   for(var i=0;i<tpts.length;i++){
@@ -1400,15 +1004,17 @@ function parseTrkpts(tpts){
   la0-=lp;la1+=lp;lo0-=lop;lo1+=lop;
   var norm=[],tt=0;
   for(var i=0;i<pts.length;i++){
-    var p=pts[i],hd=0,sp=0,dt=10,nx=0.07+(p.lon-lo0)/(lo1-lo0)*0.86,ny=0.07+(1-(p.lat-la0)/(la1-la0))*0.86;
+    var p=pts[i],hd=0,sp=0,dt=10;
+    var nx=0.07+(p.lon-lo0)/(lo1-lo0)*0.86,ny=0.07+(1-(p.lat-la0)/(la1-la0))*0.86;
     if(i>0){var p0=pts[i-1],dy=(p.lat-p0.lat)*111320,dx=(p.lon-p0.lon)*111320*Math.cos(p0.lat*Math.PI/180);
       hd=(Math.atan2(dx,dy)*180/Math.PI+360)%360;
       try{var d2=(new Date(p.time)-new Date(p0.time))/1000;if(d2>0&&d2<300)dt=d2;}catch(err){}
       sp=Math.sqrt(dx*dx+dy*dy)/Math.max(1,dt);sm=Math.max(sm,sp);}
-    tt+=dt;norm.push({nx:Math.round(nx*1e5)/1e5,ny:Math.round(ny*1e5)/1e5,ele:p.ele,cadence:p.cadence,hr:p.hr,heading:Math.round(hd*10)/10,speed:Math.round(sp*100)/100,dt:Math.round(dt*10)/10});
+    tt+=dt;norm.push({nx:Math.round(nx*1e5)/1e5,ny:Math.round(ny*1e5)/1e5,lat:p.lat,lon:p.lon,ele:p.ele,cadence:p.cadence,hr:p.hr,heading:Math.round(hd*10)/10,speed:Math.round(sp*100)/100,dt:Math.round(dt*10)/10});
   }
   return{pts:norm,eleMin:e0,eleMax:e1===e0?e0+1:e1,hrMin:h0,hrMax:h1===h0?h0+1:h1,spdMax:sm<0.1?1:sm,totalSecs:Math.round(tt),count:pts.length};
 }
+
 function parseGPXMulti(text){
   var p=new DOMParser(),xml=p.parseFromString(text,'text/xml'),tracks=[];
   var trks=xml.getElementsByTagName('trk');
@@ -1421,6 +1027,652 @@ function parseGPXMulti(text){
   }
   return tracks;
 }
+
+function loadGPXData(track){
+  window.ELE_MIN_DYN=track.eleMin;window.ELE_MAX_DYN=track.eleMax;
+  window.HR_MIN_DYN=track.hrMin;window.HR_MAX_DYN=track.hrMax;
+  window.SPD_MAX_DYN=track.spdMax;window.REAL_DUR=track.totalSecs;
+  REAL_DUR=track.totalSecs;FILL=REAL_DUR;DRAIN=Math.round(REAL_DUR*0.15);CYCLE=FILL+DRAIN;
+  trackData=track.pts;pdiList=[];renderPDIs();
+  cycleT=0;lastIdx=-1;ctx.clearRect(0,0,cv.width,cv.height);
+  var mins=Math.floor(track.totalSecs/60),secs=track.totalSecs%60;
+  document.getElementById('panel-sub').textContent=track.name+' · '+track.count+' pts · '+mins+'min '+secs+'s';
+  document.getElementById('prog-total').textContent=mins+':'+(secs<10?'0':'')+secs;
+  // actualizar tónica del random basada en elevación media
+  tonicFreq=55+nm((track.eleMin+track.eleMax)/2,0,500)*165;
+  P.speed=60;document.getElementById('spd').value=0.5;
+  document.getElementById('spd-v').textContent='60x 32s';
+}
+
+function parseRoutesCropJSON(text){
+  var data=JSON.parse(text);
+  if(!Array.isArray(data)||!data[0]||!data[0].pts)return null;
+  var tracks=[];
+  data.forEach(function(route,ri){
+    var raw=route.pts;
+    if(raw.length<2)return;
+    var la0=Infinity,la1=-Infinity,lo0=Infinity,lo1=-Infinity,e0=Infinity,e1=-Infinity;
+    raw.forEach(function(c){
+      la0=Math.min(la0,c[1]);la1=Math.max(la1,c[1]);
+      lo0=Math.min(lo0,c[0]);lo1=Math.max(lo1,c[0]);
+      if(c[2]){e0=Math.min(e0,c[2]);e1=Math.max(e1,c[2]);}
+    });
+    if(e0===Infinity)e0=0;if(e1===-Infinity)e1=100;
+    var lp=(la1-la0)*0.08||0.001,lop=(lo1-lo0)*0.08||0.001;
+    la0-=lp;la1+=lp;lo0-=lop;lo1+=lop;
+    var norm=[],sm=0,tt=0;
+    raw.forEach(function(c,k){
+      var lon=c[0],lat=c[1],ele=c[2]||0;
+      var nx=0.07+(lon-lo0)/(lo1-lo0)*0.86;
+      var ny=0.07+(1-(lat-la0)/(la1-la0))*0.86;
+      var sp=0,hd=0,dt=10;
+      if(k>0){
+        var p0=raw[k-1];
+        var dy2=(lat-p0[1])*111320;
+        var dx2=(lon-p0[0])*111320*Math.cos(p0[1]*Math.PI/180);
+        hd=(Math.atan2(dx2,dy2)*180/Math.PI+360)%360;
+        var dist=Math.sqrt(dx2*dx2+dy2*dy2);
+        sp=Math.min(dist/dt,20);
+        sm=Math.max(sm,sp);
+      }
+      tt+=dt;
+      norm.push({nx:Math.round(nx*1e5)/1e5,ny:Math.round(ny*1e5)/1e5,lat:lat,lon:lon,ele:ele,cadence:0,hr:100,heading:Math.round(hd*10)/10,speed:Math.round(sp*100)/100,dt:dt});
+    });
+    tracks.push({name:route.name||'Route '+(ri+1),pts:norm,count:norm.length,eleMin:e0,eleMax:e1===e0?e0+1:e1,hrMin:100,hrMax:100,spdMax:sm<0.1?1:sm,totalSecs:Math.round(tt)});
+  });
+  return tracks.length?tracks:null;
+}
+
+function parseGeoJSONTracks(text){
+  var data=JSON.parse(text),tracks=[],features=data.type==='FeatureCollection'?data.features:[data];
+  features.forEach(function(f,i){
+    if(!f.geometry)return;
+    var name=(f.properties&&f.properties.name)||'Track '+(i+1);
+    var lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:
+               f.geometry.type==='MultiLineString'?f.geometry.coordinates:[];
+    lines.forEach(function(coords,j){
+      if(coords.length<2)return;
+      var pts=[],eles=[],spds=[];
+      coords.forEach(function(c,k){
+        var ele=c[2]||0;
+        var spd=0;
+        if(k>0){
+          var prev=coords[k-1];
+          var dlat=(c[1]-prev[1])*111000,dlon=(c[0]-prev[0])*111000*Math.cos(c[1]*Math.PI/180);
+          spd=Math.sqrt(dlat*dlat+dlon*dlon);
+        }
+        pts.push({lat:c[1],lon:c[0],ele:ele,spd:spd,hr:0,time:k});
+        eles.push(ele);spds.push(spd);
+      });
+      tracks.push({
+        name:lines.length>1?name+'_'+j:name,
+        pts:pts,count:pts.length,
+        eleMin:Math.min.apply(null,eles.filter(function(e){return e>0;})||[0]),
+        eleMax:Math.max.apply(null,eles||[0]),
+        hrMin:0,hrMax:0,
+        spdMax:Math.max.apply(null,spds||[0]),
+        totalSecs:pts.length
+      });
+    });
+  });
+  return tracks;
+}
+
+function parseSingleFile(text,filename,cb){
+  var isJSON=filename.match(/\.(geojson|json)$/i)||text.trim().startsWith('{');
+  var tracks=null;
+  if(isJSON){
+    try{tracks=parseRoutesCropJSON(text);}catch(ex){}
+    if(!tracks||!tracks.length){try{tracks=parseGeoJSONTracks(text);}catch(ex){}}
+  }else{tracks=parseGPXMulti(text);}
+  cb(tracks);
+}
+function renderTrackList(){
+  var wrap=document.getElementById('mode-wrap'),sel=document.getElementById('track-sel'),iWrap=document.getElementById('interval-wrap');
+  if(!allTracks.length){wrap.style.display='none';return;}
+  wrap.style.display='block';sel.innerHTML='';
+  allTracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
+  sel.onchange=function(){if(!polyMode)loadGPXData(allTracks[parseInt(this.value)]);};
+  polyIntervals=allTracks.map(function(_,i){return polyIntervals[i]||0;});
+  iWrap.innerHTML='';
+  allTracks.forEach(function(t,i){
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:5px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
+    var nm2=document.createElement('span');
+    nm2.style.cssText='font-size:0.8vh;color:rgba(255,255,255,0.5);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    nm2.textContent=t.name;row.appendChild(nm2);
+    [0,3,5,8].forEach(function(iv){
+      var btn=document.createElement('button');
+      btn.textContent=iv===0?'0':iv===3?'3ª':iv===5?'5ª':'8ª';btn.dataset.iv=iv;
+      var act=polyIntervals[i]===iv;
+      btn.style.cssText='font-size:0.72vh;padding:1px 5px;border:1px solid rgba(255,255,255,'+(act?'0.55':'0.12')+');background:'+(act?'rgba(255,255,255,0.13)':'transparent')+';color:rgba(255,255,255,'+(act?'1':'0.38')+');cursor:pointer;font-family:inherit;';
+      btn.addEventListener('click',(function(idx,ivv,r){return function(){
+        polyIntervals[idx]=ivv;
+        r.querySelectorAll('button[data-iv]').forEach(function(b){
+          var a=parseInt(b.dataset.iv)===ivv;
+          b.style.borderColor='rgba(255,255,255,'+(a?'0.55':'0.12')+ ')';
+          b.style.background=a?'rgba(255,255,255,0.13)':'transparent';
+          b.style.color='rgba(255,255,255,'+(a?'1':'0.38')+ ')';
+        });};})(i,iv,row));
+      row.appendChild(btn);
+    });
+    var del=document.createElement('button');del.textContent='✕';
+    del.style.cssText='font-size:0.8vh;padding:1px 4px;border:none;background:transparent;color:rgba(255,80,60,0.5);cursor:pointer;';
+    del.addEventListener('click',(function(idx){return function(){
+      allTracks.splice(idx,1);polyIntervals.splice(idx,1);polyStates=[];
+      renderTrackList();if(allTracks.length)loadGPXData(allTracks[0]);
+    };})(i));
+    row.appendChild(del);iWrap.appendChild(row);
+  });
+  var clr=document.createElement('button');clr.textContent='LIMPIAR TODO';
+  clr.style.cssText='margin-top:4px;width:100%;font-size:0.75vh;padding:2px 0;border:1px solid rgba(255,60,40,0.2);background:transparent;color:rgba(255,80,60,0.5);cursor:pointer;font-family:inherit;letter-spacing:0.1em;';
+  clr.addEventListener('click',function(){allTracks=[];polyIntervals=[];polyStates=[];wrap.style.display='none';iWrap.innerHTML='';document.getElementById('gpx-info').textContent='';});
+  iWrap.appendChild(clr);iWrap.style.display='block';
+}
+function readGPXFile(file){
+  var info=document.getElementById('gpx-info');info.textContent='Loading '+file.name+'...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    parseSingleFile(e.target.result,file.name,function(tracks){
+      if(!tracks||!tracks.length){info.textContent='Error: '+file.name;return;}
+      allTracks=allTracks.concat(tracks);renderTrackList();loadGPXData(allTracks[0]);
+      info.textContent=allTracks.length+' track'+(allTracks.length>1?'s':'')+' loaded';
+      if(!playing){playing=true;document.getElementById('btn-play').classList.add('active');}
+      if(tracks[0].pts&&tracks[0].pts.length>0)fetchHitosForTrack(tracks[0].pts);
+    });
+  };
+  reader.readAsText(file);
+}
+
+
+var gpxDrop=document.getElementById('gpx-drop');
+var gpxFile=document.getElementById('gpx-file');
+gpxDrop.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
+gpxDrop.addEventListener('dragleave',function(){this.classList.remove('drag');});
+gpxDrop.addEventListener('drop',function(e){
+  e.preventDefault();this.classList.remove('drag');
+  Array.from(e.dataTransfer.files).forEach(function(f){
+    if(f.name.match(/\.(gpx|geojson|json)$/i))readGPXFile(f);
+  });
+});
+gpxDrop.addEventListener('click',function(){gpxFile.click();});
+gpxFile.addEventListener('change',function(){
+  Array.from(this.files).forEach(function(f){readGPXFile(f);});
+  this.value='';
+});
+
+// ══ PDIs ══════════════════════════════════════════════════════════════════
+var pdiList=[];
+var pdiSampleBuffer=null;
+
+document.getElementById('pdi-sample-file').addEventListener('change',function(){
+  var file=this.files[0];if(!file)return;
+  document.getElementById('pdi-sample-name').textContent=file.name;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    if(!AC)return;
+    AC.decodeAudioData(e.target.result,function(buf){
+      pdiSampleBuffer=buf;
+    });
+  };
+  reader.readAsArrayBuffer(file);
+});
+document.getElementById('canvas-wrap').addEventListener('click',function(e){
+  if(!trackData||trackData.length<2)return;
+  var rect=cv.getBoundingClientRect();
+  var name=prompt('PDI name:','')||'PDI '+(pdiList.length+1);
+  pdiList.push({nx:(e.clientX-rect.left)/rect.width,ny:(e.clientY-rect.top)/rect.height,name:name,triggered:false});
+  renderPDIs();
+});
+function renderPDIs(){
+  var list=document.getElementById('pdi-list');if(!list)return;list.innerHTML='';
+  pdiList.forEach(function(p,i){
+    var el=document.createElement('div');el.className='pdi-item';
+
+    // cruz
+    var cross=document.createElement('div');cross.className='pdi-cross';
+    el.appendChild(cross);
+
+    // nombre
+    var name=document.createElement('div');name.className='pdi-name';name.textContent=p.name;
+    el.appendChild(name);
+
+    // botón sample
+    var sBtn=document.createElement('div');
+    sBtn.className='pdi-sample-btn'+(p.sampleBuffer?' loaded':'');
+    sBtn.textContent=p.sampleBuffer?'♪ '+p.sampleName:'+ sample';
+    var fileInput=document.createElement('input');
+    fileInput.type='file';fileInput.accept='audio/*';fileInput.style.display='none';
+    fileInput.addEventListener('change',function(){
+      var file=this.files[0];if(!file)return;
+      var reader=new FileReader();
+      reader.onload=function(e){
+        if(!AC){p.pendingSample=e.target.result;p.sampleName=file.name;renderPDIs();return;}
+        AC.decodeAudioData(e.target.result.slice(0),function(buf){
+          p.sampleBuffer=buf;p.sampleName=file.name;renderPDIs();
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    });
+    sBtn.addEventListener('click',function(){fileInput.click();});
+    el.appendChild(fileInput);
+    el.appendChild(sBtn);
+
+    // borrar
+    var del=document.createElement('div');del.className='pdi-del';del.textContent='✕';
+    del.addEventListener('click',function(){pdiList.splice(i,1);renderPDIs();});
+    el.appendChild(del);
+
+    list.appendChild(el);
+  });
+}
+function drawPDIs(S){
+  // radio de afectacion: 0.03 en espacio normalizado = ~50m segun escala del canvas
+  var bufferR=S*0.03;
+  var crossSize=S*0.008; // tamaño de la cruz
+
+  pdiList.forEach(function(p){
+    var px=p.nx*S,py=p.ny*S;
+    ctx.save();
+
+    // círculo de puntos — buffer de afectación
+    ctx.beginPath();
+    ctx.setLineDash([S*0.004, S*0.004]);
+    ctx.arc(px,py,bufferR,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.2)';
+    ctx.lineWidth=0.8;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // cruz blanca fina
+    ctx.strokeStyle='rgba(255,255,255,0.9)';
+    ctx.lineWidth=1;
+    ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(px-crossSize,py);ctx.lineTo(px+crossSize,py);
+    ctx.moveTo(px,py-crossSize);ctx.lineTo(px,py+crossSize);
+    ctx.stroke();
+
+    // punto central
+    ctx.beginPath();ctx.arc(px,py,1.5,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.95)';ctx.fill();
+
+    // texto — light, blanco, tamaño legible
+    ctx.font='300 '+Math.max(10,S*0.014)+'px Courier New';
+    ctx.fillStyle='rgba(255,255,255,0.85)';
+    ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=6;
+    ctx.fillText(p.name,px+crossSize+S*0.004,py+S*0.004);
+
+    ctx.restore();
+  });
+}
+function checkPDIs(pt){
+  if(!AC)return;
+  pdiList.forEach(function(p){
+    var dx=p.nx-pt.nx,dy=p.ny-pt.ny;
+    if(Math.sqrt(dx*dx+dy*dy)<0.03&&!p.triggered){
+      p.triggered=true;
+
+      // decodificar sample pendiente si el AC no estaba listo antes
+      if(p.pendingSample&&!p.sampleBuffer){
+        AC.decodeAudioData(p.pendingSample.slice(0),function(buf){p.sampleBuffer=buf;});
+        p.pendingSample=null;
+      }
+
+      // elegir fuente: sample propio > sample global > síntesis
+      var buf=p.sampleBuffer||pdiSampleBuffer;
+      if(buf){
+        var src=AC.createBufferSource();src.buffer=buf;
+        var g=AC.createGain();g.gain.value=0.8;
+        src.connect(g);g.connect(masterGain);src.start();
+      } else {
+        var dur=0.5,o=AC.createOscillator();o.type='sine';
+        o.frequency.setValueAtTime(200+pt.ele,AC.currentTime);
+        o.frequency.exponentialRampToValueAtTime(80,AC.currentTime+dur);
+        var env=AC.createGain();env.gain.setValueAtTime(0.4,AC.currentTime);
+        env.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+dur);
+        o.connect(env);env.connect(masterGain);o.start();o.stop(AC.currentTime+dur);
+      }
+      setTimeout(function(){p.triggered=false;},3000);
+    }
+  });
+}
+
+// ══ HITOS DINÁMICOS — Nominatim OSM ══════════════════════════════════════
+var HITOS=[];
+var hitoTexts=[];
+
+async function fetchHitosForTrack(trackPts){
+  // Seleccionar ~12 puntos distribuidos uniformemente
+  var n=trackPts.length;
+  var step=Math.max(1,Math.floor(n/12));
+  var indices=[];
+  for(var i=0;i<n;i+=step) indices.push(i);
+  if(indices[indices.length-1]!==n-1) indices.push(n-1);
+
+  HITOS=[];
+  // consultar Nominatim para cada punto — con delay para no saturar
+  for(var k=0;k<indices.length;k++){
+    var pt=trackPts[indices[k]];
+    // necesitamos lat/lon reales — los guardamos en el track normalizado
+    // si no están disponibles saltamos
+    if(!pt.lat||!pt.lon) continue;
+    try{
+      await new Promise(function(r){setTimeout(r,300);}); // 300ms entre requests
+      var url='https://nominatim.openstreetmap.org/reverse?format=json&lat='+pt.lat+'&lon='+pt.lon+'&zoom=17&accept-language=es,en';
+      var r=await fetch(url,{headers:{'User-Agent':'GhostBikeSnds/1.0'}});
+      if(r.ok){
+        var d=await r.json();
+        var name=d.address&&(
+          d.address.road||
+          d.address.pedestrian||
+          d.address.path||
+          d.address.cycleway||
+          d.address.suburb||
+          d.address.neighbourhood||
+          d.address.quarter
+        );
+        if(name&&name.length>2){
+          // evitar duplicados consecutivos
+          var last=HITOS[HITOS.length-1];
+          if(!last||last.name!==name){
+            HITOS.push({nx:pt.nx,ny:pt.ny,name:name,triggered:false});
+          }
+        }
+      }
+    }catch(e){}
+  }
+  console.log('Hitos cargados:',HITOS.map(function(h){return h.name;}));
+}
+
+function checkHitos(pt){
+  HITOS.forEach(function(h){
+    var dx=h.nx-pt.nx,dy=h.ny-pt.ny;
+    if(Math.sqrt(dx*dx+dy*dy)<0.06&&!h.triggered){
+      h.triggered=true;
+      hitoTexts.push({name:h.name,x:h.nx,y:h.ny,born:Date.now()});
+      setTimeout(function(){h.triggered=false;},10000);
+    }
+  });
+}
+
+function drawHitoTexts(S){
+  var now=Date.now();
+  hitoTexts=hitoTexts.filter(function(t){return now-t.born<5000;});
+  hitoTexts.forEach(function(t){
+    var age=(now-t.born)/5000;
+    var alpha=age<0.15?age/0.15:age>0.7?(1-age)/0.3:1;
+    alpha=Math.max(0,Math.min(1,alpha))*0.7;
+    ctx.save();
+    ctx.font='300 '+(S*0.016)+'px Courier New';
+    ctx.fillStyle='rgba(255,255,255,'+alpha+')';
+    ctx.shadowColor='rgba(0,0,0,0.9)';ctx.shadowBlur=8;
+    ctx.fillText(t.name.toUpperCase(),t.x*S+10,t.y*S-8);
+    ctx.restore();
+  });
+}
+
+// ══ VISUAL ════════════════════════════════════════════════════════════════
+function lineColor(hr,alpha){
+  var HM2=window.HR_MIN_DYN||HR_MIN,HX2=window.HR_MAX_DYN||HR_MAX;
+  var hrN=nm(hr,HM2,HX2);
+  var pH=(window.patchHue!==null&&window.patchHue!==undefined)?window.patchHue:hrN;
+  var h=28*(1-P.hrMix)+(220-pH*220)*P.hrMix;
+  return 'hsla('+h+','+(60+hrN*30)+'%,'+(50+hrN*15)+'%,'+alpha+')';
+}
+
+function drawTrack(TD,S,filling,hi,ti,hue_override){
+  if(hi<=ti)return;
+  var EM=window.ELE_MIN_DYN||ELE_MIN,EX=window.ELE_MAX_DYN||ELE_MAX;
+  var HM=window.HR_MIN_DYN||HR_MIN,HX=window.HR_MAX_DYN||HR_MAX;
+  var n=TD.length,segLen=hi-ti;
+
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+
+  for(var i=ti+1;i<=hi;i++){
+    var prev=TD[i-1],curr=TD[i];
+    var pos=(i-ti)/segLen;
+    var eleN=nm(curr.ele,EM,EX);
+    var cadN=curr.cadence>0?0.4+nm(curr.cadence,20,84)*0.6:0.22;
+    var pw=window.patchWidth||1;
+    var lw=P.width*pw*(0.4+eleN*0.8)*cadN;
+    var alpha=filling?(0.5+pos*0.45)*cadN:pos*0.9*cadN;
+
+    var col=hue_override!==undefined
+      ?'hsla('+hue_override+',80%,62%,'+alpha+')'
+      :lineColor(curr.hr,alpha);
+
+    if(P.glowAmt>0.02){
+      ctx.lineWidth=lw+5;
+      ctx.strokeStyle=hue_override!==undefined
+        ?'hsla('+hue_override+',50%,60%,'+(alpha*P.glowAmt*0.3)+')'
+        :lineColor(curr.hr,alpha*P.glowAmt*0.3);
+      ctx.beginPath();ctx.moveTo(prev.nx*S,prev.ny*S);ctx.lineTo(curr.nx*S,curr.ny*S);ctx.stroke();
+    }
+    ctx.lineWidth=lw;ctx.strokeStyle=col;
+    ctx.beginPath();ctx.moveTo(prev.nx*S,prev.ny*S);ctx.lineTo(curr.nx*S,curr.ny*S);ctx.stroke();
+
+    // MARKER preset — puntos en cada nodo
+    if(linePreset==='marker'&&i%3===0){
+      ctx.beginPath();ctx.arc(curr.nx*S,curr.ny*S,lw*0.8,0,Math.PI*2);
+      ctx.fillStyle=col;ctx.fill();
+    }
+  }
+
+  // cabeza
+  if(filling&&hi>0&&hi<n){
+    var hpt=TD[hi];
+    var hrN2=nm(hpt.hr,HM,HX),eN2=nm(hpt.ele,EM,EX);
+    var r=P.width*0.7+eN2*2+hrN2*1.5;
+    ctx.beginPath();ctx.arc(hpt.nx*S,hpt.ny*S,r,0,Math.PI*2);
+    ctx.fillStyle=hue_override!==undefined?'hsla('+hue_override+',90%,80%,1)':lineColor(hpt.hr,1);
+    ctx.shadowColor=hue_override!==undefined?'hsla('+hue_override+',90%,70%,0.8)':lineColor(hpt.hr,0.8);
+    ctx.shadowBlur=8+hrN2*10;ctx.fill();ctx.shadowBlur=0;
+  }
+  ctx.restore();
+}
+
+// ══ LOOP ══════════════════════════════════════════════════════════════════
+function loop(ts){
+  requestAnimationFrame(loop);
+  var dt=0;
+  if(playing){dt=Math.min((ts-lastT)/1000,0.05)*P.speed;cycleT=(cycleT+dt)%CYCLE;}
+  lastT=ts;frameCount++;
+
+  var S=cv.width;
+
+  // POLY MODE
+  if(polyMode&&allTracks.length>1){
+    if(!polyStates.length)polyStates=allTracks.map(function(){return{cycleT:0,lastIdx:-1};});
+    var aF=window.patchFade!=null?window.patchFade:P.fade;
+    ctx.fillStyle='rgba(0,0,0,'+aF+')';ctx.fillRect(0,0,S,S);
+    if(seisIntensity>0.01){ctx.fillStyle='rgba(200,20,0,'+(seisIntensity*0.18)+')';ctx.fillRect(0,0,S,S);}
+    updateWindParticles(ts);drawWindParticles(S);
+    window.polyCurrentTrack=-1;
+    for(var ti_=0;ti_<allTracks.length;ti_++){
+      var ps=polyStates[ti_],trk=allTracks[ti_];
+      if(playing)ps.cycleT=(ps.cycleT+dt)%CYCLE;
+      var pf=ps.cycleT<FILL;
+      var phF=pf?ps.cycleT/FILL:1,ptF=pf?0:(ps.cycleT-FILL)/DRAIN;
+      var TD2=trk.pts,n2=TD2.length;
+      var hi2=Math.floor(phF*(n2-1)),ti2=Math.floor(ptF*(n2-1));
+      var hue2=POLY_COLORS[ti_%POLY_COLORS.length];
+      if(pf&&hi2!==ps.lastIdx&&hi2<n2){
+        var pt2=TD2[hi2];
+        // update this track's oscillator
+        if(AC&&polyOscs[ti_]&&T.osc){
+          var baseHz2=pt2.ele>0?pt2.ele:80;
+          var ivRatio2=INTERVAL_RATIOS[polyIntervals[ti_]||0]||1;
+          if(isFinite(baseHz2*ivRatio2))
+            polyOscs[ti_].frequency.setTargetAtTime(baseHz2*ivRatio2,AC.currentTime,0.4);
+          var vol2=(P.oscVol*0.3)/Math.sqrt(Math.max(1,allTracks.length));
+          polyGains[ti_].gain.setTargetAtTime(vol2,AC.currentTime,0.1);
+        }
+        if(ti_===0){
+          gpsCount++;if(gpsCount%divGPS===0)triggerClick();
+          cadCount++;if(pt2.cadence>15&&cadCount%divCad===0)triggerKick(pt2.cadence);
+          window.polyCurrentTrack=ti_;checkRandomTrigger(pt2);checkPDIs(pt2);
+          if(frameCount%2===0){
+            document.getElementById('d-ele').textContent=Math.round(pt2.ele)+'m';
+            document.getElementById('d-hr').textContent=pt2.hr+' bpm';
+            document.getElementById('d-cad').textContent=pt2.cadence+' rpm';
+            document.getElementById('d-spd').textContent=((pt2.speed||0).toFixed(1))+' m/s';
+          }
+        }
+        ps.lastIdx=hi2;
+      }
+      if(!pf)ps.lastIdx=-1;
+      drawTrack(TD2,S,pf,hi2,ti2,hue2);
+    }
+    drawPDIs(S);drawHitoTexts(S);return;
+  }
+
+  // MONO MODE
+  var filling=cycleT<FILL;
+  var headF=filling?cycleT/FILL:1;
+  var tailF=filling?0:(cycleT-FILL)/DRAIN;
+  var TD=trackData,n=TD.length;
+  var hi=Math.floor(headF*(n-1));
+  var ti=Math.floor(tailF*(n-1));
+
+  if(playing&&filling&&hi!==lastIdx&&hi<n){
+    var pt=TD[hi];
+    gpsCount++;
+    if(gpsCount%divGPS===0) triggerClick();
+    cadCount++;
+    if(pt.cadence>15&&cadCount%divCad===0) triggerKick(pt.cadence);
+    applyPatches(pt);checkRandomTrigger(pt);checkPDIs(pt);checkHitos(pt);lastIdx=hi;
+    if(frameCount%2===0){
+      document.getElementById('d-ele').textContent=Math.round(pt.ele)+'m';
+      document.getElementById('d-hr').textContent=pt.hr+' bpm';
+      document.getElementById('d-cad').textContent=pt.cadence+' rpm';
+      document.getElementById('d-spd').textContent=pt.speed.toFixed(1)+' m/s';
+    }
+  }
+  if(!playing||!filling)lastIdx=-1;
+
+  // progress
+  if(frameCount%3===0){
+    var pct=filling?cycleT/FILL:1;
+    document.getElementById('progress-fill').style.width=(pct*100)+'%';
+    var secs=Math.round(cycleT/CYCLE*(window.REAL_DUR||REAL_DUR));
+    var mins=Math.floor(secs/60);
+    document.getElementById('prog-time').textContent=mins+':'+(secs%60<10?'0':'')+secs%60;
+    document.getElementById('prog-pt').textContent=hi+' / '+n;
+  }
+
+  var activeFade=window.patchFade!=null?window.patchFade:P.fade;
+  ctx.fillStyle='rgba(0,0,0,'+activeFade+')';ctx.fillRect(0,0,S,S);
+  if(seisIntensity>0.01){ctx.fillStyle='rgba(200,20,0,'+(seisIntensity*0.18)+')';ctx.fillRect(0,0,S,S);}
+  updateWindParticles(ts);drawWindParticles(S);
+  drawTrack(TD,S,filling,hi,ti,undefined);
+  drawPDIs(S);
+}
+
+// ══ IMPORT / EXPORT PRESET ════════════════════════════════════════════════
+document.getElementById('import-preset-file').addEventListener('change',function(){
+  var file=this.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var pr=JSON.parse(e.target.result);
+      // restaurar valores
+      if(pr.speed!==undefined){P.speed=pr.speed;document.getElementById('spd').value=(pr.speed-1)/119;document.getElementById('spd-v').textContent=Math.round(pr.speed)+'x';}
+      if(pr.divisor){divGPS=pr.divisor.gps||1;divCad=pr.divisor.cad||1;divRnd=pr.divisor.rnd||1;}
+      if(pr.linePreset){linePreset=pr.linePreset;document.querySelectorAll('.preset-btn').forEach(function(b){b.classList.toggle('active',b.dataset.preset===linePreset);});}
+      if(pr.visual){
+        if(pr.visual.width!==undefined){P.width=pr.visual.width;document.getElementById('wid').value=P.width;document.getElementById('wid-v').textContent=P.width.toFixed(1);}
+        if(pr.visual.fade!==undefined){P.fade=pr.visual.fade;document.getElementById('fad').value=P.fade;document.getElementById('fad-v').textContent=P.fade.toFixed(2);}
+        if(pr.visual.hrMix!==undefined){P.hrMix=pr.visual.hrMix;document.getElementById('hrm').value=P.hrMix;document.getElementById('hrm-v').textContent=P.hrMix.toFixed(2);}
+        if(pr.visual.glow!==undefined){P.glowAmt=pr.visual.glow;document.getElementById('glow').value=P.glowAmt;document.getElementById('glow-v').textContent=P.glowAmt.toFixed(2);}
+      }
+      if(pr.audio){
+        ['master','oscVol','clickVol','kickVol','delayMix','randomVol'].forEach(function(k){
+          if(pr.audio[k]!==undefined){P[k]=pr.audio[k];}
+        });
+        var ids={master:'master',oscVol:'ovol',clickVol:'clvol',kickVol:'kvol',delayMix:'dmix',randomVol:'rvol'};
+        Object.keys(ids).forEach(function(k){
+          var el=document.getElementById(ids[k]);
+          if(el&&pr.audio[k]!==undefined){el.value=pr.audio[k];document.getElementById(ids[k]+'-v').textContent=pr.audio[k].toFixed(2);}
+        });
+      }
+      if(pr.toggles){
+        Object.keys(pr.toggles).forEach(function(k){
+          T[k]=pr.toggles[k];
+          var el=document.getElementById('tog-'+k);
+          if(el)el.classList.toggle('on',T[k]);
+        });
+      }
+      if(pr.patches){patches=pr.patches;buildPatchMatrix();}
+      if(pr.randomTrigger){
+        randomTrigger=pr.randomTrigger;
+        document.querySelectorAll('[data-rtrig]').forEach(function(b){b.classList.toggle('active',b.dataset.rtrig===randomTrigger);});
+      }
+      document.getElementById('panel-sub').textContent='Preset: '+(pr.name||file.name);
+    }catch(err){alert('Error loading preset: '+err.message);}
+  };
+  reader.readAsText(file);
+});
+
+// ══ EXPORT PRESET ═════════════════════════════════════════════════════════
+function exportPreset(){
+  var preset={
+    name:'GhostBikeSnds preset',
+    date:new Date().toISOString(),
+    speed:P.speed,
+    divisor:{gps:divGPS,cad:divCad,rnd:divRnd},
+    linePreset:linePreset,
+    visual:{width:P.width,fade:P.fade,hrMix:P.hrMix,glow:P.glowAmt},
+    audio:{master:P.master,oscVol:P.oscVol,clickVol:P.clickVol,kickVol:P.kickVol,delayMix:P.delayMix,randomVol:P.randomVol},
+    toggles:T,
+    patches:patches,
+    randomTrigger:randomTrigger,
+  };
+  var blob=new Blob([JSON.stringify(preset,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='ghostbike_preset.json';a.click();
+}
+
+// ══ START ══════════════════════════════════════════════════════════════════
+// ══ TOOLTIPS — posicionamiento con mouse ══════════════════════════════════
+document.querySelectorAll('.tip-icon').forEach(function(icon){
+  var box = icon.nextElementSibling;
+  if(!box || !box.classList.contains('tip-box')) return;
+  icon.addEventListener('mouseenter', function(e){
+    box.style.display = 'block';
+    var x = e.clientX + 12;
+    var y = e.clientY - 10;
+    // ajustar si sale de la pantalla
+    if(x + 220 > window.innerWidth) x = e.clientX - 230;
+    if(y + 120 > window.innerHeight) y = e.clientY - 120;
+    box.style.left = x + 'px';
+    box.style.top = y + 'px';
+  });
+  icon.addEventListener('mousemove', function(e){
+    var x = e.clientX + 12;
+    var y = e.clientY - 10;
+    if(x + 220 > window.innerWidth) x = e.clientX - 230;
+    if(y + 120 > window.innerHeight) y = e.clientY - 120;
+    box.style.left = x + 'px';
+    box.style.top = y + 'px';
+  });
+  icon.addEventListener('mouseleave', function(){
+    box.style.display = 'none';
+  });
+});
+
+document.getElementById('start').addEventListener('click',function(){
+  this.style.display='none';
+  buildPatchMatrix();
+  initAudio();
+  if(AC&&AC.state==='suspended')AC.resume();
+  if(polyMode&&allTracks.length)rebuildPolyOscs();
+  playing=true;
+  document.getElementById('btn-play').classList.add('active');
+  requestAnimationFrame(loop);
+  // cargar hitos del track default
+  if(trackData&&trackData.length>0) fetchHitosForTrack(trackData);
+});
 </script>
 </body>
 </html>
