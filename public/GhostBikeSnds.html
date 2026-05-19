@@ -787,11 +787,14 @@ function applyPatches(pt){
   window.patchHue=hasPatch(8)?getPatchedVal(8,0.5):null;
   window.patchFade=hasPatch(9)?P.fade*(0.3+getPatchedVal(9,0.5)*1.4):null;
   oscGain.gain.setTargetAtTime(T.osc?P.oscVol*0.3:0,AC.currentTime,0.05);
+  // also update poly gains
+  if(polyMode)polyGains.forEach(function(g){g.gain.setTargetAtTime(T.osc?P.oscVol*0.3/Math.sqrt(Math.max(1,allTracks.length)):0,AC.currentTime,0.05);});
 }
 
 // ══ AUDIO ═════════════════════════════════════════════════════════════════
 var AC,masterGain,filterNode,delayNode,delayFeedback,delayWet,delayDry;
 var oscNode,oscGain,lfoNode,lfoGain;
+var polyOscs=[],polyGains=[]; // one per track in POLY mode
 var windSpd=3,windDir=210;
 var seisIntensity=0; // 0-1 según magnitud del último sismo
 
@@ -861,6 +864,25 @@ function initAudio(){
   lfoNode.connect(lfoGain);lfoGain.connect(oscNode.frequency);lfoNode.start();
   fetchWind();setInterval(fetchWind,60000);
   fetchSeismic();setInterval(fetchSeismic,30000);
+}
+
+function rebuildPolyOscs(){
+  // stop old ones
+  polyOscs.forEach(function(o){try{o.stop();}catch(e){}});
+  polyOscs=[];polyGains=[];
+  if(!AC||!allTracks.length)return;
+  allTracks.forEach(function(trk,i){
+    var osc=AC.createOscillator();
+    osc.type='triangle';
+    var baseHz=Math.max(40,trk.eleMin>0?trk.eleMin:80);
+    var ivRatio=INTERVAL_RATIOS[polyIntervals[i]||0]||1;
+    osc.frequency.value=baseHz*ivRatio;
+    var g=AC.createGain();
+    var vol=P.oscVol*0.3/Math.sqrt(Math.max(1,allTracks.length));
+    g.gain.value=T.osc?vol:0;
+    osc.connect(g);g.connect(filterNode);osc.start();
+    polyOscs.push(osc);polyGains.push(g);
+  });
 }
 
 async function fetchWind(){
@@ -1113,6 +1135,8 @@ function renderTrackList(){
   allTracks.forEach(function(t,i){var opt=document.createElement('option');opt.value=i;opt.textContent=t.name+' ('+t.count+' pts)';sel.appendChild(opt);});
   sel.onchange=function(){if(!polyMode)loadGPXData(allTracks[parseInt(this.value)]);};
   polyIntervals=allTracks.map(function(_,i){return polyIntervals[i]||0;});
+  polyStates=[];
+  if(AC&&polyMode)rebuildPolyOscs();
   iWrap.innerHTML='';
   allTracks.forEach(function(t,i){
     var row=document.createElement('div');
@@ -1462,7 +1486,10 @@ function loop(ts){
 
   // POLY MODE
   if(polyMode&&allTracks.length>1){
-    if(!polyStates.length)polyStates=allTracks.map(function(){return{cycleT:0,lastIdx:-1};});
+    if(!polyStates.length){
+      polyStates=allTracks.map(function(){return{cycleT:0,lastIdx:-1};});
+      if(AC)rebuildPolyOscs();
+    }
     var aF=window.patchFade!=null?window.patchFade:P.fade;
     ctx.fillStyle='rgba(0,0,0,'+aF+')';ctx.fillRect(0,0,S,S);
     if(seisIntensity>0.01){ctx.fillStyle='rgba(200,20,0,'+(seisIntensity*0.18)+')';ctx.fillRect(0,0,S,S);}
@@ -1476,17 +1503,28 @@ function loop(ts){
       var TD2=trk.pts,n2=TD2.length;
       var hi2=Math.floor(phF*(n2-1)),ti2=Math.floor(ptF*(n2-1));
       var hue2=POLY_COLORS[ti_%POLY_COLORS.length];
-      if(ti_===0&&pf&&hi2!==ps.lastIdx&&hi2<n2){
+      if(pf&&hi2!==ps.lastIdx&&hi2<n2){
         var pt2=TD2[hi2];
-        gpsCount++;if(gpsCount%divGPS===0)triggerClick();
-        cadCount++;if(pt2.cadence>15&&cadCount%divCad===0)triggerKick(pt2.cadence);
-        window.polyCurrentTrack=ti_;applyPatches(pt2);checkRandomTrigger(pt2);checkPDIs(pt2);ps.lastIdx=hi2;
-        if(frameCount%2===0){
-          document.getElementById('d-ele').textContent=Math.round(pt2.ele)+'m';
-          document.getElementById('d-hr').textContent=pt2.hr+' bpm';
-          document.getElementById('d-cad').textContent=pt2.cadence+' rpm';
-          document.getElementById('d-spd').textContent=pt2.speed.toFixed(1)+' m/s';
+        // update this track's oscillator frequency
+        if(AC&&polyOscs[ti_]&&T.osc){
+          var baseHz2=pt2.ele>0?pt2.ele:80;
+          var ivRatio2=INTERVAL_RATIOS[polyIntervals[ti_]||0]||1;
+          if(isFinite(baseHz2*ivRatio2))polyOscs[ti_].frequency.setTargetAtTime(baseHz2*ivRatio2,AC.currentTime,0.3);
+          var vol2=P.oscVol*0.3/Math.sqrt(Math.max(1,allTracks.length));
+          polyGains[ti_].gain.setTargetAtTime(vol2,AC.currentTime,0.1);
         }
+        if(ti_===0){
+          gpsCount++;if(gpsCount%divGPS===0)triggerClick();
+          cadCount++;if(pt2.cadence>15&&cadCount%divCad===0)triggerKick(pt2.cadence);
+          window.polyCurrentTrack=ti_;checkRandomTrigger(pt2);checkPDIs(pt2);
+          if(frameCount%2===0){
+            document.getElementById('d-ele').textContent=Math.round(pt2.ele)+'m';
+            document.getElementById('d-hr').textContent=pt2.hr+' bpm';
+            document.getElementById('d-cad').textContent=pt2.cadence+' rpm';
+            document.getElementById('d-spd').textContent=((pt2.speed||0).toFixed(1))+' m/s';
+          }
+        }
+        ps.lastIdx=hi2;
       }
       if(!pf)ps.lastIdx=-1;
       drawTrack(TD2,S,pf,hi2,ti2,hue2);
@@ -1630,12 +1668,13 @@ document.querySelectorAll('.tip-icon').forEach(function(icon){
 
 document.getElementById('start').addEventListener('click',function(){
   this.style.display='none';
+  document.getElementById('app').style.display='flex';
   buildPatchMatrix();
   initAudio();
+  if(AC&&AC.state==='suspended')AC.resume();
   playing=true;
   document.getElementById('btn-play').classList.add('active');
   requestAnimationFrame(loop);
-  // cargar hitos del track default
   if(trackData&&trackData.length>0) fetchHitosForTrack(trackData);
 });
 </script>
